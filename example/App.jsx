@@ -4,7 +4,7 @@ import {
   AssetManager,
   AtlasAttachmentLoader,
   TextureAtlas,
-  SkeletonJson
+  SkeletonJson,
 } from '../src';
 import { Stats } from '@oasis-engine/stats'
 import "./App.css";
@@ -18,7 +18,7 @@ let root
 o3.Engine.registerFeature(Stats);
 
 
-const sourceId = 0
+const sourceId = 2
 const source = [
   {
     atlasFile:
@@ -107,7 +107,7 @@ function App() {
   useEffect(() => {
 
     init()
-    // addCube2()
+    // addCube()
     // loadSpine3() // souceId = 7 compressed texture
     // loadUseSpineLoader()
     // loadSpine2() // sourceId = 12 load image
@@ -122,7 +122,7 @@ function App() {
       });
     }
 
-    function createCube(t) {
+    function addCube() {
       const cube = root.createChild(name);
       const cubeRenderer = cube.addComponent(o3.GeometryRenderer);
       cubeRenderer.renderPriority = 2;
@@ -130,50 +130,33 @@ function App() {
       cubeRenderer.geometry = geo;
 
       const mtl = new o3.PBRMaterial(engine, 'cube_mtl')
-      mtl.baseColorTexture = t;
       mtl.unlit = true;
       cubeRenderer.material = mtl;
-      cube.transform.setRotation(0, 50, 0)
+      cube.transform.setRotation(0, 50, 0);
     }
 
     function init() {
-      requestAnimationFrame(() => {
-        const domCanvas = oasisRef.current
-        const canvas = new o3.WebCanvas(domCanvas);
-        canvas.width = window.innerWidth * o3.SystemInfo.devicePixelRatio;
-        canvas.height = window.innerHeight * o3.SystemInfo.devicePixelRatio;
-        engine = new o3.Engine(canvas, new o3.WebGLRenderer());
-        const scene = engine.sceneManager.activeScene;
-        root = new o3.Entity(engine);
-        scene.addRootEntity(root);
+      const domCanvas = oasisRef.current
+      const canvas = new o3.WebCanvas(domCanvas);
+      canvas.width = window.innerWidth * o3.SystemInfo.devicePixelRatio;
+      canvas.height = window.innerHeight * o3.SystemInfo.devicePixelRatio;
+      engine = new o3.Engine(canvas, new o3.WebGLRenderer());
+      const scene = engine.sceneManager.activeScene;
+      root = new o3.Entity(engine);
+      scene.addRootEntity(root);
 
-        const cameraEntity = root.createChild('camera');
-        const camera = cameraEntity.addComponent(o3.Camera);
-        camera.farClipPlane = 2000000;
-        camera.nearClipPlane = 0.001;
-        cameraEntity.transform.position = new o3.Vector3(0, 0, 10);
+      const cameraEntity = root.createChild('camera');
+      const camera = cameraEntity.addComponent(o3.Camera);
+      camera.farClipPlane = 2000000;
+      camera.nearClipPlane = 0.001;
+      cameraEntity.transform.position = new o3.Vector3(0, 0, 12)
+      camera.enableFrustumCulling = false;
 
-        cameraEntity.addComponent(OrbitControl)
+      cameraEntity.addComponent(OrbitControl)
 
-        loadSpine()
-        engine.run()
-      });
+      loadSpine()
+      engine.run()
     }
-
-
-    // function loadSpine() {
-    //   assetManager = new AssetManager(engine);
-    //   assetManager.loadText(skeletonFile);
-    //   if (sourceId === 7) {
-    //     assetManager.loadCompressedTexture(textureFile);
-    //   } else {
-    //     assetManager.loadTexture(textureFile);
-    //   }
-    //   assetManager.loadText(atlasFile);
-    //   assetManager.onLoad().then(() => {
-    //     initSpine();
-    //   });
-    // }
 
     function loadSpine() {
       assetManager = new AssetManager(engine);
@@ -185,42 +168,15 @@ function App() {
       });
     }
     
-    function loadSpine2() {
-      assetManager = new AssetManager(engine);
-      assetManager.loadText(skeletonFile);
-      assetManager.loadImage(textureFile);
-      assetManager.loadText(atlasFile);
-      assetManager.onLoad().then(() => {
-        initSpine();
-      });
-    }
-
-    function loadSpine3() {
-      assetManager = new AssetManager(engine);
-      assetManager.loadText(skeletonFile);
-      assetManager.loadCompressedTexture(textureFile, 995, 995);
-      assetManager.loadText(atlasFile);
-      assetManager.onLoad().then(() => {
-        initSpine();
-      });
-    }
-
     function initSpine() {
       let textureData = assetManager.get(textureFile);
-      // if (sourceId === 7) textureData = assetManager.get(textureFile);
-      // if (sourceId === 12) textureData = assetManager.get(textureFile);
         const atlas = new TextureAtlas(assetManager.get(atlasFile), function (line, w, h) {
-        // 使用压缩纹理时，atlas的textureLoader内，resize纹理至atlas大小
-        console.log(sourceId)
-        console.log(textureData)
-        // if (sourceId === 7) assetManager.createCompressedTexture(textureFile, textureData, w, h);
-        // if (sourceId === 12) assetManager.createTexture(textureFile, textureData, w, h);
         assetManager.createTexture(textureFile, textureData);
         return assetManager.get(textureFile);
       });
       const atlasLoader = new AtlasAttachmentLoader(atlas);
       const skeletonJson = new SkeletonJson(atlasLoader);
-      skeletonJson.scale = 0.0065;
+      skeletonJson.scale = 0.007;
       const skeletonData = skeletonJson.readSkeletonData(assetManager.get(skeletonFile));
       const skeletonNode = root.createChild("skeleton");
       // skeletonNode.transform.setRotation(0, -20, 0);
@@ -228,9 +184,7 @@ function App() {
       spineRenderer.setSkeletonData(skeletonData);
       spineRenderer.skeleton.setToSetupPose();
       spineRenderer.state.setAnimation(0, "animation", true);
-      window.spineRenderer = spineRenderer;
-      skeletonNode.transform.position = new o3.Vector3(-2, 5, 0)
-      // skeletonNode.transform.position = new o3.Vector3(0, 0, 0)
+      skeletonNode.transform.position = new o3.Vector3(0, 0, 0);
     }
 
   }, []);

@@ -38,7 +38,7 @@ export class MeshBatcher extends GeometryRenderer {
 
     const vertexElements = [
       new VertexElement('POSITION', 0, VertexElementFormat.Vector3, 0),
-      new VertexElement('COLOR', 12, VertexElementFormat.Vector4, 0),
+      new VertexElement('COLOR_0', 12, VertexElementFormat.Vector4, 0),
       new VertexElement('TEXCOORD_0', 28, VertexElementFormat.Vector2, 0),
     ];
 
@@ -69,8 +69,8 @@ export class MeshBatcher extends GeometryRenderer {
     this.geometry = geometry;
   }
 
-  initMaterial({ stencil, blend, depthMask }) {
-    this.material = new SkeletonMaterial(this.engine, 'skeleton_material', { stencil, blend, depthMask });
+  initMaterial() {
+    this.material = new SkeletonMaterial(this.engine);
   }
 
   clear() {}
