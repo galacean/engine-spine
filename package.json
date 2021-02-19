@@ -27,7 +27,7 @@
   },
   "version": "0.1.0",
   "description": "my awesome project",
-  "name": "@alipay/oasis-spine",
+  "name": "@oasis-engine/core",
   "publishConfig": {
     "registry": "https://registry.npm.alibaba-inc.com"
   },
