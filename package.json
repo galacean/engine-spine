@@ -26,7 +26,7 @@
     "vite-plugin-react": "^3.0.0"
   },
   "version": "0.1.0",
-  "description": "my awesome project",
+  "description": "oasis spine runtime",
   "name": "@oasis-engine/core",
   "publishConfig": {
     "registry": "https://registry.npm.alibaba-inc.com"
