@@ -40,11 +40,10 @@ export class OasisTextrure extends ITexture {
     }
   }
 
-  // @ts-ignore
-  setFilters(minFilter: o3.TextureFilter, magFilter: o3.TextureFilter) {
-    if (minFilter === o3.TextureFilter.NEAREST) {
+  setFilters(minFilter: any, magFilter: any) {
+    if (minFilter === WebGLRenderingContext.NEAREST) {
       this.texture.filterMode = o3.TextureFilterMode.Point;
-    } else if (magFilter === o3.TextureFilter.LINEAR_MIPMAP_LINEAR) {
+    } else if (magFilter === WebGLRenderingContext.LINEAR_MIPMAP_LINEAR) {
       this.texture.filterMode = o3.TextureFilterMode.Trilinear;
     } else {
       this.texture.filterMode = o3.TextureFilterMode.Bilinear;

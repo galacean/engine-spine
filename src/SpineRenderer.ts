@@ -1,12 +1,11 @@
 import { MeshBatcher } from './core/MeshBatcher';
 import { Utils, ArrayLike } from './spine-core/Utils';
-import { Skeleton } from './spine-core/Skeleton'
-import { SkeletonData } from './spine-core/SkeletonData'
-import { AnimationState } from './spine-core/AnimationState'
-import { AnimationStateData } from './spine-core/AnimationStateData'
-import { RegionAttachment } from './spine-core/attachments/RegionAttachment'
-import { MeshAttachment } from './spine-core/attachments/MeshAttachment'
-import { StencilStates, BlendStates } from './core/SkeletonMaterial'
+import { Skeleton } from './spine-core/Skeleton';
+import { SkeletonData } from './spine-core/SkeletonData';
+import { AnimationState } from './spine-core/AnimationState';
+import { AnimationStateData } from './spine-core/AnimationStateData';
+import { RegionAttachment } from './spine-core/attachments/RegionAttachment';
+import { MeshAttachment } from './spine-core/attachments/MeshAttachment';
 import {
   Script,
 } from 'oasis-engine';
@@ -26,9 +25,6 @@ export class SpineRenderer extends Script {
   private _nextBatchIndex = 0;
   private _vertexCount: number = 0;
 
-  private _stencilStates: StencilStates;
-  private _blendStates: BlendStates;
-  private _depthMask: boolean;
   private _priority: number = 0;
 
   zOffset: number = 0.01;
@@ -57,18 +53,6 @@ export class SpineRenderer extends Script {
     const animData = new AnimationStateData(asset);
     this._state = new AnimationState(animData);
     this.getVertexCount();
-  }
-
-  setCustomStencil(states: StencilStates) {
-    this._stencilStates = states;
-  }
-
-  setCustomBlend(states: BlendStates) {
-    this._blendStates = states;
-  }
-
-  setDepthMask(depthMask: boolean) {
-    this._depthMask = depthMask;
   }
 
   setInitialRenderPriority(priority: number) {
@@ -139,11 +123,7 @@ export class SpineRenderer extends Script {
       const batch = batchNode.addComponent(MeshBatcher);
       batch.renderPriority = this._priority;
       batch.initGeometry(this._vertexCount);
-      batch.initMaterial({
-        stencil: this._stencilStates,
-        blend: this._blendStates,
-        depthMask: this._depthMask
-      });
+      batch.initMaterial();
       this._batches.push(batch);
     }
     const batch = this._batches[this._nextBatchIndex++];
@@ -153,7 +133,6 @@ export class SpineRenderer extends Script {
 
   private updateGeometry() {
     this.clearBatches();
-
     let vertices = this.vertices;
     let triangles: Array<number>;
     let uvs: ArrayLike<number>;
