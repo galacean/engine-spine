@@ -31,6 +31,13 @@ export class SpineRenderScript extends Script {
     return this._meshGenerator.mesh;
   }
 
+  set scale(v: number) {
+    if (this._skeleton) {
+      this._skeleton.scaleX = v;
+      this._skeleton.scaleY = v;
+    }
+  }
+
   constructor(entity: Entity) {
     super(entity);
     this._meshGenerator = new MeshGenerator(this.engine, entity);

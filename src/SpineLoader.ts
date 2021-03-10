@@ -89,7 +89,6 @@ class SpineLoader extends Loader<Entity> {
       } else {
         skeletonLoader = new SkeletonJson(atlasLoader);
       }
-      skeletonLoader.scale = item.scale || 1;
       const skeletonData = skeletonLoader.readSkeletonData(assetManager.get(skeletonFile));
       const entity = new Entity(resourceManager.engine);
       const spineAnimation = entity.addComponent(SpineAnimation);

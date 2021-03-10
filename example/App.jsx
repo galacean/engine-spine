@@ -47,7 +47,6 @@ function App() {
         {
           url: 'http://alipay-rmsdeploy-image.cn-hangzhou.alipay.aliyun-inc.com/bakery/Fish.json',
           type: 'spine',
-          scale: 0.007
         },
         // {
         //   urls: [
@@ -56,12 +55,13 @@ function App() {
         //     'https://gw.alipayobjects.com/zos/OasisHub/78502992-5fba-4d9c-8a6d-2011f7ead213/1612507101049.png'
         //   ],
         //   type: 'spine',
-        //   scale: 0.007
         // }
       );
       root.addChild(spineEntity);
       const spineAnimation = spineEntity.getComponent(SpineAnimation);
       spineAnimation.state.setAnimation(0, 'animation', true);
+      spineAnimation.skeleton.scaleX = 0.007;
+      spineAnimation.skeleton.scaleY = 0.007;
     }
 
   }, []);
