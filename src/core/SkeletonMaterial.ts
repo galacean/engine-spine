@@ -4,14 +4,14 @@ const vertexSource = `
   uniform mat4 u_MVPMat;
 
   attribute vec3 POSITION; 
-  attribute vec4 COLOR_0;
-  attribute vec2 TEXCOORD_0;
+  attribute vec4 COLOR;
+  attribute vec2 TEXCOORD;
   varying vec2 v_uv;
   varying vec4 v_color;
 
   void main() {
-    v_uv = TEXCOORD_0;
-    v_color = COLOR_0;
+    v_uv = TEXCOORD;
+    v_color = COLOR;
     gl_Position = u_MVPMat * vec4(POSITION, 1.0);
   }
   `;
@@ -29,15 +29,6 @@ const fragmentSource = `
 Shader.create('spine_skeleton',vertexSource,fragmentSource)
 
 export class SkeletonMaterial extends Material {
-
-  get map() {
-    return this.shaderData.getTexture('map');
-  }
-
-  set map(value) {
-    this.shaderData.setTexture('map', value);
-  }
-
   constructor(engine: Engine) {
     super(engine, Shader.find('spine_skeleton'));
     const rasterState = this.renderState.rasterState;
