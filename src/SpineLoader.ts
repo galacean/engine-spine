@@ -8,7 +8,8 @@ import {
   TextureWrapMode,
   Texture2D,
   Engine,
-  Entity
+  Entity,
+  MeshRenderer
 } from '@oasis-engine/core';
 import { AssetManager } from './spine-core/AssetManager';
 import { TextureAtlas } from './spine-core/TextureAtlas';
@@ -17,6 +18,7 @@ import { AtlasAttachmentLoader } from './spine-core/AtlasAttachmentLoader';
 import { SkeletonJson } from './spine-core/SkeletonJson';
 import { SkeletonBinary } from './spine-core/SkeletonBinary';
 import { SpineAnimation } from './SpineAnimation';
+import { SkeletonMaterial } from './core/SkeletonMaterial';
 
 type SpineResouce = {
   skeletonFile: string
@@ -91,6 +93,9 @@ class SpineLoader extends Loader<Entity> {
       }
       const skeletonData = skeletonLoader.readSkeletonData(assetManager.get(skeletonFile));
       const entity = new Entity(resourceManager.engine);
+      const meshRenderer = entity.addComponent(MeshRenderer);
+      const mtl = new SkeletonMaterial(resourceManager.engine);
+      meshRenderer.setMaterial(mtl);
       const spineAnimation = entity.addComponent(SpineAnimation);
       spineAnimation.setSkeletonData(skeletonData);
       resolve(entity);

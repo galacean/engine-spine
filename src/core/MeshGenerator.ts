@@ -50,6 +50,10 @@ export class MeshGenerator {
     }
 
     const meshRenderer = this.entity.getComponent(MeshRenderer);
+    if (!meshRenderer) {
+      console.warn('You need add MeshRenderer component to entity first');
+      return;
+    }
 
     if (this.vertexCount === 0) {
       const vertexCount = this.getVertexCount(skeleton);

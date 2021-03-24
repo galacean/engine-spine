@@ -1,5 +1,5 @@
 import {
-  Mesh,
+  BufferMesh,
   Engine,
   Buffer,
   VertexElement,
@@ -12,7 +12,7 @@ import {
 
 export class MeshBuffer {
 
-  private _mesh: Mesh;
+  private _mesh: BufferMesh;
 
   private indexBuffer: Buffer;
   private vertexBuffer: Buffer;
@@ -22,7 +22,7 @@ export class MeshBuffer {
   }
 
   initialize(engine: Engine, maxVertices: number) {
-    const mesh = this._mesh = new Mesh(engine);
+    const mesh = this._mesh = new BufferMesh(engine);
 
     const indices = new Uint16Array(maxVertices);
 

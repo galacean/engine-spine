@@ -1,88 +1,77 @@
-# Oasis spine runtime
+A simple, high-perfomance spine runtime using oasis-engine BufferMesh API ～
 
---------------------
 
-## Badges
-
-[![TNPM version][tnpm-image]][tnpm-url]
-[![TNPM downloads][tnpm-downloads-image]][tnpm-url]
-[![install size][install-size-image]][install-size-url]
-
-[tnpm-image]: https://npm.alibaba-inc.com/badge/v/@oasis-engine/core.svg
-[tnpm-url]: https://npm.alibaba-inc.com/package/@oasis-engine/core
-[tnpm-downloads-image]: https://npm.alibaba-inc.com/badge/d/@oasis-engine/core.svg
-
---------------------
-
-## Installation
-
+## Install
 ```
-tnpm install @oasis-engine/spine --save
+tnpm i @oasis-engine/engine-spine --save
 ```
-
+## 
 ## Usage
-
+### Resource Load
 ```typescript
-import {
-  SpineRenderer,
-  AssetManager,
-  AtlasAttachmentLoader,
-  TextureAtlas,
-  SkeletonJson,
-} from '@oasis-engine/spine';
+// import * as o3 from 'oasis-engine';
+import '@oasis-engine/engine-spine';
 
-let assetManager: AssetManager
+init();
 
-const skeletonFile = 'your spine json';
-const atlasFile = 'your spine atlas';
-const textureFile = 'your skeleton texture';
-
-assetManager = new AssetManager(engine);
-assetManager.loadText(skeletonFile);
-assetManager.loadText(atlasFile);
-assetManager.loadImage(textureFile);
-
-assetManager.onLoad().then(() => {
-  initSpine();
-});
-
-function initSpine() {
-	const textureData = assetManager.get(textureFile);
-  const atlas = new TextureAtlas(assetManager.get(atlasFile), function () {
-    return assetManager.get(textureFile);
-  });
-  
-  const atlasLoader = new AtlasAttachmentLoader(atlas);
-  const skeletonJson = new SkeletonJson(atlasLoader);
-  
-  skeletonJson.scale = 0.007;
-  const skeletonData = skeletonJson.readSkeletonData(assetManager.get(skeletonFile));
-  
-  const skeletonNode = root.createChild('skeleton');
-  const spineRenderer = skeletonNode.addComponent(SpineRenderer);
-  spineRenderer.setSkeletonData(skeletonData);
-  
-  spineRenderer.skeleton.setToSetupPose();
-  spineRenderer.state.setAnimation(0, "animation", true);
-  skeletonNode.transform.position = new o3.Vector3(0, 0, 0);
+function init() {
+	// oasis initial code: https://github.com/oasis-engine/engine#usage
+  // root: Engine root entity.
+  loadSpine(root);
+  engine.run();
 }
+
+// When SpineAnimation is imported, a SpineLoader is automatically register to the engine loader.
+// And then you can use engine.resourceManager to load spine file.
+
+// You should specify resource type in 'spine' and pass resource cdn link.
+// When pass single url, we assume that the .json(or .bin), .atlas and .png files
+// that correspond to the spine file are in the same base URL and that the .json and .atlas files have the same name.
+// When pass multiple url in an array, you need to pass three typeof files: .json(or .bin),.atlas and .png files.
+
+async function loadSpine(root) {
+  const spineEntity = await engine.resourceManager.load(
+    {
+      url: 'Your spine animation file(.json or .bin).',
+      type: 'spine',
+    },
+    // {
+      // urls: [
+        // 'Your spine animation file(.json or .bin).',
+    		// 'atlas file',
+    		// 'texture image'
+      // ],
+      // type: 'spine',
+    // }
+  );
+  root.addChild(spineEntity);
+}
+
 ```
 
-## Options
-### SpineRenderer
-#### props
 
-- assset：spine.SkeletonData - spine asset
-- state： spine.AnimationState - spine animation state
-- skeleton：spine.Skeleton - spine skeleton
-- batches：GeometryRenderer
-- autoUpdate：Boolean - Whether trigger update automatically
+### Animation Play
+```typescript
+import { SpineAnimation } from '@oasis-engine/engine-spine';
+
+const spineEntity = await engine.resourceManager.load(
+  {
+    url: 'Your spine animation file(.json or .bin).',
+    type: 'spine',
+  },
+);
+root.addChild(spineEntity);
+
+// You can get skeleton and animationState from SpineAnimation component.
+// And use spine-core API to play animation or do other things~
+// spineAnimation.state(AnimationState): http://zh.esotericsoftware.com/spine-api-reference#AnimationState
+// spineAnimation.skeleton(Skeleton): http://zh.esotericsoftware.com/spine-api-reference#Skeleton
+const spineAnimation = spineEntity.getComponent(SpineAnimation);
+spineAnimation.state.setAnimation(0, 'your_animation_name', true);
+
+```
 
 
-#### Method
-
-- setSkeletonData - set spine asset
-- setInitialRenderPriority - set custom render priority
-- disposeCurrentSkeleton - dispose
-- updateState - update animation state
+## Spine Version
+oasis-engine 0.2 & engine-spine 0.1 - this branch, latest npm
 
