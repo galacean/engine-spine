@@ -18,7 +18,7 @@ import { AtlasAttachmentLoader } from './spine-core/AtlasAttachmentLoader';
 import { SkeletonJson } from './spine-core/SkeletonJson';
 import { SkeletonBinary } from './spine-core/SkeletonBinary';
 import { SpineAnimation } from './SpineAnimation';
-import { SkeletonMaterial } from './core/SkeletonMaterial';
+import { SpineMaterial } from './core/SpineMaterial';
 
 type SpineResouce = {
   skeletonFile: string
@@ -94,7 +94,7 @@ class SpineLoader extends Loader<Entity> {
       const skeletonData = skeletonLoader.readSkeletonData(assetManager.get(skeletonFile));
       const entity = new Entity(resourceManager.engine);
       const meshRenderer = entity.addComponent(MeshRenderer);
-      const mtl = new SkeletonMaterial(resourceManager.engine);
+      const mtl = new SpineMaterial(resourceManager.engine);
       meshRenderer.setMaterial(mtl);
       const spineAnimation = entity.addComponent(SpineAnimation);
       spineAnimation.setSkeletonData(skeletonData);

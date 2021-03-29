@@ -9,7 +9,7 @@ import { MeshAttachment } from '../spine-core/attachments/MeshAttachment';
 import { ClippingAttachment } from '../spine-core/attachments/ClippingAttachment';
 import { Utils, ArrayLike, Color } from '../spine-core/Utils';
 import { SkeletonClipping } from '../spine-core/SkeletonClipping';
-import { MeshBuffer } from './MeshBuffer';
+import { MeshBuffer } from './SpineMesh';
 
 export type Setting = {
   useClipping: boolean;

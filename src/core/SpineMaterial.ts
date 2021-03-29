@@ -28,7 +28,7 @@ const fragmentSource = `
 
 Shader.create('spine_skeleton',vertexSource,fragmentSource)
 
-export class SkeletonMaterial extends Material {
+export class SpineMaterial extends Material {
   constructor(engine: Engine) {
     super(engine, Shader.find('spine_skeleton'));
     const rasterState = this.renderState.rasterState;
