@@ -13,7 +13,7 @@ import {
 } from '@oasis-engine/core';
 import { AssetManager } from './spine-core/AssetManager';
 import { TextureAtlas } from './spine-core/TextureAtlas';
-import { Texture as ITexture } from './spine-core/Texture';
+import { Texture } from './spine-core/Texture';
 import { AtlasAttachmentLoader } from './spine-core/AtlasAttachmentLoader';
 import { SkeletonJson } from './spine-core/SkeletonJson';
 import { SkeletonBinary } from './spine-core/SkeletonBinary';
@@ -192,7 +192,7 @@ class SpineLoader extends Loader<Entity> {
 
 }
 
-export class AdaptiveTexture extends ITexture {
+export class AdaptiveTexture extends Texture {
   texture: Texture2D;
 
   constructor(data: HTMLImageElement, engine: Engine) {
