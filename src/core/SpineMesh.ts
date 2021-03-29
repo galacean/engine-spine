@@ -10,7 +10,7 @@ import {
   SetDataOptions
 } from 'oasis-engine';
 
-export class MeshBuffer {
+export class SpineMesh {
 
   private _mesh: BufferMesh;
 

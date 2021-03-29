@@ -9,7 +9,7 @@ import { MeshAttachment } from '../spine-core/attachments/MeshAttachment';
 import { ClippingAttachment } from '../spine-core/attachments/ClippingAttachment';
 import { Utils, ArrayLike, Color } from '../spine-core/Utils';
 import { SkeletonClipping } from '../spine-core/SkeletonClipping';
-import { MeshBuffer } from './SpineMesh';
+import { SpineMesh } from './SpineMesh';
 
 export type Setting = {
   useClipping: boolean;
@@ -25,7 +25,7 @@ export class MeshGenerator {
   private engine: Engine;
   private entity: Entity;
   private clipper: SkeletonClipping = new SkeletonClipping();
-  private meshBuffer: MeshBuffer = new MeshBuffer();
+  private spineMesh: SpineMesh = new SpineMesh();
   private vertexCount: number = 0;
   private indicesLength: number = 0;
   private verticesLength: number = 0;
@@ -36,7 +36,7 @@ export class MeshGenerator {
   private tempColor = new Color();
 
   get mesh() {
-    return this.meshBuffer.mesh;
+    return this.spineMesh.mesh;
   }
 
   constructor(engine: Engine, entity: Entity) {
@@ -57,8 +57,8 @@ export class MeshGenerator {
 
     if (this.vertexCount === 0) {
       const vertexCount = this.getVertexCount(skeleton);
-      this.meshBuffer.initialize(this.engine, vertexCount);
-      meshRenderer.mesh = this.meshBuffer.mesh;
+      this.spineMesh.initialize(this.engine, vertexCount);
+      meshRenderer.mesh = this.spineMesh.mesh;
     }
 
     const {
@@ -203,11 +203,11 @@ export class MeshGenerator {
   }
 
   fillVertexData() {
-    this.meshBuffer.fillVertexData(this.verticesWithZ);
+    this.spineMesh.fillVertexData(this.verticesWithZ);
   }
 
   fillIndexData() {
-    this.meshBuffer.fillIndexData(this.indices);
+    this.spineMesh.fillIndexData(this.indices);
   }
 
   addSubMesh(skeleton: Skeleton) {
