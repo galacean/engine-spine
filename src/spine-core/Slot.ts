@@ -28,10 +28,6 @@ export class Slot {
 
 	attachment: Attachment;
 
-	slot; attachment
-
-
-
 	private attachmentTime: number;
 
 	attachmentState: number;

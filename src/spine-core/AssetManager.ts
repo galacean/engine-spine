@@ -4,14 +4,14 @@ import { FakeTexture } from "./Texture";
 
 export class AssetManager implements Disposable {
 	private pathPrefix: string;
-	private textureLoader: (image: HTMLImageElement | ArrayBuffer, width?: number, height?: number) => any;
+	private textureLoader: (image: HTMLImageElement) => any;
 	private assets: Map<any> = {};
 	private errors: Map<string> = {};
 	private toLoad = 0;
 	private loaded = 0;
 	private rawDataUris: Map<string> = {};
 
-	constructor (textureLoader: (data: HTMLImageElement | ArrayBuffer, width?: number, height?: number) => any, pathPrefix: string = "") {
+	constructor (textureLoader: (image: HTMLImageElement) => any, pathPrefix: string = "") {
 		this.textureLoader = textureLoader;
 		this.pathPrefix = pathPrefix;
 	}
@@ -117,72 +117,6 @@ export class AssetManager implements Disposable {
 		}
 		if (this.rawDataUris[path]) path = this.rawDataUris[path];
 		img.src = path;
-	}
-
-	loadImage(path: string,
-		success: (path: string, image: HTMLImageElement) => void = null,
-		error: (path: string, error: string) => void = null) {
-		path = this.pathPrefix + path;
-		let storagePath = path;
-		this.toLoad++;
-		let img = new Image();
-		img.crossOrigin = "anonymous";
-		img.onload = (ev) => {
-			this.assets[storagePath] = img;
-			this.toLoad--;
-			this.loaded++;
-			if (success) success(path, img);
-		}
-		img.onerror = (ev) => {
-			this.errors[path] = `Couldn't load image ${path}`;
-			this.toLoad--;
-			this.loaded++;
-			if (error) error(path, `Couldn't load image ${path}`);
-		}
-		if (this.rawDataUris[path]) path = this.rawDataUris[path];
-		img.src = path;
-	}
-
-	loadCompressedTexture(path: string,
-		originWidth: number, originHeight: number,
-		success: (path: string, binary: Uint8Array) => void = null,
-		error: (path: string, error: string) => void = null,
-		) {
-		path = this.pathPrefix + path;
-		let storagePath = path;
-		this.toLoad++;
-
-		this.downloadBinary(path, (data: Uint8Array): void => {
-			let texture
-			if (originWidth !== undefined && originHeight !== undefined) {
-				texture = this.textureLoader(data.buffer as ArrayBuffer, originWidth, originHeight);
-			} else {
-				texture = this.textureLoader(data.buffer as ArrayBuffer);
-			}
-			this.assets[storagePath] = texture;
-			if (success) success(path, data);
-			this.toLoad--;
-			this.loaded++;
-		}, (state: number, responseText: string): void => {
-			this.errors[path] = `Couldn't load binary ${path}: status ${status}, ${responseText}`;
-			if (error) error(path, `Couldn't load binary ${path}: status ${status}, ${responseText}`);
-			this.toLoad--;
-			this.loaded++;
-		});
-	}
-
-	createCompressedTexture(path: string, data: Uint8Array, w: number, h: number) {
-		path = this.pathPrefix + path;
-		let storagePath = path;
-		let texture = this.textureLoader(data.buffer as ArrayBuffer, w, h);
-		this.assets[storagePath] = texture;
-	}
-
-	createTexture(path: string, image: HTMLImageElement) {
-		path = this.pathPrefix + path;
-		let storagePath = path;
-		let texture = this.textureLoader(image);
-		this.assets[storagePath] = texture;
 	}
 
 	loadTextureAtlas (path: string,

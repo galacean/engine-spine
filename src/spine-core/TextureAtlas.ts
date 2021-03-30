@@ -51,8 +51,8 @@ import { TextureWrap, TextureRegion } from "./Texture";
 						page.vWrap = TextureWrap.Repeat;
 					else if (direction == "xy")
 						page.uWrap = page.vWrap = TextureWrap.Repeat;
-					// pass atlas width and height to texture loader
-					page.texture = textureLoader(line, page.width, page.height);
+
+					page.texture = textureLoader(line);
 					page.texture.setFilters(page.minFilter, page.magFilter);
 					page.texture.setWraps(page.uWrap, page.vWrap);
 					page.width = page.texture.getImage().width;
