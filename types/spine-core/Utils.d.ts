@@ -72,7 +72,7 @@ export declare class Utils {
     static newArray<T>(size: number, defaultValue: T): Array<T>;
     static newFloatArray(size: number): ArrayLike<number>;
     static newShortArray(size: number): ArrayLike<number>;
-    static toFloatArray(array: Array<number>): number[] | Float32Array;
+    static toFloatArray(array: Array<number>): import("@oasis-engine/core/types/animation/types").List;
     static toSinglePrecision(value: number): number;
     static webkit602BugfixHelper(alpha: number, blend: MixBlend): void;
     static contains<T>(array: Array<T>, element: T, identity?: boolean): boolean;

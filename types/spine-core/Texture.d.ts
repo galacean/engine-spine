@@ -1,8 +1,7 @@
-import { Texture2D } from 'oasis-engine';
 export declare abstract class Texture {
-    protected _image: HTMLImageElement | ImageBitmap | Texture2D;
-    constructor(image: HTMLImageElement | ImageBitmap | ArrayBuffer);
-    getImage(): HTMLImageElement | ImageBitmap | Texture2D;
+    protected _image: HTMLImageElement | ImageBitmap;
+    constructor(image: HTMLImageElement | ImageBitmap);
+    getImage(): HTMLImageElement | ImageBitmap;
     abstract setFilters(minFilter: TextureFilter, magFilter: TextureFilter): void;
     abstract setWraps(uWrap: TextureWrap, vWrap: TextureWrap): void;
     abstract dispose(): void;

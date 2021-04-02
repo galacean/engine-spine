@@ -1,6 +1,5 @@
 A simple, high-perfomance spine runtime using oasis-engine BufferMesh API ～
 
-
 ## Install
 ```
 tnpm i @oasis-engine/engine-spine --save

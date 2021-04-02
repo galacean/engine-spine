@@ -27,7 +27,7 @@
   },
   "version": "0.1.0",
   "description": "oasis spine runtime",
-  "name": "@oasis-engine/core",
+  "name": "@oasis-engine/engine-spine",
   "publishConfig": {
     "registry": "https://registry.npm.alibaba-inc.com"
   },
