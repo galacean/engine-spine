@@ -39,5 +39,6 @@ export class SpineMaterial extends Material {
     target.sourceAlphaBlendFactor = BlendFactor.One;
     target.destinationAlphaBlendFactor = BlendFactor.OneMinusSourceAlpha;
     this.renderQueueType = RenderQueueType.Transparent;
+    target.enabled = true;
   }
 }
