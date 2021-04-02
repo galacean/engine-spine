@@ -36,7 +36,7 @@ type SpineLoadItem = LoadItem & SpineOpt;
 @resourceLoader('spine', ['json', 'bin'])
 class SpineLoader extends Loader<Entity> {
   load(item: SpineLoadItem, resourceManager: ResourceManager): AssetPromise<Entity> {
-    return new AssetPromise(async (resolve, reject) => {
+    return new AssetPromise((resolve, reject) => {
       // @ts-ignore
       if (item.type !== 'spine') {
         reject('Asset type must be spine.');
@@ -71,34 +71,34 @@ class SpineLoader extends Loader<Entity> {
         reject('Resouce param error');
       }
 
-      const loadRes = await this.onLoad(assetManager);
-      if (loadRes !== 'loaded') {
-        reject(loadRes);
-      }
+      this.onLoad(assetManager).then((loadRes) => {
+        if (loadRes !== 'loaded') {
+          reject(loadRes);
+        }
+        let atlas: TextureAtlas;
+        if (autoGenUrl) {
+          atlas = assetManager.get(atlasFile);
+        } else {
+          atlas = new TextureAtlas(assetManager.get(atlasFile), function () {
+            return assetManager.get(textureFile);
+          });
+        }
 
-      let atlas: TextureAtlas;
-      if (autoGenUrl) {
-        atlas = assetManager.get(atlasFile);
-      } else {
-        atlas = new TextureAtlas(assetManager.get(atlasFile), function () {
-          return assetManager.get(textureFile);
-        });
-      }
-
-      const atlasLoader = new AtlasAttachmentLoader(atlas);
-      if (this.isBinFile(skeletonFile)) {
-        skeletonLoader = new SkeletonBinary(atlasLoader);
-      } else {
-        skeletonLoader = new SkeletonJson(atlasLoader);
-      }
-      const skeletonData = skeletonLoader.readSkeletonData(assetManager.get(skeletonFile));
-      const entity = new Entity(resourceManager.engine);
-      const meshRenderer = entity.addComponent(MeshRenderer);
-      const mtl = new SpineMaterial(resourceManager.engine);
-      meshRenderer.setMaterial(mtl);
-      const spineAnimation = entity.addComponent(SpineAnimation);
-      spineAnimation.setSkeletonData(skeletonData);
-      resolve(entity);
+        const atlasLoader = new AtlasAttachmentLoader(atlas);
+        if (this.isBinFile(skeletonFile)) {
+          skeletonLoader = new SkeletonBinary(atlasLoader);
+        } else {
+          skeletonLoader = new SkeletonJson(atlasLoader);
+        }
+        const skeletonData = skeletonLoader.readSkeletonData(assetManager.get(skeletonFile));
+        const entity = new Entity(resourceManager.engine);
+        const meshRenderer = entity.addComponent(MeshRenderer);
+        const mtl = new SpineMaterial(resourceManager.engine);
+        meshRenderer.setMaterial(mtl);
+        const spineAnimation = entity.addComponent(SpineAnimation);
+        spineAnimation.setSkeletonData(skeletonData);
+        resolve(entity);
+      })
     });
   }
 
