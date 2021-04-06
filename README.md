@@ -2,7 +2,7 @@ A simple, high-perfomance spine runtime using oasis-engine BufferMesh API ～
 
 ## Badges
 
-![npm-version](https://img.shields.io/npm/v/@oasis-engine/engine-spine)
+<a href="https://www.npmjs.com/package/@oasis-engine/engine-spine"><img src="https://img.shields.io/npm/v/@oasis-engine/engine-spine"/></a>
 ![npm-size](https://img.shields.io/bundlephobia/minzip/@oasis-engine/engine-spine)
 ![npm-download](https://img.shields.io/npm/dm/@oasis-engine/engine-spine)
 
