@@ -2,19 +2,15 @@ A simple, high-perfomance spine runtime using oasis-engine BufferMesh API ～
 
 ## Badges
 
-[![TNPM version][tnpm-image]][tnpm-url]
-[![TNPM downloads][tnpm-downloads-image]][tnpm-url]
-[![install size][install-size-image]][install-size-url]
-
-[tnpm-image]: https://npm.alibaba-inc.com/badge/v/@oasis-engine/engine-spine.svg
-[tnpm-url]: https://npm.alibaba-inc.com/package/@oasis-engine/engine-spine
-[tnpm-downloads-image]: https://npm.alibaba-inc.com/badge/d/@oasis-engine/engine-spine.svg
+![npm-version](https://img.shields.io/npm/v/@oasis-engine/engine-spine)
+![npm-size](https://img.shields.io/bundlephobia/minzip/@oasis-engine/engine-spine)
+![npm-download](https://img.shields.io/npm/dm/@oasis-engine/engine-spine)
 
 --------------------
 
 ## Install
 ```
-tnpm i @oasis-engine/engine-spine --save
+npm i @oasis-engine/engine-spine --save
 ```
 ## 
 ## Usage

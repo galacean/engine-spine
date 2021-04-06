@@ -8,3 +8,4 @@ es
 .history
 types
 tsconfig.tsbuildinfo
+package-lock.json
