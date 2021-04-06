@@ -34,7 +34,7 @@ export class SpineMaterial extends Material {
     const rasterState = this.renderState.rasterState;
     rasterState.cullMode = CullMode.Off;
     const depthState = this.renderState.depthState;
-    depthState.enabled = false;
+    depthState.writeEnabled = false;
     const target = this.renderState.blendState.targetBlendState;
     target.sourceColorBlendFactor = BlendFactor.SourceAlpha;
     target.destinationColorBlendFactor = BlendFactor.OneMinusSourceAlpha;
