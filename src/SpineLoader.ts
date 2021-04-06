@@ -199,6 +199,7 @@ export class AdaptiveTexture extends Texture {
     super(data);
     this.texture = new Texture2D(engine, data.width, data.height);
     this.texture.setImageSource(data);
+    this.texture.generateMipmaps();
   }
 
   setFilters(minFilter: any, magFilter: any) {
