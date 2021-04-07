@@ -9,3 +9,5 @@ es
 types
 tsconfig.tsbuildinfo
 package-lock.json
+.aci.yml
+LEGAL.md
