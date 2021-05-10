@@ -43,10 +43,8 @@ class SpineLoader extends Loader<Entity> {
       }
 
       let resource: SpineResouce;
-      let autoGenUrl = false;
 
       if (!item.urls && item.url && this.checkUrl(item.url)) {
-        autoGenUrl = true;
         resource = this.getResouceFromUrl(item.url);
       }
 
@@ -54,19 +52,21 @@ class SpineLoader extends Loader<Entity> {
         resource = this.getResouceFromUrls(item.urls);
       }
       
+      let autoLoadTexture: boolean = false;
       let assetManager: AssetManager;
       let skeletonLoader: SkeletonJson | SkeletonBinary;
       assetManager = new AssetManager((data) => {
         return new AdaptiveTexture(data, resourceManager.engine);
       });
       const { skeletonFile, atlasFile, textureFile } = resource;
-      if (resource && autoGenUrl) {
-        assetManager.loadText(skeletonFile);
-        assetManager.loadTextureAtlas(atlasFile);
-      } else if (resource && !autoGenUrl) {
+      if (skeletonFile && atlasFile && textureFile) {
         assetManager.loadText(skeletonFile);
         assetManager.loadText(atlasFile);
         assetManager.loadTexture(textureFile);
+      } else if (skeletonFile && atlasFile && !textureFile) {
+        autoLoadTexture = true;
+        assetManager.loadText(skeletonFile);
+        assetManager.loadTextureAtlas(atlasFile);
       } else {
         reject('Resouce param error');
       }
@@ -76,7 +76,7 @@ class SpineLoader extends Loader<Entity> {
           reject(loadRes);
         }
         let atlas: TextureAtlas;
-        if (autoGenUrl) {
+        if (autoLoadTexture) {
           atlas = assetManager.get(atlasFile);
         } else {
           atlas = new TextureAtlas(assetManager.get(atlasFile), function () {
@@ -122,15 +122,15 @@ class SpineLoader extends Loader<Entity> {
     let atlasFile = url;
     let queryStringPos = atlasFile.indexOf('?');
     if (queryStringPos > 0) {
-      atlasFile = atlasFile.substr(0, queryStringPos)
+      atlasFile = atlasFile.substr(0, queryStringPos);
     }
     atlasFile = atlasFile.substr(0, atlasFile.lastIndexOf('.')) + atlasSuffix;
     return { skeletonFile, atlasFile };
   }
 
   checkUrls(urls: string[]): boolean {
-    if (urls.length < 3) {
-      console.error('When use urls as params, urls must contain three url: json/bin, atlas and img');
+    if (urls.length < 2) {
+      console.error('When use urls as params, urls should at least contain: json/bin and atlas');
       return false;
     }
     if (urls.length > 3) {
@@ -139,10 +139,10 @@ class SpineLoader extends Loader<Entity> {
     }
     
     const { skeletonFile, atlasFile, textureFile } = this.getResouceFromUrls(urls);
-    if (skeletonFile &&  atlasFile && textureFile) {
+    if (skeletonFile &&  atlasFile) {
       return true;
     }
-    console.error(`Lack ${skeletonFile ? '' : 'skeletonFile'}${!atlasFile ? '' : ' atlasFile'}${!textureFile ? '' : ' textureFile'}`);
+    console.error(`Lack ${skeletonFile ? '' : 'skeletonFile'}${!atlasFile ? '' : ' atlasFile'}`);
     return false;
   }
 
