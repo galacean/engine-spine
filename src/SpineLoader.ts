@@ -51,11 +51,6 @@ class SpineLoader extends Loader<Entity> {
       if (item.urls && this.checkUrls(item.urls)) {
         resource = this.getResouceFromUrls(item.urls);
       }
-<<<<<<< HEAD
-
-=======
-      
->>>>>>> 8f99366 (feat: support load only json and atlas file)
       let autoLoadTexture: boolean = false;
       let assetManager: AssetManager;
       assetManager = new AssetManager(null, (img) => {
