@@ -44,9 +44,13 @@ export class MeshGenerator {
     this.entity = entity;
   }
 
-  buildMesh(skeleton: Skeleton) {
+  buildMesh(skeleton: Skeleton, setting?: Setting) {
     if (!skeleton) {
       return;
+    }
+
+    if (setting) {
+      this.setting = setting;
     }
 
     const meshRenderer = this.entity.getComponent(MeshRenderer);

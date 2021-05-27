@@ -2,7 +2,7 @@ import { Skeleton } from './spine-core/Skeleton';
 import { SkeletonData } from './spine-core/SkeletonData';
 import { AnimationState } from './spine-core/AnimationState';
 import { AnimationStateData } from './spine-core/AnimationStateData';
-import { MeshGenerator } from './core/MeshGenerator';
+import { MeshGenerator, Setting } from './core/MeshGenerator';
 import {
   Script,
   Entity
@@ -13,6 +13,7 @@ export class SpineAnimation extends Script {
   private _skeleton: Skeleton;
   private _state: AnimationState;
   protected _meshGenerator: MeshGenerator;
+  autoUpdate: boolean = false;
 
   get skeletonData() {
     return this._skeletonData;
@@ -42,12 +43,12 @@ export class SpineAnimation extends Script {
     this._meshGenerator = new MeshGenerator(this.engine, entity);
   }
 
-  setSkeletonData(skeletonData: SkeletonData) {
+  setSkeletonData(skeletonData: SkeletonData, setting?: Setting) {
     this._skeletonData = skeletonData;
     this._skeleton = new Skeleton(skeletonData);
     const animationData = new AnimationStateData(skeletonData);
     this._state = new AnimationState(animationData);
-    this._meshGenerator.buildMesh(this._skeleton);
+    this._meshGenerator.buildMesh(this._skeleton, setting);
   }
 
   disposeCurrentSkeleton() {
@@ -56,7 +57,9 @@ export class SpineAnimation extends Script {
   }
 
   onUpdate(delta: number) {
-    this.updateState(delta * 0.001);
+    if (this.autoUpdate) {
+      this.updateState(delta * 0.001);
+    }
   }
 
   updateState(deltaTime: number) {
