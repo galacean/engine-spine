@@ -23,8 +23,6 @@ export class SpineAnimation extends Script {
   @ignoreClone
   setting: SpineRenderSetting;
 
-  autoUpdate: boolean = true;
-
   get skeletonData() {
     return this._skeletonData;
   }
@@ -68,9 +66,7 @@ export class SpineAnimation extends Script {
   }
 
   onUpdate(delta: number) {
-    if (this.autoUpdate) {
-      this.updateState(delta * 0.001);
-    }
+    this.updateState(delta * 0.001);
   }
 
   updateState(deltaTime: number) {
