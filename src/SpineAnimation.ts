@@ -2,27 +2,17 @@ import { Skeleton } from './spine-core/Skeleton';
 import { SkeletonData } from './spine-core/SkeletonData';
 import { AnimationState } from './spine-core/AnimationState';
 import { AnimationStateData } from './spine-core/AnimationStateData';
-import { MeshGenerator } from './core/MeshGenerator';
-import { SpineRenderSetting } from './types';
+import { MeshGenerator, Setting } from './core/MeshGenerator';
 import {
   Script,
-  Entity,
-  ignoreClone,
+  Entity
 } from 'oasis-engine';
 
 export class SpineAnimation extends Script {
-  @ignoreClone
   private _skeletonData: SkeletonData;
-  @ignoreClone
   private _skeleton: Skeleton;
-  @ignoreClone
   private _state: AnimationState;
-  @ignoreClone
   protected _meshGenerator: MeshGenerator;
-  
-  @ignoreClone
-  setting: SpineRenderSetting;
-
   autoUpdate: boolean = true;
 
   get skeletonData() {
@@ -53,13 +43,12 @@ export class SpineAnimation extends Script {
     this._meshGenerator = new MeshGenerator(this.engine, entity);
   }
 
-  setSkeletonData(skeletonData: SkeletonData, setting?: SpineRenderSetting) {
+  setSkeletonData(skeletonData: SkeletonData, setting?: Setting) {
     this._skeletonData = skeletonData;
-    this.setting = setting;
     this._skeleton = new Skeleton(skeletonData);
     const animationData = new AnimationStateData(skeletonData);
     this._state = new AnimationState(animationData);
-    this._meshGenerator.buildMesh(this._skeleton, this.setting);
+    this._meshGenerator.buildMesh(this._skeleton, setting);
   }
 
   disposeCurrentSkeleton() {
@@ -86,17 +75,8 @@ export class SpineAnimation extends Script {
   }
 
   updateGeometry() {
-    this._meshGenerator.buildMesh(this._skeleton, this.setting);
+    this._meshGenerator.buildMesh(this._skeleton);
     this._meshGenerator.fillVertexData();
     this._meshGenerator.fillIndexData();
-  }
-
-  /**
-   * spine animation custom clone
-   */
-  _cloneTo(target: SpineAnimation) {
-    target.setSkeletonData(this.skeletonData);
-    const _cloneSetting = {...this.setting};
-    target.setting = _cloneSetting;
   }
 }
