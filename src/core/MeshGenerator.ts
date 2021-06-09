@@ -10,18 +10,15 @@ import { ClippingAttachment } from '../spine-core/attachments/ClippingAttachment
 import { Utils, ArrayLike, Color } from '../spine-core/Utils';
 import { SkeletonClipping } from '../spine-core/SkeletonClipping';
 import { SpineMesh } from './SpineMesh';
+import { SpineRenderSetting } from '../types';
 
-export type Setting = {
-  useClipping: boolean;
-  zSpacing: number;
-}
 
 export class MeshGenerator {
   static QUAD_TRIANGLES = [0, 1, 2, 2, 3, 0];
   static VERTEX_SIZE = 2 + 2 + 4;
   static VERTEX_STRIDE = 9;
 
-  private setting: Setting;
+  private setting: SpineRenderSetting;
   private engine: Engine;
   private entity: Entity;
   private clipper: SkeletonClipping = new SkeletonClipping();
