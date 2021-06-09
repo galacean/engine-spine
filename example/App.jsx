@@ -57,11 +57,21 @@ function App() {
         //   type: 'spine',
         // }
       );
-      root.addChild(spineEntity);
-      const spineAnimation = spineEntity.getComponent(SpineAnimation);
+      const clone = spineEntity.clone();
+      root.addChild(clone);
+      clone.transform.setPosition(-0.5, 0, 0);
+      const spineAnimation = clone.getComponent(SpineAnimation);
       spineAnimation.state.setAnimation(0, 'animation', true);
       spineAnimation.skeleton.scaleX = 0.007;
       spineAnimation.skeleton.scaleY = 0.007;
+
+      const clone2 = spineEntity.clone();
+      root.addChild(clone2);
+      clone2.transform.setPosition(0.5, 0, 0);
+      const spineAnimation2 = clone2.getComponent(SpineAnimation);
+      spineAnimation2.state.setAnimation(0, 'animation', false);
+      spineAnimation2.skeleton.scaleX = 0.009;
+      spineAnimation2.skeleton.scaleY = 0.009;
     }
 
   }, []);
