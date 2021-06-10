@@ -19,9 +19,9 @@ export class SpineAnimation extends Script {
   private _state: AnimationState;
   @ignoreClone
   protected _meshGenerator: MeshGenerator;
-  
   @ignoreClone
   setting: SpineRenderSetting;
+  autoUpdate: boolean = true;
 
   get skeletonData() {
     return this._skeletonData;
@@ -66,7 +66,9 @@ export class SpineAnimation extends Script {
   }
 
   onUpdate(delta: number) {
-    this.updateState(delta * 0.001);
+    if (this.autoUpdate) {
+      this.updateState(delta * 0.001);
+    }
   }
 
   updateState(deltaTime: number) {

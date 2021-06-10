@@ -2,32 +2,30 @@
   "main": "dist/main.js",
   "browser": "dist/browser.js",
   "module": "dist/module.js",
-  "dependencies": {
-    "@oasis-engine/controls": "0.3.0-beta.1",
-    "@oasis-engine/stats": "0.3.0-beta.1"
-  },
+  "dependencies": {},
   "devDependencies": {
-    "@ali/ci": "latest",
     "@babel/plugin-proposal-class-properties": "^7.12.1",
     "@babel/plugin-proposal-decorators": "^7.12.1",
     "@babel/plugin-proposal-optional-chaining": "^7.12.1",
     "@babel/plugin-transform-object-assign": "^7.12.1",
     "@babel/preset-env": "^7.12.1",
     "@babel/preset-typescript": "^7.12.1",
+    "@oasis-engine/controls": "^0.3.12",
+    "@oasis-engine/stats": "^0.3.12",
     "@pika/react": "^16.13.1",
     "@pika/react-dom": "^16.13.1",
     "@rollup/plugin-babel": "^5.2.1",
     "@rollup/plugin-commonjs": "^16.0.0",
     "@rollup/plugin-node-resolve": "^10.0.0",
-    "oasis-engine": "0.3.0-beta.1",
+    "oasis-engine": "^0.3.11",
     "rollup": "^2.32.0",
     "rollup-plugin-terser": "^7.0.2",
     "vite": "1.0.0-rc.5",
     "vite-plugin-react": "^3.0.0"
   },
-  "version": "0.1.3",
+  "version": "0.0.1",
   "description": "oasis spine runtime",
-  "name": "@oasis-engine/engine-spine",
+  "name": "@oasis-engine/spine",
   "ci": {
     "type": "aci",
     "versions": "12"

@@ -3,13 +3,14 @@ import { TextureAtlas } from "./TextureAtlas";
 import { FakeTexture } from "./Texture";
 
 export class AssetManager implements Disposable {
-	private pathPrefix: string;
-	private textureLoader: (image: HTMLImageElement) => any;
-	private assets: Map<any> = {};
-	private errors: Map<string> = {};
-	private toLoad = 0;
-	private loaded = 0;
-	private rawDataUris: Map<string> = {};
+	// todo: enhance asset manager: load image data
+	protected pathPrefix: string;
+	protected textureLoader: (image: HTMLImageElement) => any;
+	protected assets: Map<any> = {};
+	protected errors: Map<string> = {};
+	protected toLoad = 0;
+	protected loaded = 0;
+	protected rawDataUris: Map<string> = {};
 
 	constructor (textureLoader: (image: HTMLImageElement) => any, pathPrefix: string = "") {
 		this.textureLoader = textureLoader;
@@ -34,7 +35,7 @@ export class AssetManager implements Disposable {
 		request.send();
 	}
 
-	private downloadBinary (url: string, success: (data: Uint8Array) => void, error: (status: number, responseText: string) => void) {
+	protected downloadBinary (url: string, success: (data: Uint8Array) => void, error: (status: number, responseText: string) => void) {
 		let request = new XMLHttpRequest();
 		if (this.rawDataUris[url]) url = this.rawDataUris[url];
 		request.open("GET", url, true);
