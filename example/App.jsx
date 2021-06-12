@@ -33,9 +33,9 @@ function App() {
       const camera = cameraEntity.addComponent(o3.Camera);
       camera.farClipPlane = 2000000;
       camera.nearClipPlane = 0.001;
-      cameraEntity.transform.position = new o3.Vector3(0, 0, 12)
+      cameraEntity.transform.position = new o3.Vector3(0, 0, 12);
 
-      cameraEntity.addComponent(OrbitControl)
+      cameraEntity.addComponent(OrbitControl);
 
       loadSpine(root);
 
@@ -48,20 +48,11 @@ function App() {
           url: 'http://alipay-rmsdeploy-image.cn-hangzhou.alipay.aliyun-inc.com/bakery/Fish.json',
           type: 'spine',
         },
-        // {
-        //   urls: [
-        //     'https://gw.alipayobjects.com/os/OasisHub/8081ad50-ee54-4212-b095-3d56caaea321/1612507101048.json',
-        //     'https://gw.alipayobjects.com/os/OasisHub/b25bae97-a622-40e4-9965-15fb4f4e5b8a/1612507101049.atlas',
-        //     'https://gw.alipayobjects.com/zos/OasisHub/78502992-5fba-4d9c-8a6d-2011f7ead213/1612507101049.png'
-        //   ],
-        //   type: 'spine',
-        // }
       );
       root.addChild(spineEntity);
       const spineAnimation = spineEntity.getComponent(SpineAnimation);
       spineAnimation.state.setAnimation(0, 'animation', true);
-      spineAnimation.skeleton.scaleX = 0.007;
-      spineAnimation.skeleton.scaleY = 0.007;
+      spineAnimation.scale = 0.007;
     }
 
   }, []);

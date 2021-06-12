@@ -19,10 +19,8 @@ export class SpineAnimation extends Script {
   private _state: AnimationState;
   @ignoreClone
   protected _meshGenerator: MeshGenerator;
-  
   @ignoreClone
   setting: SpineRenderSetting;
-
   autoUpdate: boolean = true;
 
   get skeletonData() {

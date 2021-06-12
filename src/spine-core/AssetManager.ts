@@ -3,6 +3,7 @@ import { TextureAtlas } from "./TextureAtlas";
 import { FakeTexture } from "./Texture";
 
 export class AssetManager implements Disposable {
+	// todo: enhance asset manager: load image data
 	protected pathPrefix: string;
 	protected textureLoader: (image: HTMLImageElement) => any;
 	protected assets: Map<any> = {};

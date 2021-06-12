@@ -41,7 +41,7 @@ export class MeshGenerator {
     this.entity = entity;
   }
 
-  buildMesh(skeleton: Skeleton, setting?: Setting) {
+  buildMesh(skeleton: Skeleton, setting?: SpineRenderSetting) {
     if (!skeleton) {
       return;
     }
