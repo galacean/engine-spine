@@ -23,7 +23,7 @@
     "vite": "1.0.0-rc.5",
     "vite-plugin-react": "^3.0.0"
   },
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "oasis spine runtime",
   "name": "@oasis-engine/spine",
   "ci": {
