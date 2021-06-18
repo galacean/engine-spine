@@ -1,7 +1,7 @@
 
 
 # Oasis Engine spine runtime
-![Jun-12-2021 18-37-22.gif](https://intranetproxy.alipay.com/skylark/lark/0/2021/gif/76063/1623494276374-ed91e2f0-b627-4866-8017-3dade59d8eb3.gif#clientId=u02ca4e9b-9d68-4&from=paste&height=245&id=uce07a058&margin=%5Bobject%20Object%5D&name=Jun-12-2021%2018-37-22.gif&originHeight=360&originWidth=348&originalType=binary&ratio=3&size=1583736&status=done&style=none&taskId=u242d4f20-ec00-4d25-a133-c5011031356&width=236.99431610107422)
+![Jun-12-2021 18-37-22.gif](https://gw.alipayobjects.com/mdn/mybank_yul/afts/img/A*am1ySYTDBQAAAAAAAAAAAAAAARQnAQ)
 
 
 ![](https://img.shields.io/npm/v/@oasis-engine/spine#id=QfHW0&originHeight=20&originWidth=80&originalType=binary&ratio=1&status=done&style=none)
