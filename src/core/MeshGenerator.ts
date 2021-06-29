@@ -192,10 +192,7 @@ export class MeshGenerator {
         this.indicesLength += finalIndicesLength;
       }
 
-      const mtl = meshRenderer.getMaterial(0);
-      if (!mtl.shaderData.getTexture('u_spriteTexture')) {
-        mtl.shaderData.setTexture('u_spriteTexture', texture.texture);
-      }
+      meshRenderer.shaderData.setTexture('u_spriteTexture', texture.texture);
 
       clipper.clipEndWithSlot(slot);
 
