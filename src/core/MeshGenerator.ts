@@ -4,6 +4,7 @@ import {
   MeshRenderer
 } from 'oasis-engine';
 import { Skeleton } from '../spine-core/Skeleton';
+import { SkeletonData } from '../spine-core/SkeletonData';
 import { RegionAttachment } from '../spine-core/attachments/RegionAttachment';
 import { MeshAttachment } from '../spine-core/attachments/MeshAttachment';
 import { ClippingAttachment } from '../spine-core/attachments/ClippingAttachment';
@@ -41,8 +42,15 @@ export class MeshGenerator {
     this.entity = entity;
   }
 
-  initialize() {
-    
+  initialize(skeleton?: Skeleton) {
+    const meshRenderer = this.entity.getComponent(MeshRenderer);
+    if (!meshRenderer) {
+      console.warn('You need add MeshRenderer component to entity first');
+      return;
+    }
+    const vertexCount = this.getVertexCount(skeleton);
+    this.spineMesh.initialize(this.engine, vertexCount);
+    meshRenderer.mesh = this.spineMesh.mesh;
   }
 
   buildMesh(skeleton: Skeleton, setting?: SpineRenderSetting) {
@@ -171,15 +179,15 @@ export class MeshGenerator {
         let i = this.verticesLength;
         let j = 0;
         for (; j < finalVerticesLength; ) {
-          verticesWithZ[i++] = vertices[j++];
-          verticesWithZ[i++] = vertices[j++];
+          verticesWithZ[i++] = finalVertices[j++];
+          verticesWithZ[i++] = finalVertices[j++];
           verticesWithZ[i++] = z;
-          verticesWithZ[i++] = vertices[j++];
-          verticesWithZ[i++] = vertices[j++];
-          verticesWithZ[i++] = vertices[j++];
-          verticesWithZ[i++] = vertices[j++];
-          verticesWithZ[i++] = vertices[j++];
-          verticesWithZ[i++] = vertices[j++];
+          verticesWithZ[i++] = finalVertices[j++];
+          verticesWithZ[i++] = finalVertices[j++];
+          verticesWithZ[i++] = finalVertices[j++];
+          verticesWithZ[i++] = finalVertices[j++];
+          verticesWithZ[i++] = finalVertices[j++];
+          verticesWithZ[i++] = finalVertices[j++];
         }
         this.verticesLength = i;
 
