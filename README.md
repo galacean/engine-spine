@@ -1,84 +1,78 @@
-A simple, high-perfomance spine runtime using oasis-engine BufferMesh API ～
 
-## Badges
 
-<a href="https://www.npmjs.com/package/@oasis-engine/engine-spine"><img src="https://img.shields.io/npm/v/@oasis-engine/engine-spine"/></a>
-![npm-size](https://img.shields.io/bundlephobia/minzip/@oasis-engine/engine-spine)
-![npm-download](https://img.shields.io/npm/dm/@oasis-engine/engine-spine)
+# Oasis Engine spine runtime
+![Jun-12-2021 18-37-22.gif](https://gw.alipayobjects.com/mdn/mybank_yul/afts/img/A*am1ySYTDBQAAAAAAAAAAAAAAARQnAQ)
 
---------------------
 
-## Install
-```
-npm i @oasis-engine/engine-spine --save
-```
+![](https://img.shields.io/npm/v/@oasis-engine/spine#id=QfHW0&originHeight=20&originWidth=80&originalType=binary&ratio=1&status=done&style=none)
+![](https://img.shields.io/bundlephobia/minzip/@oasis-engine/spine#id=yUnp4&originHeight=20&originWidth=144&originalType=binary&ratio=1&status=done&style=none)
+![](https://img.shields.io/npm/dm/@oasis-engine/spine#id=lqs8U&originHeight=20&originWidth=134&originalType=binary&ratio=1&status=done&style=none)
+
+---
+
+
+
+Spine runtime for [oasis engine](https://github.com/oasis-engine/engine).
 ## 
 ## Usage
-### Resource Load
+
+
 ```typescript
-// import * as o3 from 'oasis-engine';
-import '@oasis-engine/engine-spine';
+import { SpineAnimation } from '@oasis-engine/spine';
 
-init();
+// init oasis
+addSpine();
 
-function init() {
-	// oasis initial code: https://github.com/oasis-engine/engine#usage
-  // root: Engine root entity.
-  loadSpine(root);
-  engine.run();
-}
-
-// When SpineAnimation is imported, a SpineLoader is automatically register to the engine loader.
-// And then you can use engine.resourceManager to load spine file.
-
-// You should specify resource type in 'spine' and pass resource cdn link.
-// When pass single url, we assume that the .json(or .bin), .atlas and .png files
-// that correspond to the spine file are in the same base URL and that the .json and .atlas files have the same name.
-// When pass multiple url in an array, you need to pass three typeof files: .json(or .bin),.atlas and .png files.
-
-async function loadSpine(root) {
-  const spineEntity = await engine.resourceManager.load(
+async function addSpine() {
+	const spineEntity = await engine.resourceManager.load(
     {
-      url: 'Your spine animation file(.json or .bin).',
+      url: 'https://gw.alipayobjects.com/os/OasisHub/a66ef194-6bc8-4325-9a59-6ea9097225b1/1620888427489.json',
       type: 'spine',
     },
-    // {
-      // urls: [
-        // 'Your spine animation file(.json or .bin).',
-    		// 'atlas file',
-    		// 'texture image'
-      // ],
-      // type: 'spine',
-    // }
   );
-  root.addChild(spineEntity);
+  rootEntity.addChild(spineEntity);
+  spineAnimation.state.setAnimation(0, 'walk', true);
 }
-
 ```
 
 
-### Animation Play
-```typescript
-import { SpineAnimation } from '@oasis-engine/engine-spine';
-
-const spineEntity = await engine.resourceManager.load(
-  {
-    url: 'Your spine animation file(.json or .bin).',
-    type: 'spine',
-  },
-);
-root.addChild(spineEntity);
-
-// You can get skeleton and animationState from SpineAnimation component.
-// And use spine-core API to play animation or do other things~
-// spineAnimation.state(AnimationState): http://zh.esotericsoftware.com/spine-api-reference#AnimationState
-// spineAnimation.skeleton(Skeleton): http://zh.esotericsoftware.com/spine-api-reference#Skeleton
-const spineAnimation = spineEntity.getComponent(SpineAnimation);
-spineAnimation.state.setAnimation(0, 'your_animation_name', true);
-
+## npm
+```sh
+npm install @oasis-engine/spine
 ```
 
 
-## Spine Version
-oasis-engine 0.2 & engine-spine 0.1 - this branch, latest npm
 
+
+## Version
+oasis-engine v0.4 & @oasis-engine/spine this branch latest npm.
+
+
+## Feature
+
+- Simple in usage
+- High performance.
+- Intergrated oasis-engine rendering engine.
+- Component based API.
+
+
+
+## Contributing
+Everyone is welcome to join us! Whether you find a bug, have a great feature request or you fancy owning a task from the road map feel free to get in touch.
+​
+
+Make sure to read the [Contributing Guide](.github/HOW_TO_CONTRIBUTE.md) before submitting changes.
+
+
+## Links
+
+- [Examples](https://oasisengine.cn/0.3/examples#spine)
+- [Documentation](https://oasisengine.cn/0.3/docs/spine-cn#gatsby-focus-wrapper)
+- [OasisEngine](https://oasisengine.cn/)
+
+
+
+## License
+
+
+The Oasis Engine is released under the [MIT](https://opensource.org/licenses/MIT) license. See LICENSE file.
