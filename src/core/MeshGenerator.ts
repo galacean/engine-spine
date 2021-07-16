@@ -208,7 +208,6 @@ export class MeshGenerator {
     } // slot traverse end
     clipper.clipEnd();
     this.spineMesh.mesh.subMesh.count = this.indicesLength;
-
   }
 
   fillVertexData() {
@@ -240,6 +239,7 @@ export class MeshGenerator {
         vertexCount += mesh.triangles.length;
       } else continue;
     }
+    vertexCount *= 3;
     this.vertices = new Float32Array(vertexCount * MeshGenerator.VERTEX_SIZE);
     this.verticesWithZ = new Float32Array(vertexCount * MeshGenerator.VERTEX_STRIDE);
     this.indices = new Uint16Array(vertexCount);
