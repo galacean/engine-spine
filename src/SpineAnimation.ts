@@ -2,12 +2,15 @@ import { Skeleton } from './spine-core/Skeleton';
 import { SkeletonData } from './spine-core/SkeletonData';
 import { AnimationState } from './spine-core/AnimationState';
 import { AnimationStateData } from './spine-core/AnimationStateData';
+import { SpineMaterial } from './core/SpineMaterial';
 import { MeshGenerator } from './core/MeshGenerator';
 import { SpineRenderSetting } from './types';
 import {
   Script,
   Entity,
   ignoreClone,
+  MeshRenderer,
+  Texture2D,
 } from 'oasis-engine';
 
 export class SpineAnimation extends Script {
@@ -58,6 +61,44 @@ export class SpineAnimation extends Script {
     const animationData = new AnimationStateData(skeletonData);
     this._state = new AnimationState(animationData);
     this._meshGenerator.initialize(this._skeleton);
+  }
+
+  addSeparateSlot(slotName: string) {
+    if (!this.skeleton) {
+      console.error('Skeleton not found!');
+    }
+    const meshRenderer = this.entity.getComponent(MeshRenderer);
+    if (!meshRenderer) {
+      console.warn('You need add MeshRenderer component to entity first');
+    }
+    const slot = this.skeleton.findSlot(slotName);
+    if (slot) {
+      this._meshGenerator.addSeparateSlot(slotName);
+      const mtl = new SpineMaterial(this.engine);
+      const { materialCount } = meshRenderer;
+      // add default material for new sub mesh
+      // split will generate two material
+      meshRenderer.setMaterial(materialCount, mtl);
+      meshRenderer.setMaterial(materialCount + 1, mtl);
+    } else {
+      console.warn(`Slot: ${slotName} not find.`);
+    }
+  }
+
+  hackSeparateSlotTexture(slotName: string, texture: Texture2D) {
+    const { separateSlots } = this._meshGenerator;
+    if (separateSlots.length === 0) {
+      console.warn('You need add separate slot');
+      return;
+    }
+    if (separateSlots.includes(slotName)) {
+      const meshRenderer = this.entity.getComponent(MeshRenderer);
+      const subMeshIndex = separateSlots.findIndex(item => item === slotName);
+      const mtl = meshRenderer.getMaterial(subMeshIndex);
+      mtl.shaderData.setTexture('map', texture);
+    } else {
+      console.warn(`Slot ${slotName} is not separated. You should use addSeparateSlot to separate it`);
+    }
   }
 
   disposeCurrentSkeleton() {

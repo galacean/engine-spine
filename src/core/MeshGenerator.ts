@@ -1,7 +1,8 @@
 import {
   Engine,
   Entity,
-  MeshRenderer
+  MeshRenderer,
+  SubMesh,
 } from 'oasis-engine';
 import { Skeleton } from '../spine-core/Skeleton';
 import { SkeletonData } from '../spine-core/SkeletonData';
@@ -24,14 +25,12 @@ export class MeshGenerator {
   private entity: Entity;
   private clipper: SkeletonClipping = new SkeletonClipping();
   private spineMesh: SpineMesh = new SpineMesh();
-  private vertexCount: number = 0;
-  private indicesLength: number = 0;
-  private verticesLength: number = 0;
 
   private vertices = new Float32Array(1024);
   private verticesWithZ = new Float32Array(1024);
   private indices = new Uint16Array(1024);
   private tempColor = new Color();
+  readonly separateSlots: string[] = [];
 
   get mesh() {
     return this.spineMesh.mesh;
@@ -73,14 +72,18 @@ export class MeshGenerator {
       zSpacing = 0.01,
     } = this.setting || {};
 
-    this.verticesLength = 0;
-    this.indicesLength = 0;
+    let verticesLength = 0;
+    let indicesLength = 0;
 
     const drawOrder = skeleton.drawOrder;
     const clipper = this.clipper;
+    const seperateSubMesh = [];
+    const restSubMesh = [];
     let vertices: ArrayLike<number> = this.vertices;
     let triangles: Array<number> = null;
     let uvs: ArrayLike<number> = null;
+    let start = 0;
+    let count = 0;
     for (let slotIndex = 0; slotIndex < drawOrder.length; slotIndex += 1) {
       const slot = drawOrder[slotIndex];
 
@@ -174,9 +177,9 @@ export class MeshGenerator {
           continue;
         }
         
-        let indexStart = this.verticesLength / MeshGenerator.VERTEX_STRIDE;
+        let indexStart = verticesLength / MeshGenerator.VERTEX_STRIDE;
         let verticesWithZ = this.verticesWithZ;
-        let i = this.verticesLength;
+        let i = verticesLength;
         let j = 0;
         for (; j < finalVerticesLength; ) {
           verticesWithZ[i++] = finalVertices[j++];
@@ -189,25 +192,60 @@ export class MeshGenerator {
           verticesWithZ[i++] = finalVertices[j++];
           verticesWithZ[i++] = finalVertices[j++];
         }
-        this.verticesLength = i;
+        verticesLength = i;
 
         let indicesArray = this.indices;
-        for (i = this.indicesLength, j = 0; j < finalIndicesLength; i++, j++) {
+        for (i = indicesLength, j = 0; j < finalIndicesLength; i++, j++) {
           indicesArray[i] = finalIndices[j] + indexStart;
         }
-        this.indicesLength += finalIndicesLength;
-      }
 
-      const mtl = meshRenderer.getMaterial(0);
-      if (!mtl.shaderData.getTexture('map')) {
-        mtl.shaderData.setTexture('map', texture.texture);
+        // add submesh
+        const slotName = slot.data.name;
+        const needSeparate = this.separateSlots.includes(slotName);
+
+        if (needSeparate) {
+          const subMesh = new SubMesh(indicesLength, finalIndicesLength);
+          seperateSubMesh.push(subMesh);
+          if (count > 0) {
+            const prevSubMesh = new SubMesh(start, count);
+            restSubMesh.push(prevSubMesh);
+            count = 0;
+          }
+          start = indicesLength + finalIndicesLength;
+        } else {
+          count += finalIndicesLength;
+        }
+        
+        indicesLength += finalIndicesLength;
+
+        const materials = meshRenderer.getMaterials();
+        for (let i = 0; i < materials.length; i += 1) {
+          const mtl = materials[i];
+          if (!mtl.shaderData.getTexture('map')) {
+            mtl.shaderData.setTexture('map', texture.texture);
+          }
+        }
       }
 
       clipper.clipEndWithSlot(slot);
 
     } // slot traverse end
+
     clipper.clipEnd();
-    this.spineMesh.mesh.subMesh.count = this.indicesLength;
+
+    // add reset sub mesh
+    if (count > 0) {
+      const subMesh = new SubMesh(start, count);
+      restSubMesh.push(subMesh);
+      count = 0;
+    }
+
+    // update subMesh
+    this.spineMesh.mesh.clearSubMesh();
+    const subMeshes = seperateSubMesh.concat(restSubMesh);
+    for (let i = 0; i < subMeshes.length; i += 1) {
+      this.spineMesh.mesh.addSubMesh(subMeshes[i]);
+    }
   }
 
   fillVertexData() {
@@ -218,8 +256,8 @@ export class MeshGenerator {
     this.spineMesh.fillIndexData(this.indices);
   }
 
-  addSubMesh(skeleton: Skeleton) {
-    // TODO
+  addSeparateSlot(slotName: string) {
+    this.separateSlots.push(slotName);
   }
 
   getVertexCount(skeleton: Skeleton) {
