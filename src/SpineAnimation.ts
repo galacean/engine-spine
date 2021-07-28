@@ -4,6 +4,7 @@ import { AnimationState } from './spine-core/AnimationState';
 import { AnimationStateData } from './spine-core/AnimationStateData';
 import { MeshGenerator } from './core/MeshGenerator';
 import { SpineRenderSetting } from './types';
+import { Vector2 } from './spine-core/Utils';
 import {
   Script,
   Entity,
@@ -23,7 +24,9 @@ export class SpineAnimation extends Script {
   protected _meshGenerator: MeshGenerator;
   @ignoreClone
   setting: SpineRenderSetting;
+
   autoUpdate: boolean = true;
+  autoUpdateBounds: boolean = true;
 
   get skeletonData() {
     return this._skeletonData;
