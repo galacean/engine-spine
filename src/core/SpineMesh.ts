@@ -7,33 +7,39 @@ import {
   BufferBindFlag,
   IndexFormat,
   BufferUsage,
-  SetDataOptions
 } from 'oasis-engine';
+import { MeshGenerator } from './MeshGenerator';
 
 export class SpineMesh {
 
   private _mesh: BufferMesh;
 
-  private indexBuffer: Buffer;
-  private vertexBuffer: Buffer;
+  private _indexBuffer: Buffer;
+  private _vertexBuffer: Buffer;
 
   get mesh() {
     return this._mesh;
   }
 
-  initialize(engine: Engine, maxVertices: number) {
-    const mesh = this._mesh = new BufferMesh(engine);
+  get indexBuffer() {
+    return this._indexBuffer;
+  }
 
-    const indices = new Uint16Array(maxVertices);
+  get vertexBuffer() {
+    return this._vertexBuffer;
+  }
+
+  initialize(engine: Engine, vertexCount: number) {
+    const mesh = this._mesh = new BufferMesh(engine);
 
     const vertexElements = [
       new VertexElement('POSITION', 0, VertexElementFormat.Vector3, 0),
-      new VertexElement('COLOR', 12, VertexElementFormat.Vector4, 0),
-      new VertexElement('TEXCOORD', 28, VertexElementFormat.Vector2, 0),
+      new VertexElement('COLOR_0', 12, VertexElementFormat.Vector4, 0),
+      new VertexElement('TEXCOORD_0', 28, VertexElementFormat.Vector2, 0),
     ];
 
-    const vertexStride = 36;
-    const byteLength = vertexStride * maxVertices;
+    const vertexStride = (MeshGenerator.VERTEX_STRIDE) * 4; // position + color + uv * Float32 byteLen
+    const byteLength = vertexStride * vertexCount;
     const vertexBuffer = new Buffer(
       engine,
       BufferBindFlag.VertexBuffer,
@@ -44,37 +50,39 @@ export class SpineMesh {
     const indexBuffer = new Buffer(
       engine,
       BufferBindFlag.IndexBuffer,
-      indices,
+      vertexCount * 2,
       BufferUsage.Dynamic
     );
 
-    this.indexBuffer = indexBuffer;
-    this.vertexBuffer = vertexBuffer;
+    this._indexBuffer = indexBuffer;
+    this._vertexBuffer = vertexBuffer;
 
     mesh.setVertexBufferBinding(vertexBuffer, vertexStride);
     mesh.setIndexBufferBinding(indexBuffer, IndexFormat.UInt16);
     mesh.setVertexElements(vertexElements);
-    mesh.addSubMesh(0, indices.length);
+    mesh.addSubMesh(0, vertexCount);
   }
 
-  fillVertexData(vertexData: ArrayBuffer | ArrayBufferView) {
-    this.vertexBuffer.setData(
-      vertexData,
-      0,
-      0,
-      0,
-      SetDataOptions.Discard
+  changeBuffer(engine: Engine, vertexCount: number) {
+    const vertexStride = (MeshGenerator.VERTEX_STRIDE) * 4; // position + color + uv * Float32 byteLen
+    const byteLength = vertexStride * vertexCount;
+    const vertexBuffer = new Buffer(
+      engine,
+      BufferBindFlag.VertexBuffer,
+      byteLength,
+      BufferUsage.Dynamic
     );
-  }
 
-  fillIndexData(indexData: ArrayBuffer | ArrayBufferView) {
-    this.indexBuffer.setData(
-      indexData,
-      0,
-      0,
-      0,
-      SetDataOptions.Discard
+    const indexBuffer = new Buffer(
+      engine,
+      BufferBindFlag.IndexBuffer,
+      vertexCount * 2,
+      BufferUsage.Dynamic
     );
+    const mesh = this._mesh;
+    this._indexBuffer = indexBuffer;
+    this._vertexBuffer = vertexBuffer;
+    mesh.setVertexBufferBinding(vertexBuffer, vertexStride);
+    mesh.setIndexBufferBinding(indexBuffer, IndexFormat.UInt16);
   }
-
 }
