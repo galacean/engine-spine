@@ -199,8 +199,8 @@ export class MeshGenerator {
       }
 
       const mtl = meshRenderer.getMaterial(0);
-      if (!mtl.shaderData.getTexture('map')) {
-        mtl.shaderData.setTexture('map', texture.texture);
+      if (!mtl.shaderData.getTexture('u_spriteTexture')) {
+        mtl.shaderData.setTexture('u_spriteTexture', texture.texture);
       }
 
       clipper.clipEndWithSlot(slot);

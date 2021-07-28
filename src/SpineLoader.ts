@@ -93,7 +93,7 @@ class SpineLoader extends Loader<Entity> {
         const skeletonData = skeletonLoader.readSkeletonData(assetManager.get(skeletonFile));
         const entity = new Entity(resourceManager.engine);
         const meshRenderer = entity.addComponent(MeshRenderer);
-        const mtl = new SpineMaterial(resourceManager.engine);
+        const mtl = resourceManager.engine._spriteDefaultMaterial.clone();
         meshRenderer.setMaterial(mtl);
         const spineAnimation = entity.addComponent(SpineAnimation);
         spineAnimation.setSkeletonData(skeletonData);
