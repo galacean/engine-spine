@@ -44,10 +44,18 @@ function App() {
 
     async function loadSpine(root) {
       const spineEntity = await engine.resourceManager.load(
+        // {
+        //   url: 'http://alipay-rmsdeploy-image.cn-hangzhou.alipay.aliyun-inc.com/bakery/Fish.json',
+        //   type: 'spine',
+        // },
         {
-          url: 'http://alipay-rmsdeploy-image.cn-hangzhou.alipay.aliyun-inc.com/bakery/Fish.json',
-          type: 'spine',
-        },
+          urls: [
+            'https://gw.alipayobjects.com/os/OasisHub/416cae15-691b-4b19-bb68-fa691c042d30/1626354535504.json',
+            'https://gw.alipayobjects.com/os/OasisHub/174a2e33-8946-489f-b93e-7a27a90de4ec/1626354535507.atlas',
+            'https://gw.alipayobjects.com/zos/OasisHub/4319fb1d-97dd-4509-9af3-da9c25350452/1626354535507.png'
+          ],
+          type: 'spine'
+        }
       );
       root.addChild(spineEntity);
       const spineAnimation = spineEntity.getComponent(SpineAnimation);
