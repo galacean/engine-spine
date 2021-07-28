@@ -4,6 +4,7 @@ import { AnimationState } from './spine-core/AnimationState';
 import { AnimationStateData } from './spine-core/AnimationStateData';
 import { MeshGenerator } from './core/MeshGenerator';
 import { SpineRenderSetting } from './types';
+import { Vector2 } from './spine-core/Utils';
 import {
   Script,
   Entity,
@@ -21,7 +22,9 @@ export class SpineAnimation extends Script {
   protected _meshGenerator: MeshGenerator;
   @ignoreClone
   setting: SpineRenderSetting;
+
   autoUpdate: boolean = true;
+  autoUpdateBounds: boolean = true;
 
   get skeletonData() {
     return this._skeletonData;
@@ -87,6 +90,23 @@ export class SpineAnimation extends Script {
     this._meshGenerator.buildMesh(this._skeleton, this.setting);
     this._meshGenerator.fillVertexData();
     this._meshGenerator.fillIndexData();
+    if (this.autoUpdateBounds) {
+      this.updateBounds();
+    }
+  }
+
+  updateBounds() {
+    if (!this._skeleton) return;
+    const { mesh: { bounds } } = this._meshGenerator;
+    const offset = new Vector2();
+    const size = new Vector2();
+    const temp = [0, 0];
+    const zSpacing = this.setting?.zSpacing || 0.01;
+    const skeleton = this._skeleton;
+    skeleton.getBounds(offset, size, temp);
+    const drawOrder = skeleton.drawOrder;
+    bounds.min.setValue(offset.x, offset.y, 0);
+    bounds.max.setValue(offset.x + size.x, offset.y + size.y, drawOrder.length * zSpacing);
   }
 
   /**
