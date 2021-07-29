@@ -49,6 +49,10 @@ function App() {
 
     async function loadSpine(root) {
       const spineEntity = await engine.resourceManager.load(
+        // {
+        //   url: 'http://alipay-rmsdeploy-image.cn-hangzhou.alipay.aliyun-inc.com/bakery/Fish.json',
+        //   type: 'spine',
+        // },
         {
           url: 'http://alipay-rmsdeploy-image.cn-hangzhou.alipay.aliyun-inc.com/bakery/Fish.json',
           type: 'spine',

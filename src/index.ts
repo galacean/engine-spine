@@ -8,4 +8,3 @@ export { TextureAtlas } from './spine-core/TextureAtlas';
 export { AtlasAttachmentLoader } from './spine-core/AtlasAttachmentLoader';
 export { SkeletonJson } from './spine-core/SkeletonJson';
 export { SkeletonBinary } from './spine-core/SkeletonBinary';
-export { SpineMaterial } from './core/SpineMaterial';
