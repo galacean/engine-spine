@@ -34,8 +34,8 @@ export class SpineMesh {
 
     const vertexElements = [
       new VertexElement('POSITION', 0, VertexElementFormat.Vector3, 0),
-      new VertexElement('COLOR', 12, VertexElementFormat.Vector4, 0),
-      new VertexElement('TEXCOORD', 28, VertexElementFormat.Vector2, 0),
+      new VertexElement('COLOR_0', 12, VertexElementFormat.Vector4, 0),
+      new VertexElement('TEXCOORD_0', 28, VertexElementFormat.Vector2, 0),
     ];
 
     const vertexStride = (MeshGenerator.VERTEX_STRIDE) * 4; // position + color + uv * Float32 byteLen
