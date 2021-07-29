@@ -67,7 +67,7 @@ function App() {
       ]);
       root.addChild(spineEntity);
       const spineAnimation = spineEntity.getComponent(SpineAnimation);
-      spineAnimation.state.setAnimation(0, 'hoverboard', true);
+      spineAnimation.state.setAnimation(0, 'shoot', true);
       spineAnimation.scale = 0.05;
       spineAnimation.addSeparateSlot('gun');
       spineAnimation.hackSeparateSlotTexture('gun', hackTexture);

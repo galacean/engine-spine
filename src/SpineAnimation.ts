@@ -2,7 +2,6 @@ import { Skeleton } from './spine-core/Skeleton';
 import { SkeletonData } from './spine-core/SkeletonData';
 import { AnimationState } from './spine-core/AnimationState';
 import { AnimationStateData } from './spine-core/AnimationStateData';
-import { SpineMaterial } from './core/SpineMaterial';
 import { MeshGenerator } from './core/MeshGenerator';
 import { SpineRenderSetting } from './types';
 import {
@@ -74,7 +73,7 @@ export class SpineAnimation extends Script {
     const slot = this.skeleton.findSlot(slotName);
     if (slot) {
       this._meshGenerator.addSeparateSlot(slotName);
-      const mtl = new SpineMaterial(this.engine);
+      const mtl = this.engine._spriteDefaultMaterial.clone();
       const { materialCount } = meshRenderer;
       // add default material for new sub mesh
       // split will generate two material
@@ -95,7 +94,7 @@ export class SpineAnimation extends Script {
       const meshRenderer = this.entity.getComponent(MeshRenderer);
       const subMeshIndex = separateSlots.findIndex(item => item === slotName);
       const mtl = meshRenderer.getMaterial(subMeshIndex);
-      mtl.shaderData.setTexture('map', texture);
+      mtl.shaderData.setTexture('u_spriteTexture', texture);
     } else {
       console.warn(`Slot ${slotName} is not separated. You should use addSeparateSlot to separate it`);
     }

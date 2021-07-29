@@ -221,8 +221,8 @@ export class MeshGenerator {
         const materials = meshRenderer.getMaterials();
         for (let i = 0; i < materials.length; i += 1) {
           const mtl = materials[i];
-          if (!mtl.shaderData.getTexture('map')) {
-            mtl.shaderData.setTexture('map', texture.texture);
+          if (!mtl.shaderData.getTexture('u_spriteTexture')) {
+            mtl.shaderData.setTexture('u_spriteTexture', texture.texture);
           }
         }
       }
@@ -281,7 +281,6 @@ export class MeshGenerator {
     this.vertices = new Float32Array(vertexCount * MeshGenerator.VERTEX_SIZE);
     this.verticesWithZ = new Float32Array(vertexCount * MeshGenerator.VERTEX_STRIDE);
     this.indices = new Uint16Array(vertexCount);
-    this.vertexCount = vertexCount;
     return vertexCount;
   }
 }
