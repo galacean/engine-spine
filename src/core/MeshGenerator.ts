@@ -16,8 +16,8 @@ import { SpineRenderSetting } from '../types';
 
 export class MeshGenerator {
   static QUAD_TRIANGLES = [0, 1, 2, 2, 3, 0];
-  static VERTEX_SIZE = 2 + 2 + 4; // position without z, uv, color
-  static VERTEX_STRIDE = 3 + 2 + 4; // position with z, uv, color
+  static VERTEX_SIZE = 8; // 2 2 4 position without z, uv, color
+  static VERTEX_STRIDE = 9; // 3 2 4 position with z, uv, color
 
   private setting: SpineRenderSetting;
   private engine: Engine;
@@ -57,10 +57,12 @@ export class MeshGenerator {
     // Prepare buffer by using all attachment data but clippingAttachment
     const { defaultSkin: { attachments } } = skeletonData;
     let vertexCount: number = 0;
+    const QUAD_TRIANGLE_LENGTH = MeshGenerator.QUAD_TRIANGLES.length;
     const attachmentsArray = [];
     for (let i = 0, n = attachments.length; i < n; i++) {
-      for (let key in attachments[i]) {
-        attachmentsArray.push(attachments[i][key]);
+      const attachment = attachments[i];
+      for (let key in attachment) {
+        attachmentsArray.push(attachment[key]);
       }
     }
     for (let i = 0, n = attachmentsArray.length; i < n; i++) {
@@ -68,7 +70,7 @@ export class MeshGenerator {
       if (!attachment) {
         continue;
       } else if (attachment instanceof RegionAttachment) {
-        vertexCount += MeshGenerator.QUAD_TRIANGLES.length;
+        vertexCount += QUAD_TRIANGLE_LENGTH;
       } else if (attachment instanceof MeshAttachment) {
         let mesh = attachment;
         vertexCount += mesh.triangles.length;
@@ -76,8 +78,9 @@ export class MeshGenerator {
     }
     this.vertexCount = vertexCount;
     this.prepareBufferData(this.vertexCount);
-    this.spineMesh.initialize(this.engine, this.vertexCount);
-    meshRenderer.mesh = this.spineMesh.mesh;
+    const { spineMesh } = this;
+    spineMesh.initialize(this.engine, this.vertexCount);
+    meshRenderer.mesh = spineMesh.mesh;
   }
 
   buildMesh(skeleton: Skeleton) {
@@ -95,7 +98,7 @@ export class MeshGenerator {
 
     const meshRenderer = this.entity.getComponent(MeshRenderer);
     const drawOrder = skeleton.drawOrder;
-    const clipper = this.clipper;
+    const { spineMesh, clipper } = this;
     let vertices: ArrayLike<number> = this.vertices;
     let triangles: Array<number> = null;
     let uvs: ArrayLike<number> = null;
@@ -233,18 +236,18 @@ export class MeshGenerator {
       }
     }
 
-    this.spineMesh.mesh.subMesh.count = indicesLength;
+    spineMesh.mesh.subMesh.count = indicesLength;
 
     if (this.needResize) {
       // #1
-      this.spineMesh.vertexBuffer.resize(this.verticesWithZ.byteLength);
-      this.spineMesh.indexBuffer.resize(this.indices.byteLength);
+      spineMesh.vertexBuffer.resize(this.verticesWithZ.byteLength);
+      spineMesh.indexBuffer.resize(this.indices.byteLength);
       // #2 https://github.com/oasis-engine/engine/issues/376
-      // this.spineMesh.changeBuffer(this.engine, this.vertexCount);
+      // spineMesh.changeBuffer(this.engine, this.vertexCount);
       this.needResize = false;
     }
-    this.spineMesh.vertexBuffer.setData(this.verticesWithZ);
-    this.spineMesh.indexBuffer.setData(this.indices);
+    spineMesh.vertexBuffer.setData(this.verticesWithZ);
+    spineMesh.indexBuffer.setData(this.indices);
   }
 
 
