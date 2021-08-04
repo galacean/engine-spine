@@ -50,11 +50,11 @@ export function createGeometryMaterial(engine: Engine, options: Partial<Option> 
   }
 
   if (options.blend) {
-    const target = material.renderState.blendState.targetBlendState;
-    const depthState = material.renderState.depthState;
+    const { renderState } = material;
+    const target = renderState.blendState.targetBlendState;
     target.sourceColorBlendFactor = target.sourceAlphaBlendFactor = BlendFactor.SourceAlpha;
     target.destinationColorBlendFactor = target.destinationAlphaBlendFactor = BlendFactor.OneMinusSourceAlpha;
-    depthState.writeEnabled = false;
+    renderState.depthState.writeEnabled = false;
 
     material.renderQueueType = RenderQueueType.Transparent;
   }
