@@ -76,7 +76,8 @@ export class MeshGenerator {
     let indicesLength = 0;
 
     const drawOrder = skeleton.drawOrder;
-    const clipper = this.clipper;
+    const maxSlotCount = drawOrder.length;
+    const { clipper, spineMesh } = this;
     const seperateSubMesh = [];
     const restSubMesh = [];
     let vertices: ArrayLike<number> = this.vertices;
@@ -84,7 +85,7 @@ export class MeshGenerator {
     let uvs: ArrayLike<number> = null;
     let start = 0;
     let count = 0;
-    for (let slotIndex = 0; slotIndex < drawOrder.length; slotIndex += 1) {
+    for (let slotIndex = 0; slotIndex < maxSlotCount; slotIndex += 1) {
       const slot = drawOrder[slotIndex];
 
       if (!slot.bone.active) {
@@ -219,7 +220,8 @@ export class MeshGenerator {
         indicesLength += finalIndicesLength;
 
         const materials = meshRenderer.getMaterials();
-        for (let i = 0; i < materials.length; i += 1) {
+        const materialLength = materials.length;
+        for (let i = 0; i < materialLength; i += 1) {
           const mtl = materials[i];
           if (!mtl.shaderData.getTexture('u_spriteTexture')) {
             mtl.shaderData.setTexture('u_spriteTexture', texture.texture);
@@ -241,10 +243,11 @@ export class MeshGenerator {
     }
 
     // update subMesh
-    this.spineMesh.mesh.clearSubMesh();
+    spineMesh.mesh.clearSubMesh();
     const subMeshes = seperateSubMesh.concat(restSubMesh);
-    for (let i = 0; i < subMeshes.length; i += 1) {
-      this.spineMesh.mesh.addSubMesh(subMeshes[i]);
+    const subMeshLength = subMeshes.length;
+    for (let i = 0; i < subMeshLength; i += 1) {
+      spineMesh.mesh.addSubMesh(subMeshes[i]);
     }
   }
 
