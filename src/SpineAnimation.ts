@@ -19,12 +19,18 @@ export class SpineAnimation extends Script {
   @ignoreClone
   private _state: AnimationState;
   @ignoreClone
+  private _tempOffset: Vector2 = new Vector2();
+  @ignoreClone
+  private _tempSize: Vector2 = new Vector2();
+  @ignoreClone
+  private _tempArray: Array<number> = [0, 0];
+  @ignoreClone
   protected _meshGenerator: MeshGenerator;
   @ignoreClone
   setting: SpineRenderSetting;
 
   autoUpdate: boolean = true;
-  autoUpdateBounds: boolean = true;
+  autoUpdateBounds: boolean = false;
 
   get skeletonData() {
     return this._skeletonData;
@@ -98,9 +104,9 @@ export class SpineAnimation extends Script {
   updateBounds() {
     if (!this._skeleton) return;
     const { mesh: { bounds } } = this._meshGenerator;
-    const offset = new Vector2();
-    const size = new Vector2();
-    const temp = [0, 0];
+    const offset = this._tempOffset;
+    const size = this._tempSize;
+    const temp = this._tempArray;
     const zSpacing = this.setting?.zSpacing || 0.01;
     const skeleton = this._skeleton;
     skeleton.getBounds(offset, size, temp);

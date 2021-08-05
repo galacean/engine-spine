@@ -90,16 +90,8 @@ export class OutlineAbility extends MeshRenderer {
 
     const mesh = <ModelMesh>this.mesh;
     const positions = mesh.getPositions();
-    const { 
-      x: minX,
-      y: minY,
-      z: minZ
-    } = min;
-    const { 
-      x: maxX,
-      y: maxY,
-      z: maxZ
-    } = max;
+    const { x: minX, y: minY, z: minZ } = min;
+    const { x: maxX, y: maxY, z: maxZ } = max;
     positions[0].setValue(minX, minY, maxZ);
     positions[1].setValue(maxX, minY, maxZ);
     positions[2].setValue(maxX, minY, minZ);
@@ -119,7 +111,11 @@ export class OutlineAbility extends MeshRenderer {
       flags.push(component.entity?.transform.registerWorldChangeFlag());
     };
     flags.length = 0;
-    this.renderers.forEach(addListener);
+    const { renderers } = this;
+    const rendererLength = renderers.length;
+    for (let i = 0; i < rendererLength; i += 1) {
+      addListener(renderers[i]);
+    }
   }
 
   private removeEventListeners() {
