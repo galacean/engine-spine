@@ -119,7 +119,11 @@ export class OutlineAbility extends MeshRenderer {
   }
 
   private removeEventListeners() {
-    this.flags.forEach((flag) => flag.destroy());
+    const { flags } = this;
+    const flagLength = this.flags.length;
+    for (let i = 0; i < flagLength; i += 1) {
+      flags[i].destroy();
+    }
   }
 
   _render(camera: Camera) {
