@@ -78,6 +78,7 @@ export class MeshGenerator {
     const drawOrder = skeleton.drawOrder;
     const maxSlotCount = drawOrder.length;
     const { clipper, spineMesh } = this;
+    const { mesh } = spineMesh;
     const seperateSubMesh = [];
     const restSubMesh = [];
     let vertices: ArrayLike<number> = this.vertices;
@@ -243,11 +244,11 @@ export class MeshGenerator {
     }
 
     // update subMesh
-    spineMesh.mesh.clearSubMesh();
+    mesh.clearSubMesh();
     const subMeshes = seperateSubMesh.concat(restSubMesh);
     const subMeshLength = subMeshes.length;
     for (let i = 0; i < subMeshLength; i += 1) {
-      spineMesh.mesh.addSubMesh(subMeshes[i]);
+      mesh.addSubMesh(subMeshes[i]);
     }
   }
 
