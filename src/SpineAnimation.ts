@@ -21,12 +21,18 @@ export class SpineAnimation extends Script {
   @ignoreClone
   private _state: AnimationState;
   @ignoreClone
+  private _tempOffset: Vector2 = new Vector2();
+  @ignoreClone
+  private _tempSize: Vector2 = new Vector2();
+  @ignoreClone
+  private _tempArray: Array<number> = [0, 0];
+  @ignoreClone
   protected _meshGenerator: MeshGenerator;
   @ignoreClone
   setting: SpineRenderSetting;
 
   autoUpdate: boolean = true;
-  autoUpdateBounds: boolean = true;
+  autoUpdateBounds: boolean = false;
 
   get skeletonData() {
     return this._skeletonData;
