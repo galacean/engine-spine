@@ -94,7 +94,7 @@ export class MeshGenerator {
       const z = zSpacing * slotIndex;
       let numFloats = 0;
       let vertexSize = clipper.isClipping() ? 2 : MeshGenerator.VERTEX_SIZE;
-      
+
       if (
         attachment instanceof RegionAttachment
       ) {
@@ -114,7 +114,7 @@ export class MeshGenerator {
         vertices = this.vertices;
         numFloats = (mesh.worldVerticesLength >> 1) * vertexSize;
         if (numFloats > vertices.length) {
-          // vertices = this.vertices = Utils.newFloatArray(numFloats);
+          vertices = this.vertices = new Float32Array(numFloats);
         }
         mesh.computeWorldVertices(slot, 0, mesh.worldVerticesLength, vertices, 0, vertexSize);
         triangles = mesh.triangles;
@@ -128,7 +128,12 @@ export class MeshGenerator {
           clipper.clipStart(slot, clip);
           continue;
         }
-      } else continue;
+      } else {
+        if (useClipping) {
+          clipper.clipEndWithSlot(slot);
+          continue;
+        }
+      }
 
       if (texture != null) {
         let skeleton = slot.bone.skeleton;
@@ -170,10 +175,6 @@ export class MeshGenerator {
           finalIndicesLength = triangles.length;
         }
 
-        if (finalVerticesLength == 0 || finalIndicesLength == 0) {
-          continue;
-        }
-        
         let indexStart = this.verticesLength / MeshGenerator.VERTEX_STRIDE;
         let verticesWithZ = this.verticesWithZ;
         let i = this.verticesLength;
