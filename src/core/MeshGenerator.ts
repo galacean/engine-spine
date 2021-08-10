@@ -4,11 +4,10 @@ import {
   MeshRenderer
 } from 'oasis-engine';
 import { Skeleton } from '../spine-core/Skeleton';
-import { SkeletonData } from '../spine-core/SkeletonData';
 import { RegionAttachment } from '../spine-core/attachments/RegionAttachment';
 import { MeshAttachment } from '../spine-core/attachments/MeshAttachment';
 import { ClippingAttachment } from '../spine-core/attachments/ClippingAttachment';
-import { Utils, ArrayLike, Color } from '../spine-core/Utils';
+import { ArrayLike, Color } from '../spine-core/Utils';
 import { SkeletonClipping } from '../spine-core/SkeletonClipping';
 import { SpineMesh } from './SpineMesh';
 import { SpineRenderSetting } from '../types';
@@ -128,11 +127,9 @@ export class MeshGenerator {
           clipper.clipStart(slot, clip);
           continue;
         }
-      } else {
-        if (useClipping) {
-          clipper.clipEndWithSlot(slot);
-          continue;
-        }
+      } else if (useClipping) {
+        clipper.clipEndWithSlot(slot);
+        continue;
       }
 
       if (texture != null) {
