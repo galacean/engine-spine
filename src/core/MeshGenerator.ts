@@ -23,7 +23,6 @@ export class MeshGenerator {
   private entity: Entity;
   private clipper: SkeletonClipping = new SkeletonClipping();
   private spineMesh: SpineMesh = new SpineMesh();
-  private vertexCount: number = 0;
   private indicesLength: number = 0;
   private verticesLength: number = 0;
 
