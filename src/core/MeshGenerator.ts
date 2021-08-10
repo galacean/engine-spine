@@ -118,7 +118,7 @@ export class MeshGenerator {
         triangles = mesh.triangles;
         uvs = mesh.uvs;
         texture = mesh.region.renderObject.texture;
-      }  else if (
+      } else if (
         attachment instanceof ClippingAttachment
       ) {
         if (useClipping) {
@@ -126,10 +126,10 @@ export class MeshGenerator {
           clipper.clipStart(slot, clip);
           continue;
         }
-      } else if (useClipping) {
-        clipper.clipEndWithSlot(slot);
+      } else {
+        console.warn('Unknown attachment type.');
         continue;
-      }
+      };
 
       if (texture != null) {
         let skeleton = slot.bone.skeleton;
@@ -138,9 +138,9 @@ export class MeshGenerator {
         let alpha = skeletonColor.a * slotColor.a * attachmentColor.a;
         let color = this.tempColor;
         color.set(skeletonColor.r * slotColor.r * attachmentColor.r,
-            skeletonColor.g * slotColor.g * attachmentColor.g,
-            skeletonColor.b * slotColor.b * attachmentColor.b,
-            alpha);
+          skeletonColor.g * slotColor.g * attachmentColor.g,
+          skeletonColor.b * slotColor.b * attachmentColor.b,
+          alpha);
 
         let finalVertices: ArrayLike<number>;
         let finalVerticesLength: number;
@@ -175,7 +175,7 @@ export class MeshGenerator {
         let verticesWithZ = this.verticesWithZ;
         let i = this.verticesLength;
         let j = 0;
-        for (; j < finalVerticesLength; ) {
+        for (; j < finalVerticesLength;) {
           verticesWithZ[i++] = finalVertices[j++];
           verticesWithZ[i++] = finalVertices[j++];
           verticesWithZ[i++] = z;
