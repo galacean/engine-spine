@@ -8,7 +8,7 @@ import { SkeletonData } from '../spine-core/SkeletonData';
 import { RegionAttachment } from '../spine-core/attachments/RegionAttachment';
 import { MeshAttachment } from '../spine-core/attachments/MeshAttachment';
 import { ClippingAttachment } from '../spine-core/attachments/ClippingAttachment';
-import { Utils, ArrayLike, Color } from '../spine-core/Utils';
+import { ArrayLike, Color } from '../spine-core/Utils';
 import { SkeletonClipping } from '../spine-core/SkeletonClipping';
 import { SpineMesh } from './SpineMesh';
 import { SpineRenderSetting } from '../types';
@@ -115,7 +115,7 @@ export class MeshGenerator {
       const z = zSpacing * slotIndex;
       let numFloats = 0;
       let vertexSize = clipper.isClipping() ? 2 : MeshGenerator.VERTEX_SIZE;
-      
+
       if (
         attachment instanceof RegionAttachment
       ) {
@@ -135,13 +135,13 @@ export class MeshGenerator {
         vertices = this.vertices;
         numFloats = (mesh.worldVerticesLength >> 1) * vertexSize;
         if (numFloats > vertices.length) {
-          // vertices = this.vertices = Utils.newFloatArray(numFloats);
+          vertices = this.vertices = new Float32Array(numFloats);
         }
         mesh.computeWorldVertices(slot, 0, mesh.worldVerticesLength, vertices, 0, vertexSize);
         triangles = mesh.triangles;
         uvs = mesh.uvs;
         texture = mesh.region.renderObject.texture;
-      }  else if (
+      } else if (
         attachment instanceof ClippingAttachment
       ) {
         if (useClipping) {
@@ -149,7 +149,10 @@ export class MeshGenerator {
           clipper.clipStart(slot, clip);
           continue;
         }
-      } else continue;
+      } else {
+        console.warn('Unknown attachment type.');
+        continue;
+      };
 
       if (texture != null) {
         let skeleton = slot.bone.skeleton;
@@ -158,9 +161,9 @@ export class MeshGenerator {
         let alpha = skeletonColor.a * slotColor.a * attachmentColor.a;
         let color = this.tempColor;
         color.set(skeletonColor.r * slotColor.r * attachmentColor.r,
-            skeletonColor.g * slotColor.g * attachmentColor.g,
-            skeletonColor.b * slotColor.b * attachmentColor.b,
-            alpha);
+          skeletonColor.g * slotColor.g * attachmentColor.g,
+          skeletonColor.b * slotColor.b * attachmentColor.b,
+          alpha);
 
         let finalVertices: ArrayLike<number>;
         let finalVerticesLength: number;
@@ -191,15 +194,11 @@ export class MeshGenerator {
           finalIndicesLength = triangles.length;
         }
 
-        if (finalVerticesLength == 0 || finalIndicesLength == 0) {
-          continue;
-        }
-        
         let indexStart = verticesLength / MeshGenerator.VERTEX_STRIDE;
         let verticesWithZ = this.verticesWithZ;
         let i = verticesLength;
         let j = 0;
-        for (; j < finalVerticesLength; ) {
+        for (; j < finalVerticesLength;) {
           verticesWithZ[i++] = finalVertices[j++];
           verticesWithZ[i++] = finalVertices[j++];
           verticesWithZ[i++] = z;
