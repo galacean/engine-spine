@@ -145,7 +145,7 @@ export class MeshGenerator {
           _clipper.clipStart(slot, clip);
           continue;
         }
-      } else if (useClipping) {
+      } else if (useClipping) { // attachment might be null or BoundingBoxAttachment
         _clipper.clipEndWithSlot(slot);
         continue;
       }
