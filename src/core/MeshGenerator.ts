@@ -32,6 +32,7 @@ export class MeshGenerator {
   private verticesWithZ = new Float32Array(1024);
   private indices = new Uint16Array(1024);
   private tempColor = new Color();
+  private _meshRenderer: MeshRenderer;
 
   get mesh() {
     return this.spineMesh.mesh;
@@ -48,6 +49,7 @@ export class MeshGenerator {
       console.warn('You need add MeshRenderer component to entity first');
       return;
     }
+    this._meshRenderer = meshRenderer;
     const vertexCount = this.getVertexCount(skeleton);
     this.spineMesh.initialize(this.engine, vertexCount);
     meshRenderer.mesh = this.spineMesh.mesh;
@@ -62,7 +64,7 @@ export class MeshGenerator {
       this.setting = setting;
     }
 
-    const meshRenderer = this.entity.getComponent(MeshRenderer);
+    const meshRenderer = this._meshRenderer;
     if (!meshRenderer) {
       console.warn('You need add MeshRenderer component to entity first');
       return;
