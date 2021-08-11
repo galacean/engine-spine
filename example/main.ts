@@ -3,9 +3,10 @@ import {
   WebGLEngine, 
   Engine, 
   Camera,
-  Vector3,
   Entity,
-  Texture2D,
+  Vector3,
+  AssetType,
+  Texture2D
 } from "oasis-engine";
 import { OrbitControl } from "@oasis-engine/controls";
 import { SpineAnimation } from '../src/index';
@@ -31,17 +32,18 @@ loadSpine(root);
 engine.run();
 
 async function loadSpine(root) {
-  const spineEntity = await engine.resourceManager.load(
+  const [spineEntity, hackTexture] = await engine.resourceManager.load([
     {
       url: 'https://sbfkcel.github.io/pixi-spine-debug/assets/spine/spineboy-pro.json',
       type: 'spine',
     },
+    {
+      type: AssetType.Texture2D,
+      url: 'https://gw.alicdn.com/imgextra/i2/O1CN01ZrLkcl1njIXAnhTbK_!!6000000005125-2-tps-1534-533.png'
+    },
     // {
-    //   urls: [
-    //     'http://alipay-rmsdeploy-image.cn-hangzhou.alipay.aliyun-inc.com/bakery/huabei-wufu.json',
-    //     'http://alipay-rmsdeploy-image.cn-hangzhou.alipay.aliyun-inc.com/bakery/huabei-wufu.atlas'
-    //   ],
-    //   type: 'spine'
+    //   url: 'http://alipay-rmsdeploy-image.cn-hangzhou.alipay.aliyun-inc.com/bakery/Fish.json',
+    //   type: 'spine',
     // },
     // {
     //   urls: [
@@ -50,34 +52,12 @@ async function loadSpine(root) {
     //     'https://gw.alipayobjects.com/zos/OasisHub/4319fb1d-97dd-4509-9af3-da9c25350452/1626354535507.png'
     //   ],
     //   type: 'spine'
-    // },
-    // {
-    //   urls: [
-    //     'https://gw.alipayobjects.com/os/OasisHub/6f58bc27-bacb-493d-9a59-892eb2a37981/1625465092881.json',
-    //     'https://gw.alipayobjects.com/os/OasisHub/46ac35c1-4ac6-479e-90da-4d8161642f7c/1625465092882.atlas',
-    //     'https://gw.alipayobjects.com/zos/OasisHub/223e5e5d-e1ca-469b-87ce-088310cdded3/1625465092882.png'
-    //   ],
-    //   type: 'spine'
-    // },
-    // {
-    //   urls: [
-    //     'https://gw.alipayobjects.com/os/OasisHub/e47394d0-c7a7-4c49-82e5-2b44544d2c3d/1622118773229.json',
-    //     'https://gw.alipayobjects.com/os/OasisHub/be0c5ae1-e3ef-4a35-829c-448c04d82a82/1622118773230.atlas',
-    //     'https://gw.alipayobjects.com/zos/OasisHub/f6a4696b-4206-4233-9914-afc509f1f151/1622118773230.png'
-    //   ],
-    //   type: 'spine'
-    // },
-    // {
-    //   urls: [
-    //     'https://gw.alipayobjects.com/os/OasisHub/88ea1911-5a07-45b0-aef1-c2938cda3ec5/1626946153367.json',
-    //     'https://gw.alipayobjects.com/os/OasisHub/70be1e0a-8625-487c-8254-dc967e33a7b4/1626946153369.atlas',
-    //     'https://gw.alipayobjects.com/zos/OasisHub/7ff09d11-b8ad-4fb3-9157-dcd8559892ea/1626946153368.png'
-    //   ],
-    //   type: 'spine'
     // }
-  ) as Entity;
+  ]) as [Entity, Texture2D];
   root.addChild(spineEntity);
   const spineAnimation = spineEntity.getComponent(SpineAnimation);
   spineAnimation.state.setAnimation(0, 'shoot', true);
-  spineAnimation.scale = 0.048;
+  spineAnimation.scale = 0.05;
+  spineAnimation.addSeparateSlot('gun');
+  spineAnimation.hackSeparateSlotTexture('gun', hackTexture);
 }

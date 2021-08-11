@@ -8,6 +8,8 @@ import {
   Script,
   Entity,
   ignoreClone,
+  MeshRenderer,
+  Texture2D,
 } from 'oasis-engine';
 
 export class SpineAnimation extends Script {
@@ -63,6 +65,50 @@ export class SpineAnimation extends Script {
     this._meshGenerator.initialize(skeletonData, this.setting);
   }
 
+  /**
+   * Separate slot by slot name. This will add a new sub mesh, and new materials.
+   */
+  addSeparateSlot(slotName: string) {
+    if (!this.skeleton) {
+      console.error('Skeleton not found!');
+    }
+    const meshRenderer = this.entity.getComponent(MeshRenderer);
+    if (!meshRenderer) {
+      console.warn('You need add MeshRenderer component to entity first');
+    }
+    const slot = this.skeleton.findSlot(slotName);
+    if (slot) {
+      this._meshGenerator.addSeparateSlot(slotName);
+      const mtl = this.engine._spriteDefaultMaterial.clone();
+      const { materialCount } = meshRenderer;
+      // add default material for new sub mesh
+      // split will generate two material
+      meshRenderer.setMaterial(materialCount, mtl);
+      meshRenderer.setMaterial(materialCount + 1, mtl);
+    } else {
+      console.warn(`Slot: ${slotName} not find.`);
+    }
+  }
+
+  /**
+   * Change texture of a separated slot by name.
+   */
+  hackSeparateSlotTexture(slotName: string, texture: Texture2D) {
+    const { separateSlots } = this._meshGenerator;
+    if (separateSlots.length === 0) {
+      console.warn('You need add separate slot');
+      return;
+    }
+    if (separateSlots.includes(slotName)) {
+      const meshRenderer = this.entity.getComponent(MeshRenderer);
+      const subMeshIndex = separateSlots.findIndex(item => item === slotName);
+      const mtl = meshRenderer.getMaterial(subMeshIndex);
+      mtl.shaderData.setTexture('u_spriteTexture', texture);
+    } else {
+      console.warn(`Slot ${slotName} is not separated. You should use addSeparateSlot to separate it`);
+    }
+  }
+
   disposeCurrentSkeleton() {
     this._skeletonData = null;
     // TODO
@@ -92,7 +138,7 @@ export class SpineAnimation extends Script {
   }
 
   /**
-   * spine animation custom clone
+   * Spine animation custom clone.
    */
   _cloneTo(target: SpineAnimation) {
     target.setSkeletonData(this.skeletonData);
