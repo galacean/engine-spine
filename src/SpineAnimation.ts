@@ -65,6 +65,9 @@ export class SpineAnimation extends Script {
     this._meshGenerator.initialize(skeletonData, this.setting);
   }
 
+  /**
+   * Separate slot by slot name. This will add a new sub mesh, and new materials.
+   */
   addSeparateSlot(slotName: string) {
     if (!this.skeleton) {
       console.error('Skeleton not found!');
@@ -87,6 +90,9 @@ export class SpineAnimation extends Script {
     }
   }
 
+  /**
+   * Change texture of a separated slot by name.
+   */
   hackSeparateSlotTexture(slotName: string, texture: Texture2D) {
     const { separateSlots } = this._meshGenerator;
     if (separateSlots.length === 0) {
@@ -132,7 +138,7 @@ export class SpineAnimation extends Script {
   }
 
   /**
-   * spine animation custom clone
+   * Spine animation custom clone.
    */
   _cloneTo(target: SpineAnimation) {
     target.setSkeletonData(this.skeletonData);
