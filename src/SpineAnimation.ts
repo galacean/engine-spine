@@ -54,12 +54,15 @@ export class SpineAnimation extends Script {
   }
 
   setSkeletonData(skeletonData: SkeletonData, setting?: SpineRenderSetting) {
-    this._skeletonData = skeletonData;
+    if (!skeletonData) {
+      console.error('SkeletonData is undefined');
+    }
     this.setting = setting;
+    this._skeletonData = skeletonData;
     this._skeleton = new Skeleton(skeletonData);
     const animationData = new AnimationStateData(skeletonData);
     this._state = new AnimationState(animationData);
-    this._meshGenerator.initialize(this._skeleton);
+    this._meshGenerator.initialize(skeletonData, this.setting);
   }
 
   addSeparateSlot(slotName: string) {
@@ -124,9 +127,8 @@ export class SpineAnimation extends Script {
   }
 
   updateGeometry() {
-    this._meshGenerator.buildMesh(this._skeleton, this.setting);
-    this._meshGenerator.fillVertexData();
-    this._meshGenerator.fillIndexData();
+    if (!this._skeleton) return;
+    this._meshGenerator.buildMesh(this._skeleton);
   }
 
   /**
