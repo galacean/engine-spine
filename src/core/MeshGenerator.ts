@@ -16,8 +16,8 @@ import { SpineRenderSetting } from '../types';
 
 export class MeshGenerator {
   static QUAD_TRIANGLES = [0, 1, 2, 2, 3, 0];
-  static VERTEX_SIZE = 2 + 2 + 4; // position without z, uv, color
-  static VERTEX_STRIDE = 3 + 2 + 4; // position with z, uv, color
+  static VERTEX_SIZE = 8; // 2 2 4 position without z, uv, color
+  static VERTEX_STRIDE = 9; // 3 2 4 position with z, uv, color
   static tempColor: Color = new Color();
 
   private _setting: SpineRenderSetting;
@@ -115,7 +115,7 @@ export class MeshGenerator {
         continue;
       }
       const attachment = slot.getAttachment();
-      let attachmentColor: Color = new Color();
+      let attachmentColor: Color = null;
       let texture = null;
       const z = zSpacing * slotIndex;
       let numFloats = 0;
