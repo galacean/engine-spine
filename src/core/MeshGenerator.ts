@@ -145,10 +145,10 @@ export class MeshGenerator {
           _clipper.clipStart(slot, clip);
           continue;
         }
-      } else {
-        console.warn('Unknown attachment type.');
+      } else if (useClipping) { // attachment might be null or BoundingBoxAttachment
+        _clipper.clipEndWithSlot(slot);
         continue;
-      };
+      }
 
       if (texture != null) {
         let skeleton = slot.bone.skeleton;
