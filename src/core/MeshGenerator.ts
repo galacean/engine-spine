@@ -31,6 +31,7 @@ export class MeshGenerator {
   private _verticesWithZ: Float32Array;
   private _indices: Uint16Array;
   private _needResize: boolean = false;
+  private _meshRenderer: MeshRenderer;
 
   get mesh() {
     return this._spineMesh.mesh;
@@ -49,6 +50,7 @@ export class MeshGenerator {
       console.warn('You need add MeshRenderer component to entity first');
       return;
     }
+    this._meshRenderer = meshRenderer;
 
     if (setting) {
       this._setting = setting;
@@ -92,7 +94,7 @@ export class MeshGenerator {
     let verticesLength = 0;
     let indicesLength = 0;
 
-    const meshRenderer = this._entity.getComponent(MeshRenderer);
+    const meshRenderer = this._meshRenderer;
     const drawOrder = skeleton.drawOrder;
     const { _spineMesh, _clipper } = this;
     let vertices: ArrayLike<number> = this._vertices;
@@ -214,7 +216,10 @@ export class MeshGenerator {
         indicesLength += finalIndicesLength;
       }
 
-      meshRenderer.shaderData.setTexture('u_spriteTexture', texture.texture);
+      const mtl = meshRenderer.getMaterial(0);
+      if (!mtl.shaderData.getTexture('u_spriteTexture')) {
+        mtl.shaderData.setTexture('u_spriteTexture', texture.texture);
+      }
 
       _clipper.clipEndWithSlot(slot);
 
