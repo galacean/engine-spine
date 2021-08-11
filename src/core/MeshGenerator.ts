@@ -103,8 +103,8 @@ export class MeshGenerator {
     const seperateSubMesh = this._seperateSubMesh;
     const restSubMesh = this._restSubMesh;
     let vertices: ArrayLike<number> = this._vertices;
-    let triangles: Array<number> = [];
-    let uvs: ArrayLike<number> = [];
+    let triangles: Array<number>;
+    let uvs: ArrayLike<number>;
     let start = 0;
     let count = 0;
     for (let slotIndex = 0; slotIndex < maxSlotCount; slotIndex += 1) {
