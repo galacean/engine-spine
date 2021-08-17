@@ -9,6 +9,8 @@ import {
   Script,
   Entity,
   ignoreClone,
+  MeshRenderer,
+  Texture2D,
 } from 'oasis-engine';
 
 export class SpineAnimation extends Script {
@@ -61,12 +63,59 @@ export class SpineAnimation extends Script {
   }
 
   setSkeletonData(skeletonData: SkeletonData, setting?: SpineRenderSetting) {
-    this._skeletonData = skeletonData;
+    if (!skeletonData) {
+      console.error('SkeletonData is undefined');
+    }
     this.setting = setting;
+    this._skeletonData = skeletonData;
     this._skeleton = new Skeleton(skeletonData);
     const animationData = new AnimationStateData(skeletonData);
     this._state = new AnimationState(animationData);
-    this._meshGenerator.initialize(this._skeleton);
+    this._meshGenerator.initialize(skeletonData, this.setting);
+  }
+
+  /**
+   * Separate slot by slot name. This will add a new sub mesh, and new materials.
+   */
+  addSeparateSlot(slotName: string) {
+    if (!this.skeleton) {
+      console.error('Skeleton not found!');
+    }
+    const meshRenderer = this.entity.getComponent(MeshRenderer);
+    if (!meshRenderer) {
+      console.warn('You need add MeshRenderer component to entity first');
+    }
+    const slot = this.skeleton.findSlot(slotName);
+    if (slot) {
+      this._meshGenerator.addSeparateSlot(slotName);
+      const mtl = this.engine._spriteDefaultMaterial.clone();
+      const { materialCount } = meshRenderer;
+      // add default material for new sub mesh
+      // split will generate two material
+      meshRenderer.setMaterial(materialCount, mtl);
+      meshRenderer.setMaterial(materialCount + 1, mtl);
+    } else {
+      console.warn(`Slot: ${slotName} not find.`);
+    }
+  }
+
+  /**
+   * Change texture of a separated slot by name.
+   */
+  hackSeparateSlotTexture(slotName: string, texture: Texture2D) {
+    const { separateSlots } = this._meshGenerator;
+    if (separateSlots.length === 0) {
+      console.warn('You need add separate slot');
+      return;
+    }
+    if (separateSlots.includes(slotName)) {
+      const meshRenderer = this.entity.getComponent(MeshRenderer);
+      const subMeshIndex = separateSlots.findIndex(item => item === slotName);
+      const mtl = meshRenderer.getMaterial(subMeshIndex);
+      mtl.shaderData.setTexture('u_spriteTexture', texture);
+    } else {
+      console.warn(`Slot ${slotName} is not separated. You should use addSeparateSlot to separate it`);
+    }
   }
 
   disposeCurrentSkeleton() {
@@ -88,35 +137,17 @@ export class SpineAnimation extends Script {
     state.update(deltaTime);
     state.apply(skeleton);
     skeleton.updateWorldTransform();
-
+    
     this.updateGeometry();
   }
 
   updateGeometry() {
-    this._meshGenerator.buildMesh(this._skeleton, this.setting);
-    this._meshGenerator.fillVertexData();
-    this._meshGenerator.fillIndexData();
-    if (this.autoUpdateBounds) {
-      this.updateBounds();
-    }
-  }
-
-  updateBounds() {
     if (!this._skeleton) return;
-    const { mesh: { bounds } } = this._meshGenerator;
-    const offset = this._tempOffset;
-    const size = this._tempSize;
-    const temp = this._tempArray;
-    const zSpacing = this.setting?.zSpacing || 0.01;
-    const skeleton = this._skeleton;
-    skeleton.getBounds(offset, size, temp);
-    const drawOrder = skeleton.drawOrder;
-    bounds.min.setValue(offset.x, offset.y, 0);
-    bounds.max.setValue(offset.x + size.x, offset.y + size.y, drawOrder.length * zSpacing);
+    this._meshGenerator.buildMesh(this._skeleton);
   }
 
   /**
-   * spine animation custom clone
+   * Spine animation custom clone.
    */
   _cloneTo(target: SpineAnimation) {
     target.setSkeletonData(this.skeletonData);
