@@ -13,7 +13,6 @@ import { ArrayLike, Color } from '../spine-core/Utils';
 import { SkeletonClipping } from '../spine-core/SkeletonClipping';
 import { SpineMesh } from './SpineMesh';
 import { SpineRenderSetting } from '../types';
-import { quickSort } from '../util';
 
 export class MeshGenerator {
   static QUAD_TRIANGLES = [0, 1, 2, 2, 3, 0];
@@ -278,7 +277,7 @@ export class MeshGenerator {
     mesh.clearSubMesh();
     const subMeshes = seperateSubMesh.concat(restSubMesh);
     const subMeshLength = subMeshes.length;
-    quickSort(subMeshes, 0 , subMeshLength, this._sortSubMeshes);
+    subMeshes.sort((a, b) => a.start - b.start);
     for (let i = 0; i < subMeshLength; i += 1) {
       mesh.addSubMesh(subMeshes[i]);
     }
