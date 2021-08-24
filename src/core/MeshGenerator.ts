@@ -303,8 +303,4 @@ export class MeshGenerator {
     this._verticesWithZ = new Float32Array(vertexCount * MeshGenerator.VERTEX_STRIDE);
     this._indices = new Uint16Array(vertexCount);
   }
-
-  private _sortSubMeshes(a: SubMesh, b: SubMesh) {
-    return a.start - b.start;
-  }
 }
