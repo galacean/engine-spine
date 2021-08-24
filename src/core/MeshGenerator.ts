@@ -78,7 +78,7 @@ export class MeshGenerator {
       }
     }
     this._vertexCount = vertexCount;
-    this.prepareBufferData(this._vertexCount);
+    this._prepareBufferData(this._vertexCount);
     const { _spineMesh } = this;
     _spineMesh.initialize(this._engine, this._vertexCount);
     meshRenderer.mesh = _spineMesh.mesh;
@@ -267,7 +267,7 @@ export class MeshGenerator {
     if (indicesLength > 0 && indicesLength !== this._vertexCount) {
       if (indicesLength > this._vertexCount) {
         this._vertexCount = indicesLength;
-        this.prepareBufferData(this._vertexCount);
+        this._prepareBufferData(this._vertexCount);
         this._needResize = true;
         return;
       }
@@ -277,6 +277,7 @@ export class MeshGenerator {
     mesh.clearSubMesh();
     const subMeshes = seperateSubMesh.concat(restSubMesh);
     const subMeshLength = subMeshes.length;
+    subMeshes.sort((a, b) => a.start - b.start);
     for (let i = 0; i < subMeshLength; i += 1) {
       mesh.addSubMesh(subMeshes[i]);
     }
@@ -297,7 +298,7 @@ export class MeshGenerator {
     this.separateSlots.push(slotName);
   }
 
-  private prepareBufferData(vertexCount: number) {
+  private _prepareBufferData(vertexCount: number) {
     this._vertices = new Float32Array(vertexCount * MeshGenerator.VERTEX_SIZE);
     this._verticesWithZ = new Float32Array(vertexCount * MeshGenerator.VERTEX_STRIDE);
     this._indices = new Uint16Array(vertexCount);
