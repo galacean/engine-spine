@@ -96,15 +96,15 @@ export class SpineAnimation extends Script {
    * Change texture of a separated slot by name.
    */
   hackSeparateSlotTexture(slotName: string, texture: Texture2D) {
-    this._meshGenerator.buildMesh(this._skeleton);
-    const { separateSlots, subMeshItems } = this._meshGenerator;
+    this._meshGenerator.generateSubMesh(this._skeleton);
+    const { separateSlots, subMeshIndexArray } = this._meshGenerator;
     if (separateSlots.length === 0) {
       console.warn('You need add separate slot');
       return;
     }
     if (separateSlots.includes(slotName)) {
       const meshRenderer = this.entity.getComponent(MeshRenderer);
-      const subMeshIndex = subMeshItems.findIndex(item => item.name === slotName);
+      const subMeshIndex = subMeshIndexArray.findIndex(item => item.name === slotName);
       const mtl = meshRenderer.getMaterial(subMeshIndex);
       mtl.shaderData.setTexture('u_spriteTexture', texture);
     } else {
@@ -137,6 +137,7 @@ export class SpineAnimation extends Script {
 
   updateGeometry() {
     if (!this._skeleton) return;
+    this._meshGenerator.generateSubMesh(this._skeleton);
     this._meshGenerator.buildMesh(this._skeleton);
   }
 

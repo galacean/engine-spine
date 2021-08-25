@@ -34,16 +34,12 @@ engine.run();
 async function loadSpine(root) {
   const [spineEntity, hackTexture] = await engine.resourceManager.load([
     {
-      urls: [
-        'https://gw.alipayobjects.com/os/OasisHub/e675c9e1-2b19-4940-b8ed-474792e613d7/1629603245094.json',
-        'https://gw.alipayobjects.com/os/OasisHub/994dfadc-c498-4210-b9ba-0c3deed61fc5/1629603245095.atlas',
-        'https://gw.alipayobjects.com/zos/OasisHub/b52768b0-0374-4c64-a1bd-763b1a37ee5f/1629603245095.png',
-      ],
-      type: "spine"
+      url: 'https://sbfkcel.github.io/pixi-spine-debug/assets/spine/spineboy-pro.json',
+      type: 'spine',
     },
     {
       type: AssetType.Texture2D,
-      url: 'https://gw.alicdn.com/imgextra/i2/O1CN01XOchrA1Mh0wFgddGl_!!6000000001465-2-tps-802-256.png'
+      url: 'https://gw.alicdn.com/imgextra/i2/O1CN01ZrLkcl1njIXAnhTbK_!!6000000005125-2-tps-1534-533.png'
     },
     // {
     //   url: 'http://alipay-rmsdeploy-image.cn-hangzhou.alipay.aliyun-inc.com/bakery/Fish.json',
@@ -60,15 +56,8 @@ async function loadSpine(root) {
   ]) as [Entity, Texture2D];
   root.addChild(spineEntity);
   const spineAnimation = spineEntity.getComponent(SpineAnimation);
-  spineAnimation.state.setAnimation(0, '02_walk', true);
+  spineAnimation.state.setAnimation(0, 'shoot', true);
   spineAnimation.scale = 0.05;
-  spineAnimation.skeleton.setSkinByName('skin1');
-  console.log(spineAnimation);
-  spineAnimation.addSeparateSlot('defult/head_hair');
-  spineAnimation.addSeparateSlot('defult/arm_rigth_weapon');
-  spineAnimation.addSeparateSlot('defult/Sleeveless_01');
-
-  spineAnimation.hackSeparateSlotTexture('defult/head_hair', hackTexture);
-  spineAnimation.hackSeparateSlotTexture('defult/arm_rigth_weapon', hackTexture);
-  spineAnimation.hackSeparateSlotTexture('defult/Sleeveless_01', hackTexture);
+  spineAnimation.addSeparateSlot('gun');
+  spineAnimation.hackSeparateSlotTexture('gun', hackTexture);
 }
