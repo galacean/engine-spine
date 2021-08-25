@@ -79,12 +79,14 @@ export class SpineAnimation extends Script {
     const slot = this.skeleton.findSlot(slotName);
     if (slot) {
       this._meshGenerator.addSeparateSlot(slotName);
-      const mtl = this.engine._spriteDefaultMaterial.clone();
+      // add sprite default material for new sub mesh
+      const mtl1 = this.engine._spriteDefaultMaterial.clone();
+      const mtl2 = this.engine._spriteDefaultMaterial.clone();
       const { materialCount } = meshRenderer;
-      // add default material for new sub mesh
-      // split will generate two material
-      meshRenderer.setMaterial(materialCount, mtl);
-      meshRenderer.setMaterial(materialCount + 1, mtl);
+      // one split will generate two sub mesh, thus two materials required
+      // if no sub mesh generated, redundant material will ignored by renderer
+      meshRenderer.setMaterial(materialCount, mtl1);
+      meshRenderer.setMaterial(materialCount + 1, mtl2);
     } else {
       console.warn(`Slot: ${slotName} not find.`);
     }
@@ -94,14 +96,15 @@ export class SpineAnimation extends Script {
    * Change texture of a separated slot by name.
    */
   hackSeparateSlotTexture(slotName: string, texture: Texture2D) {
-    const { separateSlots } = this._meshGenerator;
+    this._meshGenerator.buildMesh(this._skeleton);
+    const { separateSlots, subMeshItems } = this._meshGenerator;
     if (separateSlots.length === 0) {
       console.warn('You need add separate slot');
       return;
     }
     if (separateSlots.includes(slotName)) {
       const meshRenderer = this.entity.getComponent(MeshRenderer);
-      const subMeshIndex = separateSlots.findIndex(item => item === slotName);
+      const subMeshIndex = subMeshItems.findIndex(item => item.name === slotName);
       const mtl = meshRenderer.getMaterial(subMeshIndex);
       mtl.shaderData.setTexture('u_spriteTexture', texture);
     } else {

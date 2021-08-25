@@ -14,6 +14,10 @@ import { SkeletonClipping } from '../spine-core/SkeletonClipping';
 import { SpineMesh } from './SpineMesh';
 import { SpineRenderSetting } from '../types';
 
+type SubMeshItem = {
+  subMesh: SubMesh;
+  name: string;
+}
 export class MeshGenerator {
   static QUAD_TRIANGLES = [0, 1, 2, 2, 3, 0];
   static VERTEX_SIZE = 8; // 2 2 4 position without z, uv, color
@@ -32,12 +36,17 @@ export class MeshGenerator {
   private _indices: Uint16Array;
   private _needResize: boolean = false;
   private _meshRenderer: MeshRenderer;
-  private _seperateSubMesh: SubMesh[] = [];
-  private _restSubMesh: SubMesh[] = [];
+  private _seperateSubMeshItems: SubMeshItem[] = [];
+  private _restSubMeshItems: SubMeshItem[] = [];
+  private _subMeshItems: SubMeshItem[] = [];
   readonly separateSlots: string[] = [];
 
   get mesh() {
     return this._spineMesh.mesh;
+  }
+
+  get subMeshItems() {
+    return this._subMeshItems;
   }
 
   constructor(engine: Engine, entity: Entity) {
@@ -92,16 +101,18 @@ export class MeshGenerator {
 
     let verticesLength = 0;
     let indicesLength = 0;
-    this._seperateSubMesh.length = 0;
-    this._restSubMesh.length = 0;
+    this._seperateSubMeshItems.length = 0;
+    this._restSubMeshItems.length = 0;
+    this._subMeshItems.length = 0;
     
     const meshRenderer = this._meshRenderer;
     const drawOrder = skeleton.drawOrder;
     const maxSlotCount = drawOrder.length;
     const { _clipper, _spineMesh } = this;
     const { mesh } = _spineMesh;
-    const seperateSubMesh = this._seperateSubMesh;
-    const restSubMesh = this._restSubMesh;
+    const seperateSubMeshItems = this._seperateSubMeshItems;
+    const restSubMeshItems = this._restSubMeshItems;
+    const subMeshItems = this._subMeshItems;
     let vertices: ArrayLike<number> = this._vertices;
     let triangles: Array<number>;
     let uvs: ArrayLike<number>;
@@ -226,10 +237,16 @@ export class MeshGenerator {
 
         if (needSeparate) {
           const subMesh = new SubMesh(indicesLength, finalIndicesLength);
-          seperateSubMesh.push(subMesh);
+          seperateSubMeshItems.push({
+            name: slotName,
+            subMesh,
+          });
           if (count > 0) {
             const prevSubMesh = new SubMesh(start, count);
-            restSubMesh.push(prevSubMesh);
+            restSubMeshItems.push({
+              name: 'default',
+              subMesh: prevSubMesh,
+            });
             count = 0;
           }
           start = indicesLength + finalIndicesLength;
@@ -247,7 +264,6 @@ export class MeshGenerator {
             mtl.shaderData.setTexture('u_spriteTexture', texture.texture);
           }
         }
-
       }
 
       _clipper.clipEndWithSlot(slot);
@@ -259,9 +275,23 @@ export class MeshGenerator {
     // add reset sub mesh
     if (count > 0) {
       const subMesh = new SubMesh(start, count);
-      restSubMesh.push(subMesh);
+      restSubMeshItems.push({
+        name: 'default',
+        subMesh,
+      });
       count = 0;
     }
+
+    // sort sub-mesh
+    const seperateSubMeshItemLength = seperateSubMeshItems.length;
+    const restSubMeshItemLength = restSubMeshItems.length;
+    for (let i = 0; i < seperateSubMeshItemLength; i += 1) {
+      subMeshItems.push(seperateSubMeshItems[i]);
+    }
+    for (let i = 0; i < restSubMeshItemLength; i += 1) {
+      subMeshItems.push(restSubMeshItems[i]);
+    }
+    subMeshItems.sort((a, b) => a.subMesh.start - b.subMesh.start);
 
     // update buffer when vertex count change
     if (indicesLength > 0 && indicesLength !== this._vertexCount) {
@@ -273,13 +303,11 @@ export class MeshGenerator {
       }
     }
 
-    // update subMesh
+    // update sub-mesh
     mesh.clearSubMesh();
-    const subMeshes = seperateSubMesh.concat(restSubMesh);
-    const subMeshLength = subMeshes.length;
-    subMeshes.sort((a, b) => a.start - b.start);
-    for (let i = 0; i < subMeshLength; i += 1) {
-      mesh.addSubMesh(subMeshes[i]);
+    const subMeshItemLength = subMeshItems.length;
+    for (let i = 0; i < subMeshItemLength; i += 1) {
+      mesh.addSubMesh(subMeshItems[i].subMesh);
     }
 
     if (this._needResize) {
