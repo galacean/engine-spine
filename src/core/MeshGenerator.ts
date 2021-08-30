@@ -14,9 +14,9 @@ import { SkeletonClipping } from '../spine-core/SkeletonClipping';
 import { SpineMesh } from './SpineMesh';
 import { SpineRenderSetting } from '../types';
 
-type SubMeshIndex = {
+type SubMeshItem = {
+  subMesh: SubMesh;
   name: string;
-  index: number;
 }
 export class MeshGenerator {
   static QUAD_TRIANGLES = [0, 1, 2, 2, 3, 0];
@@ -36,15 +36,15 @@ export class MeshGenerator {
   private _indices: Uint16Array;
   private _needResize: boolean = false;
   private _meshRenderer: MeshRenderer;
-  private _subMeshIndexArray: SubMeshIndex[] = [];
+  private _subMeshItems: SubMeshItem[] = [];
   readonly separateSlots: string[] = [];
 
   get mesh() {
     return this._spineMesh.mesh;
   }
 
-  get subMeshIndexArray() {
-    return this._subMeshIndexArray;
+  get subMeshItems() {
+    return this._subMeshItems;
   }
 
   constructor(engine: Engine, entity: Entity) {
@@ -91,71 +91,6 @@ export class MeshGenerator {
     meshRenderer.mesh = _spineMesh.mesh;
   }
 
-  generateSubMesh(skeleton: Skeleton) {
-    const subMeshIndexArray = this._subMeshIndexArray;
-    subMeshIndexArray.length = 0;
-    const drawOrder = skeleton.drawOrder;
-    const maxSlotCount = drawOrder.length;
-    for (let slotIndex = 0; slotIndex < maxSlotCount; slotIndex += 1) {
-      const slot = drawOrder[slotIndex];
-      const slotName = slot.data.name;
-      const needSeparate = this.separateSlots.includes(slotName);
-      if (needSeparate) {
-        // first cut
-        if (subMeshIndexArray.length === 0) {
-          // If first slot is separated, generate two submesh
-          // And first item is seperated slot
-          if (slotIndex === 0) {
-            for (let i = 0; i < 2; i += 1) {
-              subMeshIndexArray.push({
-                name: i === 0 ? slotName : 'fragment',
-                index: i,
-              });
-            }
-          } else {
-            // Generate three submesh, middle is seperated slot
-            for (let i = 0; i < 3; i += 1) {
-              subMeshIndexArray.push({
-                name: i === 1 ? slotName : 'fragment',
-                index: i,
-              });
-            }
-          }
-        } else {
-          // not first cut 
-          // If last slot is separated, generate one submesh
-          const indexStart = subMeshIndexArray.length;
-          if (slotIndex === maxSlotCount - 1) {
-            subMeshIndexArray.push({
-              name: slotName,
-              index: indexStart,
-            });
-          } else {
-            for (let i = 0; i < 2; i += 1) {
-              subMeshIndexArray.push({
-                name: i === 0 ? slotName : 'fragment',
-                index: indexStart + i,
-              });
-            }
-          }
-        }
-      }
-    } // tranverse end
-    const mesh = this._spineMesh.mesh;
-    mesh.clearSubMesh();
-    const subMeshIndexArrayLength = subMeshIndexArray.length;
-    if (subMeshIndexArrayLength > 1) {
-      for (let i = 0; i < subMeshIndexArrayLength; i += 1) {
-        const subMesh = new SubMesh();
-        mesh.addSubMesh(subMesh);
-      }
-    } else {
-      // single sub mesh
-      const subMesh = new SubMesh();
-      mesh.addSubMesh(subMesh);
-    }
-  }
-
   buildMesh(skeleton: Skeleton) {
     const {
       useClipping = true,
@@ -164,14 +99,14 @@ export class MeshGenerator {
 
     let verticesLength = 0;
     let indicesLength = 0;
+    this._subMeshItems.length = 0;
     
     const meshRenderer = this._meshRenderer;
     const drawOrder = skeleton.drawOrder;
     const maxSlotCount = drawOrder.length;
     const { _clipper, _spineMesh } = this;
     const { mesh } = _spineMesh;
-    const subMeshIndexArray = this._subMeshIndexArray;
-    const subMeshIndexArrayLength = subMeshIndexArray.length;
+    const subMeshItems = this._subMeshItems;
     let vertices: ArrayLike<number> = this._vertices;
     let triangles: Array<number>;
     let uvs: ArrayLike<number>;
@@ -179,6 +114,7 @@ export class MeshGenerator {
     let count = 0;
     for (let slotIndex = 0; slotIndex < maxSlotCount; slotIndex += 1) {
       const slot = drawOrder[slotIndex];
+
       if (!slot.bone.active) {
         _clipper.clipEndWithSlot(slot);
         continue;
@@ -289,29 +225,24 @@ export class MeshGenerator {
           indicesArray[i] = finalIndices[j] + indexStart;
         }
 
-        // set sub mesh data
+        // add submesh
         const slotName = slot.data.name;
-        let needSeparate = false;
-        let index = 0;
-        for (let i = 0; i < subMeshIndexArrayLength; i++) {
-          const { name, index: _index } = subMeshIndexArray[i];
-          if (name === slotName) {
-            needSeparate = true;
-            index = _index;
-          }
-        }
+        const needSeparate = this.separateSlots.includes(slotName);
 
         if (needSeparate) {
+          const subMesh = new SubMesh(indicesLength, finalIndicesLength);
+          subMeshItems.push({
+            name: slotName,
+            subMesh,
+          });
           if (count > 0) {
-            // start count
-            const subMesh = mesh.subMeshes[index - 1];
-            subMesh.start = start;
-            subMesh.count = count;
+            const prevSubMesh = new SubMesh(start, count);
+            subMeshItems.push({
+              name: 'default',
+              subMesh: prevSubMesh,
+            });
             count = 0;
           }
-          const subMesh = mesh.subMeshes[index];
-          subMesh.start = indicesLength;
-          subMesh.count = finalIndicesLength;
           start = indicesLength + finalIndicesLength;
         } else {
           count += finalIndicesLength;
@@ -337,12 +268,16 @@ export class MeshGenerator {
 
     // add reset sub mesh
     if (count > 0) {
-      const subMeshes = mesh.subMeshes;
-      const subMesh = subMeshes[subMeshes.length - 1];
-      subMesh.start = start;
-      subMesh.count = count;
+      const subMesh = new SubMesh(start, count);
+      subMeshItems.push({
+        name: 'default',
+        subMesh,
+      });
       count = 0;
     }
+
+    // sort sub-mesh
+    subMeshItems.sort((a, b) => a.subMesh.start - b.subMesh.start);
 
     // update buffer when vertex count change
     if (indicesLength > 0 && indicesLength !== this._vertexCount) {
@@ -352,6 +287,13 @@ export class MeshGenerator {
         this._needResize = true;
         return;
       }
+    }
+
+    // update sub-mesh
+    mesh.clearSubMesh();
+    const subMeshItemLength = subMeshItems.length;
+    for (let i = 0; i < subMeshItemLength; i += 1) {
+      mesh.addSubMesh(subMeshItems[i].subMesh);
     }
 
     if (this._needResize) {
