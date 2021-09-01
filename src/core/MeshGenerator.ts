@@ -254,8 +254,8 @@ export class MeshGenerator {
         const materialLength = materials.length;
         for (let i = 0; i < materialLength; i += 1) {
           const mtl = materials[i];
-          if (!mtl.shaderData.getTexture('u_spriteTexture')) {
-            mtl.shaderData.setTexture('u_spriteTexture', texture.texture);
+          if (!mtl.shaderData.getTexture('u_cusTomTexture')) {
+            mtl.shaderData.setTexture('u_cusTomTexture', texture.texture);
           }
         }
       }
