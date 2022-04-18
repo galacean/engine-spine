@@ -36,6 +36,7 @@ type SpineLoadItem = LoadItem & SpineOpt;
 class SpineLoader extends Loader<Entity> {
   load(item: SpineLoadItem, resourceManager: ResourceManager): AssetPromise<Entity> {
     return new AssetPromise((resolve, reject) => {
+      const { engine } = resourceManager;
       // @ts-ignore
       if (item.type !== 'spine') {
         reject('Asset type must be spine.');
@@ -53,14 +54,14 @@ class SpineLoader extends Loader<Entity> {
 
       let autoLoadTexture: boolean = false;
       let assetManager: AssetManager;
-      assetManager = new AssetManager();
+      assetManager = new AssetManager(null, (img) => {
+        return this.createAdaptiveTexture(img, engine);
+      });
+
+      const { skeletonFile, atlasFile, textureFile } = resource;
 
       // create spine entity on load complete
       assetManager.onLoadComplete = () => {
-        const { engine } = resourceManager;
-        const image = assetManager.get(textureFile);
-        const texture = new AdaptiveTexture(image, engine);
-        assetManager.setAsset(textureFile, texture);
         let atlas: TextureAtlas;
         if (autoLoadTexture) {
           atlas = assetManager.get(atlasFile);
@@ -88,7 +89,6 @@ class SpineLoader extends Loader<Entity> {
       }
 
       // load asset
-      const { skeletonFile, atlasFile, textureFile } = resource;
       const isBinFile = this.isBinFile(skeletonFile);
       if (skeletonFile && atlasFile && textureFile) {
         if (isBinFile) {
@@ -97,7 +97,7 @@ class SpineLoader extends Loader<Entity> {
           assetManager.loadText(skeletonFile);
         }
         assetManager.loadText(atlasFile);
-        assetManager.loadImage(textureFile); // load image instead of texture in case pass engine to assetManager
+        assetManager.loadTexture(textureFile);
       } else if (skeletonFile && atlasFile && !textureFile) {
         autoLoadTexture = true;
         if (isBinFile) {
@@ -114,6 +114,10 @@ class SpineLoader extends Loader<Entity> {
 
   textureAssetPicker(assetManager: AssetManager, textureFile: string) {
     return assetManager.get(textureFile);
+  }
+
+  createAdaptiveTexture(img, engine) {
+    return new AdaptiveTexture(img, engine);
   }
 
   isBinFile(url: string): boolean {

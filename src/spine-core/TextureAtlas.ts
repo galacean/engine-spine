@@ -9,13 +9,13 @@ import { TextureWrap, TextureRegion } from "./Texture";
 		pages = new Array<TextureAtlasPage>();
 		regions = new Array<TextureAtlasRegion>();
 
-		constructor (atlasText: string, textureAssetPicker: (textureAssetUrl: string) => any) {
-			this.load(atlasText, textureAssetPicker);
+		constructor (atlasText: string, textureLoader: (path: string, width?: number, height?: number) => any) {
+			this.load(atlasText, textureLoader);
 		}
 
-		private load (atlasText: string, textureAssetPicker: (textureAssetUrl: string) => any) {
-			if (textureAssetPicker == null)
-				throw new Error("textureAssetPicker cannot be null.");
+		private load (atlasText: string, textureLoader: (path: string, width?: number, height?: number) => any) {
+			if (textureLoader == null)
+				throw new Error("textureLoader cannot be null.");
 
 			let reader = new TextureAtlasReader(atlasText);
 			let tuple = new Array<string>(4);
@@ -52,7 +52,7 @@ import { TextureWrap, TextureRegion } from "./Texture";
 					else if (direction == "xy")
 						page.uWrap = page.vWrap = TextureWrap.Repeat;
 
-					page.texture = textureAssetPicker(line);
+					page.texture = textureLoader(line);
 					page.texture.setFilters(page.minFilter, page.magFilter);
 					page.texture.setWraps(page.uWrap, page.vWrap);
 					page.width = page.texture.getImage().width;

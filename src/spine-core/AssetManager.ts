@@ -1,11 +1,12 @@
 import { Disposable, Map } from "./Utils";
 import { TextureAtlas } from "./TextureAtlas";
 import { FakeTexture } from "./Texture";
+import { AdaptiveTexture } from "../SpineLoader";
 
 export class AssetManager implements Disposable {
 	// todo: enhance asset manager: load image data
 	protected pathPrefix: string;
-	protected textureLoader: (image: HTMLImageElement) => any;
+	protected textureLoader: (image: HTMLImageElement) => AdaptiveTexture;
 	protected errors: Map<string> = {};
 	protected toLoad = 0;
 	protected loaded = 0;
@@ -13,13 +14,9 @@ export class AssetManager implements Disposable {
 	assets: Map<any> = {};
 	onLoadComplete: any;
 
-	constructor (pathPrefix?: string, textureLoader?: (image: HTMLImageElement) => any) {
+	constructor (pathPrefix?: string, textureLoader?: (image: HTMLImageElement) => AdaptiveTexture) {
 		this.pathPrefix = pathPrefix || '';
 		this.textureLoader = textureLoader;
-	}
-
-	setAsset(path: string, asset: any) {
-		this.assets[path] = asset;
 	}
 
 	private downloadText (url: string, success: (data: string) => void, error: (status: number, responseText: string) => void) {
@@ -125,7 +122,7 @@ export class AssetManager implements Disposable {
 	}
 
 	loadTexture (path: string,
-		success: (path: string, image: HTMLImageElement) => void = null,
+		success: (path: string, texture: AdaptiveTexture) => void = null,
 		error: (path: string, error: string) => void = null) {
 		path = this.pathPrefix + path;
 		let storagePath = path;
@@ -137,7 +134,7 @@ export class AssetManager implements Disposable {
 			this.assets[storagePath] = texture;
 			this.onLoad();
 			this.loaded++;
-			if (success) success(path, img);
+			if (success) success(path, texture);
 		}
 		img.onerror = (ev) => {
 			this.errors[path] = `Couldn't load image ${path}`;
@@ -179,9 +176,9 @@ export class AssetManager implements Disposable {
 
 			for (let atlasPage of atlasPages) {
 				let pageLoadError = false;
-				this.loadImage(atlasPage, (imagePath: string, image: HTMLImageElement) => {
-					pagesLoaded.count++;
 
+				this.loadTexture(atlasPage, (imagePath: string, texture: AdaptiveTexture) => {
+					pagesLoaded.count++;
 					if (pagesLoaded.count == atlasPages.length) {
 						if (!pageLoadError) {
 							try {
@@ -194,12 +191,14 @@ export class AssetManager implements Disposable {
 								this.loaded++;
 							} catch (e) {
 								let ex = e as Error;
+								console.log(e);
 								this.errors[path] = `Couldn't load texture atlas ${path}: ${ex.message}`;
 								if (error) error(path, `Couldn't load texture atlas ${path}: ${ex.message}`);
 								this.onLoad();
 								this.loaded++;
 							}
 						} else {
+							console.log(3);
 							this.errors[path] = `Couldn't load texture atlas page ${imagePath}} of atlas ${path}`;
 							if (error) error(path, `Couldn't load texture atlas page ${imagePath} of atlas ${path}`);
 							this.onLoad();
@@ -211,6 +210,7 @@ export class AssetManager implements Disposable {
 					pagesLoaded.count++;
 
 					if (pagesLoaded.count == atlasPages.length) {
+						console.log(4);
 						this.errors[path] = `Couldn't load texture atlas page ${imagePath}} of atlas ${path}`;
 						if (error) error(path, `Couldn't load texture atlas page ${imagePath} of atlas ${path}`);
 						this.onLoad();
