@@ -175,9 +175,9 @@ export class MeshGenerator {
         let alpha = skeletonColor.a * slotColor.a * attachmentColor.a;
         let color = MeshGenerator.tempColor;
         color.set(skeletonColor.r * slotColor.r * attachmentColor.r,
-            skeletonColor.g * slotColor.g * attachmentColor.g,
-            skeletonColor.b * slotColor.b * attachmentColor.b,
-            alpha);
+          skeletonColor.g * slotColor.g * attachmentColor.g,
+          skeletonColor.b * slotColor.b * attachmentColor.b,
+          alpha);
 
         if (_clipper.isClipping()) {
           _clipper.clipTriangles(vertices, numFloats, triangles, triangles.length, uvs, color, null, false);
