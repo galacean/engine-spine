@@ -6,15 +6,20 @@ export class AssetManager implements Disposable {
 	// todo: enhance asset manager: load image data
 	protected pathPrefix: string;
 	protected textureLoader: (image: HTMLImageElement) => any;
-	protected assets: Map<any> = {};
 	protected errors: Map<string> = {};
 	protected toLoad = 0;
 	protected loaded = 0;
 	protected rawDataUris: Map<string> = {};
+	assets: Map<any> = {};
+	onLoadComplete: any;
 
-	constructor (textureLoader: (image: HTMLImageElement) => any, pathPrefix: string = "") {
+	constructor (pathPrefix?: string, textureLoader?: (image: HTMLImageElement) => any) {
+		this.pathPrefix = pathPrefix || '';
 		this.textureLoader = textureLoader;
-		this.pathPrefix = pathPrefix;
+	}
+
+	setAsset(path: string, asset: any) {
+		this.assets[path] = asset;
 	}
 
 	private downloadText (url: string, success: (data: string) => void, error: (status: number, responseText: string) => void) {
@@ -66,12 +71,12 @@ export class AssetManager implements Disposable {
 		this.downloadBinary(path, (data: Uint8Array): void => {
 			this.assets[path] = data;
 			if (success) success(path, data);
-			this.toLoad--;
+			this.onLoad();
 			this.loaded++;
 		}, (state: number, responseText: string): void => {
 			this.errors[path] = `Couldn't load binary ${path}: status ${status}, ${responseText}`;
 			if (error) error(path, `Couldn't load binary ${path}: status ${status}, ${responseText}`);
-			this.toLoad--;
+			this.onLoad();
 			this.loaded++;
 		});
 	}
@@ -85,14 +90,38 @@ export class AssetManager implements Disposable {
 		this.downloadText(path, (data: string): void => {
 			this.assets[path] = data;
 			if (success) success(path, data);
-			this.toLoad--;
+			this.onLoad();
 			this.loaded++;
 		}, (state: number, responseText: string): void => {
 			this.errors[path] = `Couldn't load text ${path}: status ${status}, ${responseText}`;
 			if (error) error(path, `Couldn't load text ${path}: status ${status}, ${responseText}`);
-			this.toLoad--;
+			this.onLoad();
 			this.loaded++;
 		});
+	}
+
+	loadImage (path: string,
+		success: (path: string, image: HTMLImageElement) => void = null,
+		error: (path: string, error: string) => void = null) {
+		path = this.pathPrefix + path;
+		let storagePath = path;
+		this.toLoad++;
+		let img = new Image();
+		img.crossOrigin = "anonymous";
+		img.onload = (ev) => {
+			this.assets[storagePath] = img;
+			this.onLoad();
+			this.loaded++;
+			if (success) success(path, img);
+		}
+		img.onerror = (ev) => {
+			this.errors[path] = `Couldn't load image ${path}`;
+			this.onLoad();
+			this.loaded++;
+			if (error) error(path, `Couldn't load image ${path}`);
+		}
+		if (this.rawDataUris[path]) path = this.rawDataUris[path];
+		img.src = path;
 	}
 
 	loadTexture (path: string,
@@ -106,13 +135,13 @@ export class AssetManager implements Disposable {
 		img.onload = (ev) => {
 			let texture = this.textureLoader(img);
 			this.assets[storagePath] = texture;
-			this.toLoad--;
+			this.onLoad();
 			this.loaded++;
 			if (success) success(path, img);
 		}
 		img.onerror = (ev) => {
 			this.errors[path] = `Couldn't load image ${path}`;
-			this.toLoad--;
+			this.onLoad();
 			this.loaded++;
 			if (error) error(path, `Couldn't load image ${path}`);
 		}
@@ -143,14 +172,14 @@ export class AssetManager implements Disposable {
 				let ex = e as Error;
 				this.errors[path] = `Couldn't load texture atlas ${path}: ${ex.message}`;
 				if (error) error(path, `Couldn't load texture atlas ${path}: ${ex.message}`);
-				this.toLoad--;
+				this.onLoad();
 				this.loaded++;
 				return;
 			}
 
 			for (let atlasPage of atlasPages) {
 				let pageLoadError = false;
-				this.loadTexture(atlasPage, (imagePath: string, image: HTMLImageElement) => {
+				this.loadImage(atlasPage, (imagePath: string, image: HTMLImageElement) => {
 					pagesLoaded.count++;
 
 					if (pagesLoaded.count == atlasPages.length) {
@@ -161,19 +190,19 @@ export class AssetManager implements Disposable {
 								});
 								this.assets[path] = atlas;
 								if (success) success(path, atlas);
-								this.toLoad--;
+								this.onLoad();
 								this.loaded++;
 							} catch (e) {
 								let ex = e as Error;
 								this.errors[path] = `Couldn't load texture atlas ${path}: ${ex.message}`;
 								if (error) error(path, `Couldn't load texture atlas ${path}: ${ex.message}`);
-								this.toLoad--;
+								this.onLoad();
 								this.loaded++;
 							}
 						} else {
 							this.errors[path] = `Couldn't load texture atlas page ${imagePath}} of atlas ${path}`;
 							if (error) error(path, `Couldn't load texture atlas page ${imagePath} of atlas ${path}`);
-							this.toLoad--;
+							this.onLoad();
 							this.loaded++;
 						}
 					}
@@ -184,7 +213,7 @@ export class AssetManager implements Disposable {
 					if (pagesLoaded.count == atlasPages.length) {
 						this.errors[path] = `Couldn't load texture atlas page ${imagePath}} of atlas ${path}`;
 						if (error) error(path, `Couldn't load texture atlas page ${imagePath} of atlas ${path}`);
-						this.toLoad--;
+						this.onLoad();
 						this.loaded++;
 					}
 				});
@@ -192,7 +221,7 @@ export class AssetManager implements Disposable {
 		}, (state: number, responseText: string): void => {
 			this.errors[path] = `Couldn't load texture atlas ${path}: status ${status}, ${responseText}`;
 			if (error) error(path, `Couldn't load texture atlas ${path}: status ${status}, ${responseText}`);
-			this.toLoad--;
+			this.onLoad();
 			this.loaded++;
 		});
 	}
@@ -219,6 +248,13 @@ export class AssetManager implements Disposable {
 
 	isLoadingComplete (): boolean {
 		return this.toLoad == 0;
+	}
+
+	onLoad() {
+		this.toLoad--;
+		if (this.toLoad === 0) {
+			this.onLoadComplete();
+		}
 	}
 
 	getToLoad (): number {

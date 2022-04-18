@@ -112,11 +112,6 @@ export class SpineAnimation extends Script {
     }
   }
 
-  disposeCurrentSkeleton() {
-    this._skeletonData = null;
-    // TODO
-  }
-
   onUpdate(delta: number) {
     if (this.autoUpdate) {
       this.updateState(delta * 0.001);
@@ -148,4 +143,17 @@ export class SpineAnimation extends Script {
     const _cloneSetting = {...this.setting};
     target.setting = _cloneSetting;
   }
+
+  private _disposeCurrentSkeleton() {
+    this._skeletonData = null;
+    this._skeleton = null;
+    this._state = null;
+  }
+
+  onDestroy() {
+    this._disposeCurrentSkeleton();
+    this._meshGenerator = null;
+    this.setting = null;
+  }
+
 }
