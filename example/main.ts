@@ -1,4 +1,3 @@
-import { Stats } from '@oasis-engine/stats';
 import { 
   WebGLEngine, 
   Engine, 
@@ -8,7 +7,7 @@ import {
   AssetType,
   Texture2D
 } from "oasis-engine";
-import { OrbitControl } from "@oasis-engine/controls";
+import { OrbitControl, Stats } from "oasis-engine-toolkit";
 import { SpineAnimation } from '../src/index';
 
 Engine.registerFeature(Stats);
