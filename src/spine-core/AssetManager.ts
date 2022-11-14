@@ -7,11 +7,11 @@ export class AssetManager implements Disposable {
 	// todo: enhance asset manager: load image data
 	protected pathPrefix: string;
 	protected textureLoader: (image: HTMLImageElement) => AdaptiveTexture;
+	protected assets: Map<any> = {};
 	protected errors: Map<string> = {};
 	protected toLoad = 0;
 	protected loaded = 0;
 	protected rawDataUris: Map<string> = {};
-	assets: Map<any> = {};
 	onLoadComplete: any;
 
 	constructor (pathPrefix?: string, textureLoader?: (image: HTMLImageElement) => AdaptiveTexture) {
