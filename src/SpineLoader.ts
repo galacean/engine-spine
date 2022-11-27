@@ -36,6 +36,7 @@ type SpineLoadItem = LoadItem & SpineOpt;
 class SpineLoader extends Loader<Entity> {
   load(item: SpineLoadItem, resourceManager: ResourceManager): AssetPromise<Entity> {
     return new AssetPromise((resolve, reject) => {
+      const { engine } = resourceManager;
       // @ts-ignore
       if (item.type !== 'spine') {
         reject('Asset type must be spine.');
@@ -50,58 +51,73 @@ class SpineLoader extends Loader<Entity> {
       if (item.urls && this.checkUrls(item.urls)) {
         resource = this.getResouceFromUrls(item.urls);
       }
-      
+
       let autoLoadTexture: boolean = false;
       let assetManager: AssetManager;
-      let skeletonLoader: SkeletonJson | SkeletonBinary;
-      assetManager = new AssetManager((data) => {
-        return new AdaptiveTexture(data, resourceManager.engine);
+      assetManager = new AssetManager(null, (img) => {
+        return this.createAdaptiveTexture(img, engine);
       });
-      const { skeletonFile, atlasFile, textureFile } = resource;
-      if (skeletonFile && atlasFile && textureFile) {
-        assetManager.loadText(skeletonFile);
-        assetManager.loadText(atlasFile);
-        assetManager.loadTexture(textureFile);
-      } else if (skeletonFile && atlasFile && !textureFile) {
-        autoLoadTexture = true;
-        assetManager.loadText(skeletonFile);
-        assetManager.loadTextureAtlas(atlasFile);
-      } else {
-        reject('Resouce param error');
-      }
 
-      this.onLoad(assetManager).then((loadRes) => {
-        if (loadRes !== 'loaded') {
-          reject(loadRes);
-        }
+      const { skeletonFile, atlasFile, textureFile } = resource;
+
+      // create spine entity on load complete
+      assetManager.onLoadComplete = () => {
         let atlas: TextureAtlas;
         if (autoLoadTexture) {
           atlas = assetManager.get(atlasFile);
         } else {
-          atlas = new TextureAtlas(assetManager.get(atlasFile), function () {
-            return assetManager.get(textureFile);
-          });
+          const atlasText = assetManager.get(atlasFile);
+          atlas = new TextureAtlas(atlasText, this.textureAssetPicker.bind(this, assetManager, textureFile));
         }
-
         const atlasLoader = new AtlasAttachmentLoader(atlas);
+        let skeletonLoader: SkeletonJson | SkeletonBinary;
         if (this.isBinFile(skeletonFile)) {
           skeletonLoader = new SkeletonBinary(atlasLoader);
         } else {
           skeletonLoader = new SkeletonJson(atlasLoader);
         }
         const skeletonData = skeletonLoader.readSkeletonData(assetManager.get(skeletonFile));
-        const { engine } = resourceManager;
         const entity = new Entity(engine);
         const meshRenderer = entity.addComponent(MeshRenderer);
         meshRenderer.shaderData.enableMacro('USE_MODEL_MATRIX');
         meshRenderer.shaderData.enableMacro('USE_CUSTOM_TEXTURE');
-        const mtl = resourceManager.engine._spriteDefaultMaterial.clone();
+        const mtl = engine._spriteDefaultMaterial.clone();
         meshRenderer.setMaterial(mtl);
         const spineAnimation = entity.addComponent(SpineAnimation);
         spineAnimation.setSkeletonData(skeletonData);
         resolve(entity);
-      })
+      }
+
+      // load asset
+      const isBinFile = this.isBinFile(skeletonFile);
+      if (skeletonFile && atlasFile && textureFile) {
+        if (isBinFile) {
+          assetManager.loadBinary(skeletonFile);
+        } else {
+          assetManager.loadText(skeletonFile);
+        }
+        assetManager.loadText(atlasFile);
+        assetManager.loadTexture(textureFile);
+      } else if (skeletonFile && atlasFile && !textureFile) {
+        autoLoadTexture = true;
+        if (isBinFile) {
+          assetManager.loadBinary(skeletonFile);
+        } else {
+          assetManager.loadText(skeletonFile);
+        }
+        assetManager.loadTextureAtlas(atlasFile);
+      } else {
+        reject('Resouce param error');
+      }
     });
+  }
+
+  textureAssetPicker(assetManager: AssetManager, textureFile: string) {
+    return assetManager.get(textureFile);
+  }
+
+  createAdaptiveTexture(img, engine) {
+    return new AdaptiveTexture(img, engine);
   }
 
   isBinFile(url: string): boolean {
@@ -176,23 +192,8 @@ class SpineLoader extends Loader<Entity> {
   getExtFromUrl(url: string): string {
     return url.split(/[#?]/)[0].split('.').pop().trim();
   }
-
-  onLoad(loader: AssetManager): Promise<any> {
-    return new Promise((res, rej) => {
-      setInterval(() => {
-        if (loader.isLoadingComplete()) {
-          if (loader.hasErrors()) {
-            rej(loader.getErrors());
-          } else {
-            res('loaded');
-          }
-        }
-      }, 100);
-    })
-  }
-  
-
 }
+
 
 export class AdaptiveTexture extends Texture {
   texture: Texture2D;

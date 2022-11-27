@@ -78,6 +78,7 @@ export class SpineComponent extends Script {
   onDestroy() {
     if (this._resource) {
       this._resource.parent = null;
+      this._resource = null;
     }
   }
 }

@@ -3,6 +3,7 @@ import resolve from "@rollup/plugin-node-resolve";
 import babel from "@rollup/plugin-babel";
 import pkg from "./package.json";
 import { terser } from "rollup-plugin-terser";
+import versionInjector from 'rollup-plugin-version-injector';
 
 const extensions = [".js", ".jsx", ".ts", ".tsx"];
 
@@ -15,6 +16,7 @@ export default {
 	external: ["oasis-engine"],
 
 	plugins: [
+		versionInjector(),
 		// Allows node_modules resolution
 		resolve({ extensions }),
 

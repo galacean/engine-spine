@@ -31,6 +31,7 @@ async function addSpine() {
     },
   );
   rootEntity.addChild(spineEntity);
+  const spineAnimation = spineEntity.getComponent(SpineAnimation);
   spineAnimation.state.setAnimation(0, 'walk', true);
 }
 ```
