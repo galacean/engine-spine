@@ -51,6 +51,7 @@ class SpineLoader extends Loader<Entity> {
       if (item.urls && this.checkUrls(item.urls)) {
         resource = this.getResouceFromUrls(item.urls);
       }
+
       let autoLoadTexture: boolean = false;
       let assetManager: AssetManager;
       assetManager = new AssetManager(null, (img) => {
