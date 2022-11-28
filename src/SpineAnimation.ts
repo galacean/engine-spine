@@ -68,7 +68,6 @@ export class SpineAnimation extends Script {
     }
     this.setting = setting;
     this._skeletonData = skeletonData;
-    this.setting = setting;
     this._skeleton = new Skeleton(skeletonData);
     const animationData = new AnimationStateData(skeletonData);
     this._state = new AnimationState(animationData);
@@ -143,7 +142,9 @@ export class SpineAnimation extends Script {
   updateGeometry() {
     if (!this._skeleton) return;
     this._meshGenerator.buildMesh(this._skeleton);
-    this.updateBounds();
+    if (this.autoUpdateBounds) {
+      this.updateBounds();
+    }
   }
 
   updateBounds() {
