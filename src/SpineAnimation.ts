@@ -143,6 +143,21 @@ export class SpineAnimation extends Script {
   updateGeometry() {
     if (!this._skeleton) return;
     this._meshGenerator.buildMesh(this._skeleton);
+    this.updateBounds();
+  }
+
+  updateBounds() {
+    const meshRenderer = this.entity.getComponent(MeshRenderer);
+    const bounds = meshRenderer.bounds;
+    const offset = this._tempOffset;
+    const size = this._tempSize;
+    const temp = this._tempArray;
+    const zSpacing = this.setting?.zSpacing || 0.01;
+    const skeleton = this._skeleton;
+    skeleton.getBounds(offset, size, temp);
+    const drawOrder = skeleton.drawOrder;
+    bounds.min.set(offset.x, offset.y, 0);
+    bounds.max.set(offset.x + size.x, offset.y + size.y, drawOrder.length * zSpacing);
   }
 
   /**

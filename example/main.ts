@@ -9,6 +9,7 @@ import {
 } from "oasis-engine";
 import { OrbitControl, Stats } from "oasis-engine-toolkit";
 import { SpineAnimation } from '../src/index';
+import BoundingBoxLine from './outline';
 
 Engine.registerFeature(Stats);
 
@@ -20,8 +21,8 @@ scene.addRootEntity(root);
 
 const cameraEntity = root.createChild('camera');
 const camera = cameraEntity.addComponent(Camera);
-camera.farClipPlane = 2000000;
-camera.nearClipPlane = 0.001;
+camera.farClipPlane = 200;
+camera.nearClipPlane = 1;
 cameraEntity.transform.position = new Vector3(0, 0, 120);
 
 cameraEntity.addComponent(OrbitControl);
@@ -59,4 +60,13 @@ async function loadSpine(root) {
   spineAnimation.scale = 0.05;
   spineAnimation.addSeparateSlot('gun');
   spineAnimation.hackSeparateSlotTexture('gun', hackTexture);
+
+  const outlineEntity = root.createChild('outline');
+  const outline = outlineEntity.addComponent(BoundingBoxLine);
+
+  outline.attachToEntity(spineEntity);
+  outline.isActive = true;
+  // setInterval(() => {
+  //   outline.updateVertices();
+  // }, 67);
 }
