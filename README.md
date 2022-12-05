@@ -46,7 +46,7 @@ npm install @oasis-engine/spine
 
 
 ## Version
-oasis-engine v0.4 & @oasis-engine/spine this branch latest npm.
+oasis-engine v0.8 & @oasis-engine/spine this branch latest npm.
 
 
 ## Feature
