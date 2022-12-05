@@ -1,9 +1,11 @@
 import {
   Engine,
   Entity,
-  MeshRenderer
+  MeshRenderer,
+  SubMesh,
 } from 'oasis-engine';
 import { Skeleton } from '../spine-core/Skeleton';
+import { SkeletonData } from '../spine-core/SkeletonData';
 import { RegionAttachment } from '../spine-core/attachments/RegionAttachment';
 import { MeshAttachment } from '../spine-core/attachments/MeshAttachment';
 import { ClippingAttachment } from '../spine-core/attachments/ClippingAttachment';
@@ -12,78 +14,109 @@ import { SkeletonClipping } from '../spine-core/SkeletonClipping';
 import { SpineMesh } from './SpineMesh';
 import { SpineRenderSetting } from '../types';
 
-
+type SubMeshItem = {
+  subMesh: SubMesh;
+  name: string;
+}
 export class MeshGenerator {
   static QUAD_TRIANGLES = [0, 1, 2, 2, 3, 0];
-  static VERTEX_SIZE = 2 + 2 + 4;
-  static VERTEX_STRIDE = 9;
+  static VERTEX_SIZE = 8; // 2 2 4 position without z, uv, color
+  static VERTEX_STRIDE = 9; // 3 2 4 position with z, uv, color
+  static tempColor: Color = new Color();
 
-  private setting: SpineRenderSetting;
-  private engine: Engine;
-  private entity: Entity;
-  private clipper: SkeletonClipping = new SkeletonClipping();
-  private spineMesh: SpineMesh = new SpineMesh();
-  private indicesLength: number = 0;
-  private verticesLength: number = 0;
+  private _setting: SpineRenderSetting;
+  private _engine: Engine;
+  private _entity: Entity;
+  private _clipper: SkeletonClipping = new SkeletonClipping();
+  private _spineMesh: SpineMesh = new SpineMesh();
 
-  private vertices = new Float32Array(1024);
-  private verticesWithZ = new Float32Array(1024);
-  private indices = new Uint16Array(1024);
-  private tempColor = new Color();
+  private _vertexCount: number;
+  private _vertices: Float32Array;
+  private _verticesWithZ: Float32Array;
+  private _indices: Uint16Array;
+  private _needResize: boolean = false;
+  private _meshRenderer: MeshRenderer;
+  private _subMeshItems: SubMeshItem[] = [];
+  readonly separateSlots: string[] = [];
 
   get mesh() {
-    return this.spineMesh.mesh;
+    return this._spineMesh.mesh;
+  }
+
+  get subMeshItems() {
+    return this._subMeshItems;
   }
 
   constructor(engine: Engine, entity: Entity) {
-    this.engine = engine;
-    this.entity = entity;
+    this._engine = engine;
+    this._entity = entity;
   }
 
-  initialize(skeleton?: Skeleton) {
-    const meshRenderer = this.entity.getComponent(MeshRenderer);
+  initialize(skeletonData: SkeletonData, setting?: SpineRenderSetting) {
+    if (!skeletonData) return;
+
+    const meshRenderer = this._entity.getComponent(MeshRenderer);
     if (!meshRenderer) {
       console.warn('You need add MeshRenderer component to entity first');
       return;
     }
-    const vertexCount = this.getVertexCount(skeleton);
-    this.spineMesh.initialize(this.engine, vertexCount);
-    meshRenderer.mesh = this.spineMesh.mesh;
-  }
-
-  buildMesh(skeleton: Skeleton, setting?: SpineRenderSetting) {
-    if (!skeleton) {
-      return;
-    }
+    this._meshRenderer = meshRenderer;
 
     if (setting) {
-      this.setting = setting;
+      this._setting = setting;
     }
 
-    const meshRenderer = this.entity.getComponent(MeshRenderer);
-    if (!meshRenderer) {
-      console.warn('You need add MeshRenderer component to entity first');
-      return;
+    // Prepare buffer by using all attachment data but clippingAttachment
+    const { defaultSkin: { attachments } } = skeletonData;
+    let vertexCount: number = 0;
+    const QUAD_TRIANGLE_LENGTH = MeshGenerator.QUAD_TRIANGLES.length;
+    for (let i = 0, n = attachments.length; i < n; i++) {
+      const slotAttachment = attachments[i];
+      for (let key in slotAttachment) {
+        const attachment = slotAttachment[key];
+        if (!attachment) {
+          continue;
+        } else if (attachment instanceof RegionAttachment) {
+          vertexCount += QUAD_TRIANGLE_LENGTH;
+        } else if (attachment instanceof MeshAttachment) {
+          let mesh = attachment;
+          vertexCount += mesh.triangles.length;
+        } else continue;
+      }
     }
+    this._vertexCount = vertexCount;
+    this._prepareBufferData(this._vertexCount);
+    const { _spineMesh } = this;
+    _spineMesh.initialize(this._engine, this._vertexCount);
+    meshRenderer.mesh = _spineMesh.mesh;
+  }
 
+  buildMesh(skeleton: Skeleton) {
     const {
       useClipping = true,
       zSpacing = 0.01,
-    } = this.setting || {};
+    } = this._setting || {};
 
-    this.verticesLength = 0;
-    this.indicesLength = 0;
-
+    let verticesLength = 0;
+    let indicesLength = 0;
+    this._subMeshItems.length = 0;
+    
+    const meshRenderer = this._meshRenderer;
     const drawOrder = skeleton.drawOrder;
-    const clipper = this.clipper;
-    let vertices: ArrayLike<number> = this.vertices;
-    let triangles: Array<number> = null;
-    let uvs: ArrayLike<number> = null;
-    for (let slotIndex = 0; slotIndex < drawOrder.length; slotIndex += 1) {
+    const maxSlotCount = drawOrder.length;
+    const { _clipper, _spineMesh } = this;
+    const { mesh } = _spineMesh;
+    const subMeshItems = this._subMeshItems;
+    let vertices: ArrayLike<number> = this._vertices;
+    let triangles: Array<number>;
+    let uvs: ArrayLike<number>;
+    let start = 0;
+    let count = 0;
+    for (let slotIndex = 0; slotIndex < maxSlotCount; slotIndex += 1) {
       const slot = drawOrder[slotIndex];
 
       if (!slot.bone.active) {
-        clipper.clipEndWithSlot(slot);
+        _clipper.clipEndWithSlot(slot);
         continue;
       }
       const attachment = slot.getAttachment();
@@ -91,66 +124,65 @@ export class MeshGenerator {
       let texture = null;
       const z = zSpacing * slotIndex;
       let numFloats = 0;
-      let vertexSize = clipper.isClipping() ? 2 : MeshGenerator.VERTEX_SIZE;
-
+      let vertexSize = _clipper.isClipping() ? 2 : MeshGenerator.VERTEX_SIZE;
       if (
         attachment instanceof RegionAttachment
       ) {
-        let region = <RegionAttachment>attachment;
-        attachmentColor = region.color;
-        vertices = this.vertices;
+        let regionAttachment = <RegionAttachment>attachment;
+        attachmentColor = regionAttachment.color;
+        vertices = this._vertices;
         numFloats = vertexSize * 4;
-        region.computeWorldVertices(slot.bone, vertices, 0, vertexSize);
+        regionAttachment.computeWorldVertices(slot.bone, vertices, 0, vertexSize);
         triangles = MeshGenerator.QUAD_TRIANGLES;
-        uvs = region.uvs;
-        texture = region.region.renderObject.texture;
+        uvs = regionAttachment.uvs;
+        texture = regionAttachment.region.renderObject.texture;
       } else if (
         attachment instanceof MeshAttachment
       ) {
-        let mesh = <MeshAttachment>attachment;
-        attachmentColor = mesh.color;
-        vertices = this.vertices;
-        numFloats = (mesh.worldVerticesLength >> 1) * vertexSize;
+        let meshAttachment = <MeshAttachment>attachment;
+        attachmentColor = meshAttachment.color;
+        vertices = this._vertices;
+        numFloats = (meshAttachment.worldVerticesLength >> 1) * vertexSize;
         if (numFloats > vertices.length) {
-          vertices = this.vertices = new Float32Array(numFloats);
+          vertices = this._vertices = new Float32Array(numFloats);
         }
-        mesh.computeWorldVertices(slot, 0, mesh.worldVerticesLength, vertices, 0, vertexSize);
-        triangles = mesh.triangles;
-        uvs = mesh.uvs;
-        texture = mesh.region.renderObject.texture;
-      } else if (
+        meshAttachment.computeWorldVertices(slot, 0, meshAttachment.worldVerticesLength, vertices, 0, vertexSize);
+        triangles = meshAttachment.triangles;
+        uvs = meshAttachment.uvs;
+        texture = meshAttachment.region.renderObject.texture;
+      }  else if (
         attachment instanceof ClippingAttachment
       ) {
         if (useClipping) {
           let clip = <ClippingAttachment>(attachment);
-          clipper.clipStart(slot, clip);
+          _clipper.clipStart(slot, clip);
           continue;
         }
-      } else {
-        console.warn('Unknown attachment type.');
+      } else if (useClipping) { // attachment might be null or BoundingBoxAttachment
+        _clipper.clipEndWithSlot(slot);
         continue;
-      };
+      }
 
       if (texture != null) {
-        let skeleton = slot.bone.skeleton;
-        let skeletonColor = skeleton.color;
-        let slotColor = slot.color;
-        let alpha = skeletonColor.a * slotColor.a * attachmentColor.a;
-        let color = this.tempColor;
-        color.set(skeletonColor.r * slotColor.r * attachmentColor.r,
-          skeletonColor.g * slotColor.g * attachmentColor.g,
-          skeletonColor.b * slotColor.b * attachmentColor.b,
-          alpha);
-
         let finalVertices: ArrayLike<number>;
         let finalVerticesLength: number;
         let finalIndices: ArrayLike<number>;
         let finalIndicesLength: number;
 
-        if (clipper.isClipping()) {
-          clipper.clipTriangles(vertices, numFloats, triangles, triangles.length, uvs, color, null, false);
-          let clippedVertices = clipper.clippedVertices;
-          let clippedTriangles = clipper.clippedTriangles;
+        let skeleton = slot.bone.skeleton;
+        let skeletonColor = skeleton.color;
+        let slotColor = slot.color;
+        let alpha = skeletonColor.a * slotColor.a * attachmentColor.a;
+        let color = MeshGenerator.tempColor;
+        color.set(skeletonColor.r * slotColor.r * attachmentColor.r,
+          skeletonColor.g * slotColor.g * attachmentColor.g,
+          skeletonColor.b * slotColor.b * attachmentColor.b,
+          alpha);
+
+        if (_clipper.isClipping()) {
+          _clipper.clipTriangles(vertices, numFloats, triangles, triangles.length, uvs, color, null, false);
+          let clippedVertices = _clipper.clippedVertices;
+          let clippedTriangles = _clipper.clippedTriangles;
           finalVertices = clippedVertices;
           finalVerticesLength = clippedVertices.length;
           finalIndices = clippedTriangles;
@@ -171,9 +203,9 @@ export class MeshGenerator {
           finalIndicesLength = triangles.length;
         }
 
-        let indexStart = this.verticesLength / MeshGenerator.VERTEX_STRIDE;
-        let verticesWithZ = this.verticesWithZ;
-        let i = this.verticesLength;
+        let indexStart = verticesLength / MeshGenerator.VERTEX_STRIDE;
+        let verticesWithZ = this._verticesWithZ;
+        let i = verticesLength;
         let j = 0;
         for (; j < finalVerticesLength;) {
           verticesWithZ[i++] = finalVertices[j++];
@@ -186,61 +218,103 @@ export class MeshGenerator {
           verticesWithZ[i++] = finalVertices[j++];
           verticesWithZ[i++] = finalVertices[j++];
         }
-        this.verticesLength = i;
+        verticesLength = i;
 
-        let indicesArray = this.indices;
-        for (i = this.indicesLength, j = 0; j < finalIndicesLength; i++, j++) {
+        let indicesArray = this._indices;
+        for (i = indicesLength, j = 0; j < finalIndicesLength; i++, j++) {
           indicesArray[i] = finalIndices[j] + indexStart;
         }
-        this.indicesLength += finalIndicesLength;
+
+        // add submesh
+        const slotName = slot.data.name;
+        const needSeparate = this.separateSlots.includes(slotName);
+
+        if (needSeparate) {
+          const subMesh = new SubMesh(indicesLength, finalIndicesLength);
+          subMeshItems.push({
+            name: slotName,
+            subMesh,
+          });
+          if (count > 0) {
+            const prevSubMesh = new SubMesh(start, count);
+            subMeshItems.push({
+              name: 'default',
+              subMesh: prevSubMesh,
+            });
+            count = 0;
+          }
+          start = indicesLength + finalIndicesLength;
+        } else {
+          count += finalIndicesLength;
+        }
+        
+        indicesLength += finalIndicesLength;
+
+        const materials = meshRenderer.getMaterials();
+        const materialLength = materials.length;
+        for (let i = 0; i < materialLength; i += 1) {
+          const mtl = materials[i];
+          if (!mtl.shaderData.getTexture('u_cusTomTexture')) {
+            mtl.shaderData.setTexture('u_cusTomTexture', texture.texture);
+          }
+        }
       }
 
-      const mtl = meshRenderer.getMaterial(0);
-      if (!mtl.shaderData.getTexture('map')) {
-        mtl.shaderData.setTexture('map', texture.texture);
-      }
-
-      clipper.clipEndWithSlot(slot);
+      _clipper.clipEndWithSlot(slot);
 
     } // slot traverse end
-    clipper.clipEnd();
-    this.spineMesh.mesh.subMesh.count = this.indicesLength;
-  }
 
-  fillVertexData() {
-    this.spineMesh.fillVertexData(this.verticesWithZ);
-  }
+    _clipper.clipEnd();
 
-  fillIndexData() {
-    this.spineMesh.fillIndexData(this.indices);
-  }
-
-  addSubMesh(skeleton: Skeleton) {
-    // TODO
-  }
-
-  getVertexCount(skeleton: Skeleton) {
-    if (!skeleton) return;
-    const drawOrder = skeleton.drawOrder;
-    let vertexCount = 0;
-    for (let i = 0, n = drawOrder.length; i < n; i++) {
-      let slot = drawOrder[i];
-      if (!slot.bone.active) continue;
-      let attachment = slot.getAttachment();
-      if (!attachment) {
-        continue;
-      } else if (attachment instanceof RegionAttachment) {
-        vertexCount += MeshGenerator.QUAD_TRIANGLES.length;
-      } else if (attachment instanceof MeshAttachment) {
-        let mesh = attachment;
-        vertexCount += mesh.triangles.length;
-      } else continue;
+    // add reset sub mesh
+    if (count > 0) {
+      const subMesh = new SubMesh(start, count);
+      subMeshItems.push({
+        name: 'default',
+        subMesh,
+      });
+      count = 0;
     }
-    vertexCount *= 3;
-    this.vertices = new Float32Array(vertexCount * MeshGenerator.VERTEX_SIZE);
-    this.verticesWithZ = new Float32Array(vertexCount * MeshGenerator.VERTEX_STRIDE);
-    this.indices = new Uint16Array(vertexCount);
-    this.vertexCount = vertexCount;
-    return vertexCount;
+
+    // sort sub-mesh
+    subMeshItems.sort((a, b) => a.subMesh.start - b.subMesh.start);
+
+    // update buffer when vertex count change
+    if (indicesLength > 0 && indicesLength !== this._vertexCount) {
+      if (indicesLength > this._vertexCount) {
+        this._vertexCount = indicesLength;
+        this._prepareBufferData(this._vertexCount);
+        this._needResize = true;
+        return;
+      }
+    }
+
+    // update sub-mesh
+    mesh.clearSubMesh();
+    const subMeshItemLength = subMeshItems.length;
+    for (let i = 0; i < subMeshItemLength; i += 1) {
+      mesh.addSubMesh(subMeshItems[i].subMesh);
+    }
+
+    if (this._needResize) {
+      // #1
+      _spineMesh.vertexBuffer.resize(this._verticesWithZ.byteLength);
+      _spineMesh.indexBuffer.resize(this._indices.byteLength);
+      // #2 https://github.com/oasis-engine/engine/issues/376
+      // spineMesh.changeBuffer(this.engine, this.vertexCount);
+      this._needResize = false;
+    }
+    _spineMesh.vertexBuffer.setData(this._verticesWithZ);
+    _spineMesh.indexBuffer.setData(this._indices);
+  }
+
+  addSeparateSlot(slotName: string) {
+    this.separateSlots.push(slotName);
+  }
+
+  private _prepareBufferData(vertexCount: number) {
+    this._vertices = new Float32Array(vertexCount * MeshGenerator.VERTEX_SIZE);
+    this._verticesWithZ = new Float32Array(vertexCount * MeshGenerator.VERTEX_STRIDE);
+    this._indices = new Uint16Array(vertexCount);
   }
 }

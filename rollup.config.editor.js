@@ -3,20 +3,19 @@ import resolve from "@rollup/plugin-node-resolve";
 import babel from "@rollup/plugin-babel";
 import pkg from "./package.json";
 import { terser } from "rollup-plugin-terser";
-import versionInjector from 'rollup-plugin-version-injector';
 
 const extensions = [".js", ".jsx", ".ts", ".tsx"];
 
-const name = "oasisSpine";
+const name = "oasisSpineEditor";
+
 
 export default {
-	input: "./src/index.ts",
+	input: "./src/editor/index.ts",
 	// Specify here external modules which you don't want to include in your bundle (for instance: 'lodash', 'moment' etc.)
 	// https://rollupjs.org/guide/en#external-e-external
 	external: ["oasis-engine"],
 
 	plugins: [
-		versionInjector(),
 		// Allows node_modules resolution
 		resolve({ extensions }),
 
@@ -42,16 +41,16 @@ export default {
 
 	output: [
 		{
-			file: pkg.main,
+			file: "dist/editor.js",
 			format: "cjs",
 		},
 		{
-			file: pkg.module,
+			file: "dist/editor.esm.js",
 			format: "es",
 			sourcemap:true
 		},
 		{
-			file: pkg.browser,
+			file: "dist/editor.umd.js",
 			format: "umd",
 			name,
 			globals: {
