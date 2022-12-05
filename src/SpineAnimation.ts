@@ -4,6 +4,7 @@ import { AnimationState } from './spine-core/AnimationState';
 import { AnimationStateData } from './spine-core/AnimationStateData';
 import { MeshGenerator } from './core/MeshGenerator';
 import { SpineRenderSetting } from './types';
+import { Vector2 } from './spine-core/Utils';
 import {
   Script,
   Entity,
@@ -20,10 +21,18 @@ export class SpineAnimation extends Script {
   @ignoreClone
   private _state: AnimationState;
   @ignoreClone
+  private _tempOffset: Vector2 = new Vector2();
+  @ignoreClone
+  private _tempSize: Vector2 = new Vector2();
+  @ignoreClone
+  private _tempArray: Array<number> = [0, 0];
+  @ignoreClone
   protected _meshGenerator: MeshGenerator;
   @ignoreClone
   setting: SpineRenderSetting;
+
   autoUpdate: boolean = true;
+  autoUpdateBounds: boolean = false;
 
   get skeletonData() {
     return this._skeletonData;
@@ -133,6 +142,23 @@ export class SpineAnimation extends Script {
   updateGeometry() {
     if (!this._skeleton) return;
     this._meshGenerator.buildMesh(this._skeleton);
+    if (this.autoUpdateBounds) {
+      this.updateBounds();
+    }
+  }
+
+  updateBounds() {
+    const meshRenderer = this.entity.getComponent(MeshRenderer);
+    const bounds = meshRenderer.bounds;
+    const offset = this._tempOffset;
+    const size = this._tempSize;
+    const temp = this._tempArray;
+    const zSpacing = this.setting?.zSpacing || 0.01;
+    const skeleton = this._skeleton;
+    skeleton.getBounds(offset, size, temp);
+    const drawOrder = skeleton.drawOrder;
+    bounds.min.set(offset.x, offset.y, 0);
+    bounds.max.set(offset.x + size.x, offset.y + size.y, drawOrder.length * zSpacing);
   }
 
   /**
