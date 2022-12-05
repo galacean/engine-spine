@@ -42,7 +42,7 @@
     "test": "jest",
     "test-cov": "jest --coverage",
     "dev": "rollup -cw",
-    "build": "rollup -c rollup.config.js && rollup -c rollup.config.editor.js && npm run b:types",
+    "build": "rollup -c rollup.config.js && npm run b:types",
     "ci": "npm run lint && npm run test-cov",
     "lint": "eslint src --fix --ext .ts,.tsx",
     "b:types": "tsc --emitDeclarationOnly"
