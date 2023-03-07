@@ -1,7 +1,7 @@
 export { SpineAnimation } from './SpineAnimation';
 import './SpineLoader';
+import './AntGSpineLoader';
 
-// todo: export for mars spine plugin
 export { AssetManager } from './spine-core/AssetManager';
 export { Texture } from './spine-core/Texture';
 export { TextureAtlas } from './spine-core/TextureAtlas';
