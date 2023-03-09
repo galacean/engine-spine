@@ -1,5 +1,5 @@
 {
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "oasis spine runtime",
   "name": "@oasis-engine/spine",
   "main": "dist/main.js",
