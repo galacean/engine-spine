@@ -24,7 +24,7 @@ type SpineOpt = {
 
 type SpineLoadItem = LoadItem & SpineOpt;
 
-@resourceLoader('antg_spine', ['json'])
+@resourceLoader('antg_spine', ['json', 'bin'])
 class SpineLoader extends Loader<Entity> {
   load(item: SpineLoadItem, resourceManager: ResourceManager): AssetPromise<Entity> {
     return new AssetPromise((resolve, reject) => {
@@ -50,9 +50,8 @@ class SpineLoader extends Loader<Entity> {
         return this.createAdaptiveTexture(img, engine);
       });
 
-      loadText(skeletonFile).then((data: string) => {
-        jsonData = data;
-        const json = JSON.parse(data);
+      loadText(skeletonFile).then((json: any) => {
+        jsonData = json;
         if (!json._ext) {
           reject('AntG spine json must have ext data');
         } else {
@@ -143,8 +142,8 @@ export class AdaptiveTexture extends Texture {
 function loadText(url: string) {
   return new Promise((resolve, reject) => {
     let request = new XMLHttpRequest();
-    request.overrideMimeType("text/html");
-    request.open("GET", url, true);
+    request.responseType = 'json';
+    request.open('GET', url, true);
     request.onload = () => {
       if (request.status == 200) {
         resolve(request.response);
