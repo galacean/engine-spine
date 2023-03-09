@@ -24,7 +24,7 @@ type SpineOpt = {
 
 type SpineLoadItem = LoadItem & SpineOpt;
 
-@resourceLoader('antg_spine', ['json', 'bin'])
+@resourceLoader('antg_spine', ['json'])
 class SpineLoader extends Loader<Entity> {
   load(item: SpineLoadItem, resourceManager: ResourceManager): AssetPromise<Entity> {
     return new AssetPromise((resolve, reject) => {
