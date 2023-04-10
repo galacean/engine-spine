@@ -191,14 +191,12 @@ export class AssetManager implements Disposable {
 								this.loaded++;
 							} catch (e) {
 								let ex = e as Error;
-								console.log(e);
 								this.errors[path] = `Couldn't load texture atlas ${path}: ${ex.message}`;
 								if (error) error(path, `Couldn't load texture atlas ${path}: ${ex.message}`);
 								this.onLoad();
 								this.loaded++;
 							}
 						} else {
-							console.log(3);
 							this.errors[path] = `Couldn't load texture atlas page ${imagePath}} of atlas ${path}`;
 							if (error) error(path, `Couldn't load texture atlas page ${imagePath} of atlas ${path}`);
 							this.onLoad();
@@ -210,7 +208,6 @@ export class AssetManager implements Disposable {
 					pagesLoaded.count++;
 
 					if (pagesLoaded.count == atlasPages.length) {
-						console.log(4);
 						this.errors[path] = `Couldn't load texture atlas page ${imagePath}} of atlas ${path}`;
 						if (error) error(path, `Couldn't load texture atlas page ${imagePath} of atlas ${path}`);
 						this.onLoad();

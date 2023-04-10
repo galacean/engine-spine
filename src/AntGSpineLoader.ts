@@ -10,7 +10,7 @@ import {
   Engine,
   Entity,
   MeshRenderer
-} from 'oasis-engine';
+} from '@galacean/engine';
 import { AssetManager } from './spine-core/AssetManager';
 import { TextureAtlas } from './spine-core/TextureAtlas';
 import { Texture } from './spine-core/Texture';

@@ -11,7 +11,7 @@ import {
   ignoreClone,
   MeshRenderer,
   Texture2D,
-} from 'oasis-engine';
+} from '@galacean/engine';
 
 export class SpineAnimation extends Script {
   @ignoreClone

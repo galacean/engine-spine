@@ -7,7 +7,7 @@ import {
   BufferBindFlag,
   IndexFormat,
   BufferUsage,
-} from 'oasis-engine';
+} from '@galacean/engine';
 import { MeshGenerator } from './MeshGenerator';
 
 export class SpineMesh {

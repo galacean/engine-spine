@@ -7,13 +7,13 @@ import versionInjector from 'rollup-plugin-version-injector';
 
 const extensions = [".js", ".jsx", ".ts", ".tsx"];
 
-const name = "oasisSpine";
+const name = "galaceanSpine";
 
 export default {
 	input: "./src/index.ts",
 	// Specify here external modules which you don't want to include in your bundle (for instance: 'lodash', 'moment' etc.)
 	// https://rollupjs.org/guide/en#external-e-external
-	external: ["oasis-engine"],
+	external: ["@galacean/engine"],
 
 	plugins: [
 		versionInjector(),
@@ -55,7 +55,7 @@ export default {
 			format: "umd",
 			name,
 			globals: {
-				"oasis-engine": "oasisEngine",
+				"@galacean/engine": "@galacean/engine",
 			},
 		},
 	],
