@@ -14,7 +14,7 @@ import {
   RenderQueueType,
   CullMode,
   Vector4,
-} from 'oasis-engine';
+} from '@galacean/engine';
 
 export default class BoundingBoxLine extends MeshRenderer {
   private attachedEntity: Entity;

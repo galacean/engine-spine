@@ -3,7 +3,7 @@ import {
   Entity,
   MeshRenderer,
   SubMesh,
-} from 'oasis-engine';
+} from '@galacean/engine';
 import { Skeleton } from '../spine-core/Skeleton';
 import { SkeletonData } from '../spine-core/SkeletonData';
 import { RegionAttachment } from '../spine-core/attachments/RegionAttachment';
@@ -300,7 +300,7 @@ export class MeshGenerator {
       // #1
       _spineMesh.vertexBuffer.resize(this._verticesWithZ.byteLength);
       _spineMesh.indexBuffer.resize(this._indices.byteLength);
-      // #2 https://github.com/oasis-engine/engine/issues/376
+      // #2 https://github.com/galacean/engine/issues/376
       // spineMesh.changeBuffer(this.engine, this.vertexCount);
       this._needResize = false;
     }

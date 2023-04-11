@@ -1,17 +1,16 @@
 import { 
   WebGLEngine, 
-  Engine, 
   Camera,
   Entity,
   Vector3,
   AssetType,
   Texture2D
-} from "oasis-engine";
-import { OrbitControl, Stats } from "oasis-engine-toolkit";
+} from "@galacean/engine";
+import { OrbitControl, Stats } from "@galacean/engine-toolkit";
 import { SpineAnimation } from '../src/index';
 import BoundingBoxLine from './outline';
 
-Engine.registerFeature(Stats);
+document.getElementById('canvas').oncontextmenu = function(e) { e.preventDefault(); e.stopPropagation(); }
 
 const engine = new WebGLEngine('canvas');
 engine.canvas.resizeByClientSize();
@@ -26,6 +25,7 @@ camera.nearClipPlane = 1;
 cameraEntity.transform.position = new Vector3(0, 0, 120);
 
 cameraEntity.addComponent(OrbitControl);
+cameraEntity.addComponent(Stats);
 
 loadSpine(root);
 
