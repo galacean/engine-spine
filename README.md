@@ -1,24 +1,24 @@
 
 
-# Oasis Engine spine runtime
+# Galacean Engine spine runtime
 ![Jun-12-2021 18-37-22.gif](https://gw.alipayobjects.com/mdn/mybank_yul/afts/img/A*am1ySYTDBQAAAAAAAAAAAAAAARQnAQ)
 
 
-![](https://img.shields.io/npm/v/@oasis-engine/spine#id=QfHW0&originHeight=20&originWidth=80&originalType=binary&ratio=1&status=done&style=none)
-![](https://img.shields.io/bundlephobia/minzip/@oasis-engine/spine#id=yUnp4&originHeight=20&originWidth=144&originalType=binary&ratio=1&status=done&style=none)
-![](https://img.shields.io/npm/dm/@oasis-engine/spine#id=lqs8U&originHeight=20&originWidth=134&originalType=binary&ratio=1&status=done&style=none)
+![](https://img.shields.io/npm/v/@galacean/engine-spine#id=QfHW0&originHeight=20&originWidth=80&originalType=binary&ratio=1&status=done&style=none)
+![](https://img.shields.io/bundlephobia/minzip/@galacean/engine-spine#id=yUnp4&originHeight=20&originWidth=144&originalType=binary&ratio=1&status=done&style=none)
+![](https://img.shields.io/npm/dm/@galacean/engine-spine#id=lqs8U&originHeight=20&originWidth=134&originalType=binary&ratio=1&status=done&style=none)
 
 ---
 
 
 
-Spine runtime for [oasis engine](https://github.com/oasis-engine/engine).
+Spine runtime for [Galacean engine](https://github.com/galacean/engine).
 ## 
 ## Usage
 
 
 ```typescript
-import { SpineAnimation } from '@oasis-engine/spine';
+import { SpineAnimation } from '@galacean/engine-spine';
 
 // init oasis
 addSpine();
@@ -26,7 +26,7 @@ addSpine();
 async function addSpine() {
 	const spineEntity = await engine.resourceManager.load(
     {
-      url: 'https://gw.alipayobjects.com/os/OasisHub/a66ef194-6bc8-4325-9a59-6ea9097225b1/1620888427489.json',
+      url: 'https://sbfkcel.github.io/pixi-spine-debug/assets/spine/spineboy-pro.json',
       type: 'spine',
     },
   );
@@ -39,21 +39,21 @@ async function addSpine() {
 
 ## npm
 ```sh
-npm install @oasis-engine/spine
+npm install @galacean-engine/spine
 ```
 
 
 
 
 ## Version
-oasis-engine v0.8 & @oasis-engine/spine this branch latest npm.
+@galacean/engine-spine currently only supports spine version 3.8
 
 
 ## Feature
 
 - Simple in usage
 - High performance.
-- Intergrated oasis-engine rendering engine.
+- Intergrated with galacean engine.
 - Component based API.
 
 
@@ -67,9 +67,9 @@ Make sure to read the [Contributing Guide](.github/HOW_TO_CONTRIBUTE.md) before 
 
 ## Links
 
-- [Examples](https://oasisengine.cn/0.3/examples#spine)
-- [Documentation](https://oasisengine.cn/0.3/docs/spine-cn#gatsby-focus-wrapper)
-- [OasisEngine](https://oasisengine.cn/)
+- [Examples](https://oasisengine.cn/#/examples/latest/spine-animation)
+- [Documentation](https://oasisengine.cn/#/docs/latest/cn/spine)
+- [GalaceanEngine](https://oasisengine.cn/)
 
 
 
