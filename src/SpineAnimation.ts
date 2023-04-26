@@ -115,7 +115,7 @@ export class SpineAnimation extends Script {
       const meshRenderer = this.entity.getComponent(MeshRenderer);
       const subMeshIndex = subMeshItems.findIndex(item => item.name === slotName);
       const mtl = meshRenderer.getMaterial(subMeshIndex);
-      mtl.shaderData.setTexture('u_cusTomTexture', texture);
+      mtl.shaderData.setTexture('renderer_SpriteTexture', texture);
     } else {
       console.warn(`Slot ${slotName} is not separated. You should use addSeparateSlot to separate it`);
     }
@@ -123,7 +123,7 @@ export class SpineAnimation extends Script {
 
   onUpdate(delta: number) {
     if (this.autoUpdate) {
-      this.updateState(delta * 0.001);
+      this.updateState(delta);
     }
   }
 
