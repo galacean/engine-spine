@@ -12,26 +12,31 @@ import BoundingBoxLine from './outline';
 
 document.getElementById('canvas').oncontextmenu = function(e) { e.preventDefault(); e.stopPropagation(); }
 
-const engine = new WebGLEngine('canvas');
-engine.canvas.resizeByClientSize();
-const scene = engine.sceneManager.activeScene;
-const root = scene.createRootEntity();
-scene.addRootEntity(root);
 
-const cameraEntity = root.createChild('camera');
-const camera = cameraEntity.addComponent(Camera);
-camera.farClipPlane = 200;
-camera.nearClipPlane = 1;
-cameraEntity.transform.position = new Vector3(0, 0, 120);
+WebGLEngine.create({ canvas: "canvas" }).then((engine) => {
+  engine.canvas.resizeByClientSize();
+  engine.run();
 
-cameraEntity.addComponent(OrbitControl);
-cameraEntity.addComponent(Stats);
+  engine.canvas.resizeByClientSize();
+  const scene = engine.sceneManager.activeScene;
+  const root = scene.createRootEntity();
+  scene.addRootEntity(root);
 
-loadSpine(root);
+  const cameraEntity = root.createChild('camera');
+  const camera = cameraEntity.addComponent(Camera);
+  camera.farClipPlane = 200;
+  camera.nearClipPlane = 1;
+  cameraEntity.transform.position = new Vector3(0, 0, 120);
 
-engine.run();
+  cameraEntity.addComponent(OrbitControl);
+  cameraEntity.addComponent(Stats);
 
-async function loadSpine(root) {
+  loadSpine(root, engine);
+});
+
+
+
+async function loadSpine(root, engine) {
   const [spineEntity, hackTexture] = await engine.resourceManager.load([
     {
       url: 'https://sbfkcel.github.io/pixi-spine-debug/assets/spine/spineboy-pro.json',

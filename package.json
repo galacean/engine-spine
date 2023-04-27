@@ -1,5 +1,5 @@
 {
-  "version": "0.9.1",
+  "version": "1.0.0-beta.0",
   "description": "galacean spine runtime",
   "name": "@galacean/engine-spine",
   "main": "dist/main.js",
@@ -7,7 +7,7 @@
   "module": "dist/module.js",
   "dependencies": {},
   "peerDependencies": {
-    "@galacean/engine": ">=0.9.0"
+    "@galacean/engine": ">=1.0.0"
   },
   "devDependencies": {
     "@babel/plugin-proposal-class-properties": "^7.12.1",
@@ -16,8 +16,8 @@
     "@babel/plugin-transform-object-assign": "^7.12.1",
     "@babel/preset-env": "^7.12.1",
     "@babel/preset-typescript": "^7.12.1",
-    "@galacean/engine": "^0.9.0-beta.80",
-    "@galacean/engine-toolkit": "^0.9.0-beta.7",
+    "@galacean/engine": "^1.0.0-beta.0",
+    "@galacean/engine-toolkit": "^1.0.0-alpha.18",
     "@pika/react": "^16.13.1",
     "@pika/react-dom": "^16.13.1",
     "@rollup/plugin-babel": "^5.2.1",
