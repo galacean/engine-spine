@@ -4,11 +4,14 @@ import {
   Entity,
   Vector3,
   AssetType,
-  Texture2D
+  Texture2D,
+  Logger
 } from "@galacean/engine";
 import { OrbitControl, Stats } from "@galacean/engine-toolkit";
 import { SpineAnimation } from '../src/index';
 import BoundingBoxLine from './outline';
+
+Logger.enable();
 
 document.getElementById('canvas').oncontextmenu = function(e) { e.preventDefault(); e.stopPropagation(); }
 
@@ -63,14 +66,14 @@ async function loadSpine(root, engine) {
   const spineAnimation = spineEntity.getComponent(SpineAnimation);
   spineAnimation.state.setAnimation(0, 'shoot', true);
   spineAnimation.scale = 0.05;
-  spineAnimation.addSeparateSlot('gun');
-  spineAnimation.hackSeparateSlotTexture('gun', hackTexture);
+  // spineAnimation.addSeparateSlot('gun');
+  // spineAnimation.hackSeparateSlotTexture('gun', hackTexture);
 
   const outlineEntity = root.createChild('outline');
   const outline = outlineEntity.addComponent(BoundingBoxLine);
 
-  outline.attachToEntity(spineEntity);
-  outline.isActive = true;
+  // outline.attachToEntity(spineEntity);
+  // outline.isActive = true;
   // setInterval(() => {
   //   outline.updateVertices();
   // }, 67);

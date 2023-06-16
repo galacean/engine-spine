@@ -2,6 +2,7 @@ import { Disposable, Map } from "./Utils";
 import { TextureAtlas } from "./TextureAtlas";
 import { FakeTexture } from "./Texture";
 import { AdaptiveTexture } from "../SpineLoader";
+import { request } from "@galacean/engine";
 
 export class AssetManager implements Disposable {
 	// todo: enhance asset manager: load image data
@@ -19,22 +20,12 @@ export class AssetManager implements Disposable {
 		this.textureLoader = textureLoader;
 	}
 
-	private downloadText (url: string, success: (data: string) => void, error: (status: number, responseText: string) => void) {
-		let request = new XMLHttpRequest();
-		request.overrideMimeType("text/html");
-		if (this.rawDataUris[url]) url = this.rawDataUris[url];
-		request.open("GET", url, true);
-		request.onload = () => {
-			if (request.status == 200) {
-				success(request.responseText);
-			} else {
-				error(request.status, request.responseText);
-			}
-		}
-		request.onerror = () => {
-			error(request.status, request.responseText);
-		}
-		request.send();
+	private downloadText (url: string, success: (data: any) => void, error: (error: any) => void) {
+		request(url, { type: 'text' }).then((res) => {
+			success(res);
+		}).catch((err) => {
+			error(err);
+		});
 	}
 
 	protected downloadBinary (url: string, success: (data: Uint8Array) => void, error: (status: number, responseText: string) => void) {
@@ -89,9 +80,9 @@ export class AssetManager implements Disposable {
 			if (success) success(path, data);
 			this.onLoad();
 			this.loaded++;
-		}, (state: number, responseText: string): void => {
-			this.errors[path] = `Couldn't load text ${path}: status ${status}, ${responseText}`;
-			if (error) error(path, `Couldn't load text ${path}: status ${status}, ${responseText}`);
+		}, (error: any): void => {
+			this.errors[path] = `Couldn't load text ${path}: ${JSON.stringify(error)}`;
+			if (error) error(path, `Couldn't load text ${path}: ${JSON.stringify(error)}`);
 			this.onLoad();
 			this.loaded++;
 		});
@@ -127,23 +118,17 @@ export class AssetManager implements Disposable {
 		path = this.pathPrefix + path;
 		let storagePath = path;
 		this.toLoad++;
-		let img = new Image();
-		img.crossOrigin = "anonymous";
-		img.onload = (ev) => {
-			let texture = this.textureLoader(img);
+		if (this.rawDataUris[path]) path = this.rawDataUris[path];
+		request(path, { type: 'image' }).then((res: any) => {
+			let texture = this.textureLoader(res);
 			this.assets[storagePath] = texture;
 			this.onLoad();
 			this.loaded++;
 			if (success) success(path, texture);
-		}
-		img.onerror = (ev) => {
-			this.errors[path] = `Couldn't load image ${path}`;
-			this.onLoad();
-			this.loaded++;
-			if (error) error(path, `Couldn't load image ${path}`);
-		}
-		if (this.rawDataUris[path]) path = this.rawDataUris[path];
-		img.src = path;
+		}).catch((err) => {
+			error(path, err);
+		});
+
 	}
 
 	loadTextureAtlas (path: string,
@@ -215,9 +200,9 @@ export class AssetManager implements Disposable {
 					}
 				});
 			}
-		}, (state: number, responseText: string): void => {
-			this.errors[path] = `Couldn't load texture atlas ${path}: status ${status}, ${responseText}`;
-			if (error) error(path, `Couldn't load texture atlas ${path}: status ${status}, ${responseText}`);
+		}, (error: any): void => {
+			this.errors[path] = `Couldn't load texture atlas ${path}: ${JSON.stringify(error)}`;
+			if (error) error(path, `Couldn't load texture atlas ${path}: ${JSON.stringify(error)}`);
 			this.onLoad();
 			this.loaded++;
 		});

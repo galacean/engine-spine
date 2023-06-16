@@ -114,8 +114,9 @@ export class SpineAnimation extends Script {
     if (separateSlots.includes(slotName)) {
       const meshRenderer = this.entity.getComponent(MeshRenderer);
       const subMeshIndex = subMeshItems.findIndex(item => item.name === slotName);
+      console.log(subMeshItems, subMeshIndex, texture);
       const mtl = meshRenderer.getMaterial(subMeshIndex);
-      mtl.shaderData.setTexture('renderer_SpriteTexture', texture);
+      // mtl.shaderData.setTexture('u_spineTexture', texture);
     } else {
       console.warn(`Slot ${slotName} is not separated. You should use addSeparateSlot to separate it`);
     }
