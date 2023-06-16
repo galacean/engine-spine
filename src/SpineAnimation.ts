@@ -1,19 +1,32 @@
-import { Skeleton } from './spine-core/Skeleton';
-import { SkeletonData } from './spine-core/SkeletonData';
-import { AnimationState } from './spine-core/AnimationState';
-import { AnimationStateData } from './spine-core/AnimationStateData';
-import { MeshGenerator } from './core/MeshGenerator';
-import { SpineRenderSetting } from './types';
-import { Vector2 } from './spine-core/Utils';
+import { Skeleton } from "./spine-core/Skeleton";
+import { SkeletonData } from "./spine-core/SkeletonData";
+import { AnimationState } from "./spine-core/AnimationState";
+import { AnimationStateData } from "./spine-core/AnimationStateData";
+import { MeshGenerator } from "./core/MeshGenerator";
+import { SpineRenderSetting } from "./types";
+import { Vector2 } from "./spine-core/Utils";
 import {
   Script,
   Entity,
   ignoreClone,
   MeshRenderer,
   Texture2D,
-} from '@galacean/engine';
+  Material,
+  Engine,
+} from "@galacean/engine";
+import { SpineMaterial } from "./SpineMaterial";
 
 export class SpineAnimation extends Script {
+  /** Spine 材质 */
+  private static _defaultMaterial: Material;
+  static getDefaultMaterial(engine: Engine): Material {
+    if (!this._defaultMaterial) {
+      this._defaultMaterial = new SpineMaterial(engine);
+      this._defaultMaterial.isGCIgnored = true;
+    }
+    return this._defaultMaterial;
+  }
+
   @ignoreClone
   private _skeletonData: SkeletonData;
   @ignoreClone
@@ -89,8 +102,8 @@ export class SpineAnimation extends Script {
     if (slot) {
       this._meshGenerator.addSeparateSlot(slotName);
       // add sprite default material for new sub mesh
-      const mtl1 = this.engine._spriteDefaultMaterial.clone();
-      const mtl2 = this.engine._spriteDefaultMaterial.clone();
+      const mtl1 = SpineAnimation._defaultMaterial.clone();
+      const mtl2 = SpineAnimation._defaultMaterial.clone();
       const { materialCount } = meshRenderer;
       // one split will generate two sub mesh, thus two materials required
       // if no sub mesh generated, redundant material will ignored by renderer
@@ -116,7 +129,7 @@ export class SpineAnimation extends Script {
       const subMeshIndex = subMeshItems.findIndex(item => item.name === slotName);
       console.log(subMeshItems, subMeshIndex, texture);
       const mtl = meshRenderer.getMaterial(subMeshIndex);
-      // mtl.shaderData.setTexture('u_spineTexture', texture);
+      mtl.shaderData.setTexture('material_SpineTexture', texture);
     } else {
       console.warn(`Slot ${slotName} is not separated. You should use addSeparateSlot to separate it`);
     }

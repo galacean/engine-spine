@@ -13,7 +13,7 @@ import {
 } from '@galacean/engine';
 import { AssetManager } from './spine-core/AssetManager';
 import { TextureAtlas } from './spine-core/TextureAtlas';
-import { Texture } from './spine-core/Texture';
+import { Texture, TextureFilter } from './spine-core/Texture';
 import { AtlasAttachmentLoader } from './spine-core/AtlasAttachmentLoader';
 import { SkeletonJson } from './spine-core/SkeletonJson';
 import { SpineAnimation } from './SpineAnimation';
@@ -78,6 +78,7 @@ class SpineLoader extends Loader<Entity> {
         const meshRenderer = entity.addComponent(MeshRenderer);
         meshRenderer.shaderData.enableMacro('USE_MODEL_MATRIX');
         meshRenderer.shaderData.enableMacro('USE_CUSTOM_TEXTURE');
+        // @ts-ignore
         const mtl = engine._spriteDefaultMaterial.clone();
         meshRenderer.setMaterial(mtl);
         const spineAnimation = entity.addComponent(SpineAnimation);
@@ -121,9 +122,9 @@ export class AdaptiveTexture extends Texture {
   }
 
   setFilters(minFilter: any, magFilter: any) {
-    if (minFilter === WebGLRenderingContext.NEAREST) {
+    if (minFilter === TextureFilter.Nearest) {
       this.texture.filterMode = TextureFilterMode.Point;
-    } else if (magFilter === WebGLRenderingContext.LINEAR_MIPMAP_LINEAR) {
+    } else if (magFilter === TextureFilter.MipMapLinearLinear) {
       this.texture.filterMode = TextureFilterMode.Trilinear;
     } else {
       this.texture.filterMode = TextureFilterMode.Bilinear;
