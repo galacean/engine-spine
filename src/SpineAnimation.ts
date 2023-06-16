@@ -127,7 +127,6 @@ export class SpineAnimation extends Script {
     if (separateSlots.includes(slotName)) {
       const meshRenderer = this.entity.getComponent(MeshRenderer);
       const subMeshIndex = subMeshItems.findIndex(item => item.name === slotName);
-      console.log(subMeshItems, subMeshIndex, texture);
       const mtl = meshRenderer.getMaterial(subMeshIndex);
       mtl.shaderData.setTexture('material_SpineTexture', texture);
     } else {
