@@ -10,16 +10,10 @@ import {
   Engine,
   Entity,
   MeshRenderer,
-  BlendFactor,
-  BlendOperation,
-  Material,
-  CullMode,
-  RenderQueueType,
-  Shader,
 } from '@galacean/engine';
 import { AssetManager } from './spine-core/AssetManager';
 import { TextureAtlas } from './spine-core/TextureAtlas';
-import { Texture } from './spine-core/Texture';
+import { Texture, TextureFilter } from './spine-core/Texture';
 import { AtlasAttachmentLoader } from './spine-core/AtlasAttachmentLoader';
 import { SkeletonJson } from './spine-core/SkeletonJson';
 import { SkeletonBinary } from './spine-core/SkeletonBinary';
@@ -85,7 +79,7 @@ class SpineLoader extends Loader<Entity> {
         const skeletonData = skeletonLoader.readSkeletonData(assetManager.get(skeletonFile));
         const entity = new Entity(engine);
         const meshRenderer = entity.addComponent(MeshRenderer);
-        const mtl = createMaterial(engine);
+        const mtl = SpineAnimation.getDefaultMaterial(engine);
         meshRenderer.setMaterial(mtl);
         const spineAnimation = entity.addComponent(SpineAnimation);
         spineAnimation.setSkeletonData(skeletonData);
@@ -210,9 +204,9 @@ export class AdaptiveTexture extends Texture {
   }
 
   setFilters(minFilter: any, magFilter: any) {
-    if (minFilter === WebGLRenderingContext.NEAREST) {
+    if (minFilter === TextureFilter.Nearest) {
       this.texture.filterMode = TextureFilterMode.Point;
-    } else if (magFilter === WebGLRenderingContext.LINEAR_MIPMAP_LINEAR) {
+    } else if (magFilter === TextureFilter.MipMapLinearLinear) {
       this.texture.filterMode = TextureFilterMode.Trilinear;
     } else {
       this.texture.filterMode = TextureFilterMode.Bilinear;
@@ -227,55 +221,5 @@ export class AdaptiveTexture extends Texture {
 
   dispose() {}
 }
-
-function createMaterial(engine: Engine) {
-  const vertexSource = `
-    uniform mat4 renderer_MVPMat;
-
-    attribute vec3 POSITION;
-    attribute vec2 TEXCOORD_0;
-    attribute vec4 COLOR_0;
-    
-    varying vec2 v_uv;
-    varying vec4 v_color;
-    
-    void main()
-    {
-      gl_Position = renderer_MVPMat * vec4(POSITION, 1.0);
-    
-      v_uv = TEXCOORD_0;
-      v_color = COLOR_0;
-    }
-  `;
-  const fragSource = `
-    uniform sampler2D u_spineTexture;
-
-    varying vec2 v_uv;
-    varying vec4 v_color;
-    
-    void main()
-    {
-      vec4 baseColor = texture2D(u_spineTexture, v_uv);
-      gl_FragColor = baseColor * v_color;
-    }
-  `;
-  const shader = Shader.create('galacean-spine-shader', vertexSource, fragSource);
-  const material = new Material(engine, shader);
-  const renderState = material.renderState;
-  const target = renderState.blendState.targetBlendState;
-  target.enabled = true;
-  target.sourceColorBlendFactor = BlendFactor.SourceAlpha;
-  target.destinationColorBlendFactor = BlendFactor.OneMinusSourceAlpha;
-  target.sourceAlphaBlendFactor = BlendFactor.One;
-  target.destinationAlphaBlendFactor = BlendFactor.OneMinusSourceAlpha;
-  target.colorBlendOperation = target.alphaBlendOperation = BlendOperation.Add;
-  renderState.depthState.writeEnabled = false;
-  renderState.rasterState.cullMode = CullMode.Off;
-  material.renderState.renderQueueType = RenderQueueType.Transparent;
-  material.isGCIgnored = true;
-  return material;
-}
-
-
 
 export { SpineLoader };
