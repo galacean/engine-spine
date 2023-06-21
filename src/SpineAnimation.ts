@@ -24,7 +24,7 @@ export class SpineAnimation extends Script {
       this._defaultMaterial = new SpineMaterial(engine);
       this._defaultMaterial.isGCIgnored = true;
     }
-    return this._defaultMaterial;
+    return this._defaultMaterial.clone();
   }
 
   @ignoreClone
