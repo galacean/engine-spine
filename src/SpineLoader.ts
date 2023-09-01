@@ -62,48 +62,52 @@ class SpineLoader extends Loader<Entity> {
 
       // create spine entity on load complete
       assetManager.onLoadComplete = () => {
-        let atlas: TextureAtlas;
-        if (autoLoadTexture) {
-          atlas = assetManager.get(atlasFile);
-        } else {
-          const atlasText = assetManager.get(atlasFile);
-          atlas = new TextureAtlas(atlasText, this.textureAssetPicker.bind(this, assetManager, textureFile));
+        try {
+          let atlas: TextureAtlas;
+          if (autoLoadTexture) {
+            atlas = assetManager.get(atlasFile);
+          } else {
+            const atlasText = assetManager.get(atlasFile);
+            atlas = new TextureAtlas(atlasText, this.textureAssetPicker.bind(this, assetManager, textureFile));
+          }
+          const atlasLoader = new AtlasAttachmentLoader(atlas);
+          let skeletonLoader: SkeletonJson | SkeletonBinary;
+          if (this.isBinFile(skeletonFile)) {
+            skeletonLoader = new SkeletonBinary(atlasLoader);
+          } else {
+            skeletonLoader = new SkeletonJson(atlasLoader);
+          }
+          const skeletonData = skeletonLoader.readSkeletonData(assetManager.get(skeletonFile));
+          const entity = new Entity(engine);
+          const meshRenderer = entity.addComponent(MeshRenderer);
+          const mtl = SpineAnimation.getDefaultMaterial(engine);
+          meshRenderer.setMaterial(mtl);
+          const spineAnimation = entity.addComponent(SpineAnimation);
+          spineAnimation.setSkeletonData(skeletonData);
+          resolve(entity);
+        } catch (err) {
+          reject(err);
         }
-        const atlasLoader = new AtlasAttachmentLoader(atlas);
-        let skeletonLoader: SkeletonJson | SkeletonBinary;
-        if (this.isBinFile(skeletonFile)) {
-          skeletonLoader = new SkeletonBinary(atlasLoader);
-        } else {
-          skeletonLoader = new SkeletonJson(atlasLoader);
-        }
-        const skeletonData = skeletonLoader.readSkeletonData(assetManager.get(skeletonFile));
-        const entity = new Entity(engine);
-        const meshRenderer = entity.addComponent(MeshRenderer);
-        const mtl = SpineAnimation.getDefaultMaterial(engine);
-        meshRenderer.setMaterial(mtl);
-        const spineAnimation = entity.addComponent(SpineAnimation);
-        spineAnimation.setSkeletonData(skeletonData);
-        resolve(entity);
       }
 
       // load asset
       const isBinFile = this.isBinFile(skeletonFile);
       if (skeletonFile && atlasFile && textureFile) {
         if (isBinFile) {
-          assetManager.loadBinary(skeletonFile);
+          assetManager.loadBinary(skeletonFile, null, reject);
         } else {
-          assetManager.loadText(skeletonFile);
+          assetManager.loadText(skeletonFile, null, reject);
         }
-        assetManager.loadText(atlasFile);
-        assetManager.loadTexture(textureFile);
+        assetManager.loadText(atlasFile, null, reject);
+        assetManager.loadTexture(textureFile, null, reject);
       } else if (skeletonFile && atlasFile && !textureFile) {
         autoLoadTexture = true;
         if (isBinFile) {
-          assetManager.loadBinary(skeletonFile);
+          assetManager.loadBinary(skeletonFile, null, reject);
         } else {
-          assetManager.loadText(skeletonFile);
+          assetManager.loadText(skeletonFile, null, reject);
         }
-        assetManager.loadTextureAtlas(atlasFile);
+        assetManager.loadTextureAtlas(atlasFile, null, reject);
       } else {
         reject('Resouce param error');
       }

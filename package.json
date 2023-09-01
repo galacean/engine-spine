@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0-beta.2",
+  "version": "1.0.0-test.5",
   "description": "galacean spine runtime",
   "name": "@galacean/engine-spine",
   "main": "dist/main.js",
@@ -19,7 +19,7 @@
     "@babel/core": "^7.22.5",
     "@swc/core": "^1.3.32",
     "@swc/helpers": "^0.5",
-    "@galacean/engine": "^1.0.0-beta.0",
+    "@galacean/engine": "1.0.0-beta.15",
     "@galacean/engine-toolkit": "^1.0.0-alpha.18",
     "@rollup/plugin-terser": "^0.4.3",
     "@rollup/plugin-inject": "^4.0.2",
@@ -39,7 +39,6 @@
     "vite": "^4.3.9",
     "typescript": "^4.8.4",
     "cross-env": "^5.2.0"
-    
   },
   "ci": {
     "type": "aci",
@@ -59,5 +58,6 @@
     "lint": "eslint src --fix --ext .ts,.tsx",
     "b:types": "tsc --emitDeclarationOnly"
   },
-  "types": "types/index.d.ts"
+  "types": "types/index.d.ts",
+  "repository": "https://github.com/johanzhu/engine-spine.git"
 }

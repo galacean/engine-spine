@@ -8,4 +8,7 @@ export { TextureAtlas } from './spine-core/TextureAtlas';
 export { AtlasAttachmentLoader } from './spine-core/AtlasAttachmentLoader';
 export { SkeletonJson } from './spine-core/SkeletonJson';
 export { SkeletonBinary } from './spine-core/SkeletonBinary';
-export const version = '[VI]{version}[/VI]';
+
+export const version = `__buildVersion`;
+
+console.log(`Galacean spine version :${version}`);

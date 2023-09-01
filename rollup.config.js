@@ -8,8 +8,11 @@ import serve from "rollup-plugin-serve";
 import miniProgramPlugin from "./rollup.miniprogram.plugin";
 import replace from "@rollup/plugin-replace";
 import { swc, defineRollupSwcOption, minify } from "rollup-plugin-swc3";
+import { terser } from "rollup-plugin-terser";
 
 const { BUILD_TYPE, NODE_ENV } = process.env;
+
+const rootName = 'galaceanSpine';
 
 const pkgs = [
   {
@@ -42,6 +45,7 @@ const commonPlugins = [
     })
   ),
   commonjs(),
+  terser(),
   NODE_ENV === "development"
     ? serve({
         contentBase: "packages",
@@ -66,30 +70,23 @@ function config({ location, pkgJson }) {
   );
 
   return {
-    umd: (compress) => {
-      const umdConfig = pkgJson.umd;
+    umd: () => {
       let file = path.join(location, "dist", "browser.js");
       const plugins = [...commonPlugins];
-      if (compress) {
-        plugins.push(minify());
-        file = path.join(location, "dist", "browser.min.js");
-      }
-
-      const umdExternal = Object.keys(umdConfig.globals ?? {});
-
       return {
         input,
-        external: umdExternal,
+        external,
         output: [
           {
             file,
-            name: umdConfig.name,
+            name: rootName,
             format: "umd",
-            sourcemap: false,
-            globals: umdConfig.globals,
-          },
+            globals: {
+              "@galacean/engine": "Galacean"
+            }
+          }
         ],
-        plugins,
+        plugins
       };
     },
     mini: () => {
@@ -167,19 +164,8 @@ switch (BUILD_TYPE) {
 }
 
 function getUMD() {
-  const configs = pkgs.filter((pkg) => pkg.pkgJson.umd);
-  return configs
-    .map((config) => makeRollupConfig({ ...config, type: "umd" }))
-    .concat(
-      configs.map((config) =>
-        makeRollupConfig({
-          ...config,
-          type: "umd",
-          compress: false,
-          visualizer: false,
-        })
-      )
-    );
+  const configs = [...pkgs];
+  return configs.map((config) => makeRollupConfig({ ...config, type: "umd" }));
 }
 
 function getModule() {
