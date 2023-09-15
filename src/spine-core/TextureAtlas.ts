@@ -190,7 +190,6 @@ import { TextureWrap, TextureRegion } from "./Texture";
 		x: number;
 		y: number;
 		index: number;
-		rotate: boolean;
 		degrees: number;
 		texture: Texture;
 	}
