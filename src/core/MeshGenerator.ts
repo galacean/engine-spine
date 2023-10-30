@@ -297,11 +297,7 @@ export class MeshGenerator {
     }
 
     if (this._needResize) {
-      // #1
-      _spineMesh.vertexBuffer.resize(this._verticesWithZ.byteLength);
-      _spineMesh.indexBuffer.resize(this._indices.byteLength);
-      // #2 https://github.com/galacean/engine/issues/376
-      // spineMesh.changeBuffer(this.engine, this.vertexCount);
+      _spineMesh.changeBuffer(this._engine, this._vertexCount);
       this._needResize = false;
     }
     _spineMesh.vertexBuffer.setData(this._verticesWithZ);
