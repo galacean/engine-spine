@@ -7,7 +7,7 @@
   "module": "dist/module.js",
   "dependencies": {},
   "peerDependencies": {
-    "@galacean/engine": ">=1.1.0"
+    "@galacean/engine": ">=1.1.0-beta.0"
   },
   "devDependencies": {
     "@babel/core": "^7.22.5",
