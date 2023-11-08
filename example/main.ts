@@ -5,11 +5,13 @@ import {
   Vector3,
   AssetType,
   Texture2D,
-  Logger
+  Logger,
+  Loader,
 } from "@galacean/engine";
 import { OrbitControl, Stats } from "@galacean/engine-toolkit";
 import { SpineAnimation } from '../src/index';
 import BoundingBoxLine from './outline';
+import '@galacean/engine-lottie';
 
 Logger.enable();
 
@@ -36,8 +38,6 @@ WebGLEngine.create({ canvas: "canvas" }).then((engine) => {
 
   loadSpine(root, engine);
 });
-
-
 
 async function loadSpine(root, engine) {
   const [spineEntity, hackTexture] = await engine.resourceManager.load([
@@ -78,3 +78,14 @@ async function loadSpine(root, engine) {
   //   outline.updateVertices();
   // }, 67);
 }
+
+// WebGLEngine.create({ canvas: "canvas" }).then((engine) => {
+//   engine.canvas.resizeByClientSize(1);
+//   engine.resourceManager
+//   .load({
+//     url: 'https://mmtcdp.stable.alipay.net/oasis_be/afts/file/A*26LgRq4pDFoAAAAAAAAAAAAADnN-AQ/project.json',
+//     type: AssetType.Project,
+//   }).then(() => {
+//     engine.run();
+//   });
+// });
