@@ -5,6 +5,7 @@
   "main": "dist/main.js",
   "browser": "dist/browser.js",
   "module": "dist/module.js",
+  "dependencies": {},
   "peerDependencies": {
     "@galacean/engine": ">=1.1.0-beta.0"
   },
