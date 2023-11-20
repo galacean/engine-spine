@@ -23,6 +23,7 @@ export class SpineRenderer extends Script {
         this._resource = value.clone();
         this.entity.addChild(this._resource);
         this._spineAnimation = this._resource.getComponent(SpineAnimation);
+        this._spineAnimation.scale = this._scale;
         // 如果设置了自动播放，默认就播放第一个动画
         if (this._autoPlay) {
           const { animations } = this._spineAnimation.skeletonData;
