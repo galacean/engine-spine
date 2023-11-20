@@ -6,7 +6,7 @@ export class SpineRenderer extends Script {
   private _animationName = "";
   private _loop = true;
   private _autoPlay = true;
-  private _scale = 0.05;
+  private _scale = 1.0;
   private _spineAnimation: SpineAnimation = null;
   /** @internal */
   _animationNames: Array<string> = [];
