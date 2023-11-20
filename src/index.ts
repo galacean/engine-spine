@@ -12,6 +12,6 @@ export { SkeletonJson } from "./spine-core/SkeletonJson";
 export { SkeletonBinary } from "./spine-core/SkeletonBinary";
 export const version = `__buildVersion`;
 
-Loader.registerClass("SpineAnimation", SpineRenderer);
+Loader.registerClass("SpineRenderer", SpineRenderer);
 
 console.log(`Galacean spine version :${version}`);
