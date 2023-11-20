@@ -1,5 +1,5 @@
-import { 
-  WebGLEngine, 
+import {
+  WebGLEngine,
   Camera,
   Entity,
   Vector3,
@@ -9,14 +9,14 @@ import {
   Loader,
 } from "@galacean/engine";
 import { OrbitControl, Stats } from "@galacean/engine-toolkit";
-import { SpineAnimation } from '../src/index';
-import BoundingBoxLine from './outline';
-import '@galacean/engine-lottie';
+import { SpineAnimation, SpineRenderer } from "../src/index";
 
 Logger.enable();
 
-document.getElementById('canvas').oncontextmenu = function(e) { e.preventDefault(); e.stopPropagation(); }
-
+document.getElementById("canvas").oncontextmenu = function (e) {
+  e.preventDefault();
+  e.stopPropagation();
+};
 
 WebGLEngine.create({ canvas: "canvas" }).then((engine) => {
   engine.canvas.resizeByClientSize();
@@ -27,7 +27,7 @@ WebGLEngine.create({ canvas: "canvas" }).then((engine) => {
   const root = scene.createRootEntity();
   scene.addRootEntity(root);
 
-  const cameraEntity = root.createChild('camera');
+  const cameraEntity = root.createChild("camera");
   const camera = cameraEntity.addComponent(Camera);
   camera.farClipPlane = 200;
   camera.nearClipPlane = 1;
@@ -40,14 +40,14 @@ WebGLEngine.create({ canvas: "canvas" }).then((engine) => {
 });
 
 async function loadSpine(root, engine) {
-  const [spineEntity, hackTexture] = await engine.resourceManager.load([
+  const [spineResource, hackTexture] = (await engine.resourceManager.load([
     {
-      url: 'https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/kx5353rrNIDn4CsX/spineboy-pro/spineboy-pro.json',
-      type: 'spine',
+      url: "https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/kx5353rrNIDn4CsX/spineboy-pro/spineboy-pro.json",
+      type: "spine",
     },
     {
       type: AssetType.Texture2D,
-      url: 'https://gw.alicdn.com/imgextra/i2/O1CN01ZrLkcl1njIXAnhTbK_!!6000000005125-2-tps-1534-533.png'
+      url: "https://gw.alicdn.com/imgextra/i2/O1CN01ZrLkcl1njIXAnhTbK_!!6000000005125-2-tps-1534-533.png",
     },
     // {
     //   url: 'http://alipay-rmsdeploy-image.cn-hangzhou.alipay.aliyun-inc.com/bakery/Fish.json',
@@ -61,11 +61,27 @@ async function loadSpine(root, engine) {
     //   ],
     //   type: 'spine'
     // }
-  ]) as [Entity, Texture2D];
-  root.addChild(spineEntity);
-  const spineAnimation = spineEntity.getComponent(SpineAnimation);
-  spineAnimation.state.setAnimation(0, 'shoot', true);
-  spineAnimation.scale = 0.05;
+  ])) as [Entity, Texture2D];
+
+  const spineEntity1 = root.createChild("test");
+  const spineRenderer = spineEntity1.addComponent(SpineRenderer);
+  spineRenderer.autoPlay = false;
+  spineRenderer.resource = spineResource;
+  spineRenderer.scale = 0.05;
+  
+  setTimeout(() => {
+    // spineRenderer.autoPlay = false;
+    spineRenderer.animationName = "shoot";
+    spineRenderer.loop = true;
+    
+    // spineRenderer.play("shoot", false);
+    // // spineRenderer.animationName = "shoot";
+    // // spineRenderer.loop = false;
+    // setTimeout(() => {
+    //   spineRenderer.loop = true;
+    // }, 5000);
+  }, 1000);
+
   // spineAnimation.addSeparateSlot('gun');
   // spineAnimation.hackSeparateSlotTexture('gun', hackTexture);
 
