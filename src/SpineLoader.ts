@@ -185,11 +185,6 @@ class SpineLoader extends Loader<Entity> {
     return false;
   }
 
-  getResourceFromUrlByEditor(url): SpineResouce | null {
-    const jsonPromise = this.request(url, { type: "json" });
-    AssetPromise.all([jsonPromise]);
-  }
-
   getResouceFromUrl(url): SpineResouce {
     const skeletonFile = url;
     const atlasSuffix = ".atlas";
