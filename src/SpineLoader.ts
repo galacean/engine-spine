@@ -46,15 +46,36 @@ class SpineLoader extends Loader<Entity> {
 
       let resource: SpineResouce = null;
 
-      this.request<any>(item.url || "", { type: "json" })
-        .then((res) => {
-          // 来自编辑器
-          if (res.jsonUrl && res.atlasUrl && res.pngUrl) {
-            resource = this.getResouceFromUrls([
-              res.jsonUrl,
-              res.atlasUrl,
-              res.pngUrl,
-            ]);
+      if (item.urls) {
+        this.handleResource(resourceManager, item, resource, resolve, reject);
+      } else {
+        this.request<any>(item.url || "", { type: "json" })
+          .then((res) => {
+            // 来自编辑器
+            if (res.jsonUrl && res.atlasUrl && res.pngUrl) {
+              resource = this.getResouceFromUrls([
+                res.jsonUrl,
+                res.atlasUrl,
+                res.pngUrl,
+              ]);
+              this.handleResource(
+                resourceManager,
+                item,
+                resource,
+                resolve,
+                reject
+              );
+            } else {
+              this.handleResource(
+                resourceManager,
+                item,
+                resource,
+                resolve,
+                reject
+              );
+            }
+          })
+          .catch((err) => {
             this.handleResource(
               resourceManager,
               item,
@@ -62,19 +83,8 @@ class SpineLoader extends Loader<Entity> {
               resolve,
               reject
             );
-          } else {
-            this.handleResource(
-              resourceManager,
-              item,
-              resource,
-              resolve,
-              reject
-            );
-          }
-        })
-        .catch((err) => {
-          this.handleResource(resourceManager, item, resource, resolve, reject);
-        });
+          });
+      }
     });
   }
 
