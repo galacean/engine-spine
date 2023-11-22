@@ -41,14 +41,14 @@ WebGLEngine.create({ canvas: "canvas" }).then((engine) => {
 
 async function loadSpine(root, engine) {
   const [spineResource] = (await engine.resourceManager.load([
-    // {
-    //   url: "https://mmtcdp.stable.alipay.net/oasis_be/afts/file/A*_zH0RZOJ2NIAAAAAAAAAAAAADnN-AQ/spineboy-pro-editor.json",
-    //   type: "spine",
-    // },
     {
-      url: "https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/kx5353rrNIDn4CsX/spineboy-pro/spineboy-pro.json",
+      url: "https://mmtcdp.stable.alipay.net/oasis_be/afts/file/A*5QEzTZ_dVlYAAAAAAAAAAAAADnN-AQ/spineboy.json",
       type: "spine",
     },
+    // {
+    //   url: "https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/kx5353rrNIDn4CsX/spineboy-pro/spineboy-pro.json",
+    //   type: "spine",
+    // },
     // {
     //   type: AssetType.Texture2D,
     //   url: "https://gw.alicdn.com/imgextra/i2/O1CN01ZrLkcl1njIXAnhTbK_!!6000000005125-2-tps-1534-533.png",
@@ -71,10 +71,10 @@ async function loadSpine(root, engine) {
   const spineEntity1 = root.createChild("test");
   const spineRenderer = spineEntity1.addComponent(SpineRenderer);
   // spineRenderer.autoPlay = false;
-  spineRenderer.scale = 0.05;
-  spineRenderer.resource = spineResource;
+  // spineRenderer.scale = 0.05;
   spineRenderer.scale = 0.05;
   spineRenderer.animationName = "shoot";
+  spineRenderer.resource = spineResource;
   
   // setTimeout(() => {
   //   // spineRenderer.autoPlay = false;

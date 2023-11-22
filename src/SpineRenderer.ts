@@ -33,7 +33,7 @@ export class SpineRenderer extends Script {
             _animationNames.push(animations[i].name);
           }
           _animationNames.length > 0 &&
-            this.play(_animationNames[0], this._loop);
+            this.play(this._animationName || _animationNames[0], this._loop);
         }
       }
     } else {
