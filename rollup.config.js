@@ -12,7 +12,7 @@ import { terser } from "rollup-plugin-terser";
 
 const { BUILD_TYPE, NODE_ENV } = process.env;
 
-const rootName = 'galaceanSpine';
+const rootName = 'Galacean.Spine';
 
 const pkgs = [
   {
