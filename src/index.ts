@@ -14,4 +14,4 @@ export const version = `__buildVersion`;
 
 Loader.registerClass("SpineRenderer", SpineRenderer);
 
-console.log(`Galacean spine version :${version}`);
+console.log(`Galacean spine version: ${version}`);
