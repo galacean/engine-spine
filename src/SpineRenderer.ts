@@ -103,9 +103,7 @@ export class SpineRenderer extends Script {
   }
 
   onDestroy() {
-    this._resource.parent = null;
-    this._resource.destroy();
-    this._resource = null;
+    this.resource = null;
   }
 
   play(name: string = "", loop: boolean = true) {
