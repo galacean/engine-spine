@@ -20,12 +20,20 @@ export class SpineAnimation extends Script {
   /** Spine 材质 */
   private static _defaultMaterial: Material;
   static getDefaultMaterial(engine: Engine): Material {
-    if (this._defaultMaterial && this._defaultMaterial.engine === engine) {
-      return this._defaultMaterial.clone();
+    let defaultMaterial = this._defaultMaterial;
+    if (defaultMaterial) {
+      if (defaultMaterial.engine === engine) {
+        return defaultMaterial.clone();
+      } else {
+        // 表示新启了一个引擎
+        defaultMaterial.destroy(true);
+        defaultMaterial = null;
+      }
     }
-    this._defaultMaterial = new SpineMaterial(engine);
-    this._defaultMaterial.isGCIgnored = true;
-    return this._defaultMaterial.clone();
+    defaultMaterial = new SpineMaterial(engine);
+    defaultMaterial.isGCIgnored = true;
+    this._defaultMaterial = defaultMaterial;
+    return defaultMaterial.clone();
   }
 
   @ignoreClone
@@ -103,8 +111,9 @@ export class SpineAnimation extends Script {
     if (slot) {
       this._meshGenerator.addSeparateSlot(slotName);
       // add sprite default material for new sub mesh
-      const mtl1 = SpineAnimation._defaultMaterial.clone();
-      const mtl2 = SpineAnimation._defaultMaterial.clone();
+      const { engine } = this;
+      const mtl1 = SpineAnimation.getDefaultMaterial(engine);
+      const mtl2 = SpineAnimation.getDefaultMaterial(engine);
       const { materialCount } = meshRenderer;
       // one split will generate two sub mesh, thus two materials required
       // if no sub mesh generated, redundant material will ignored by renderer
