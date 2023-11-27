@@ -20,10 +20,11 @@ export class SpineAnimation extends Script {
   /** Spine 材质 */
   private static _defaultMaterial: Material;
   static getDefaultMaterial(engine: Engine): Material {
-    if (!this._defaultMaterial) {
-      this._defaultMaterial = new SpineMaterial(engine);
-      this._defaultMaterial.isGCIgnored = true;
+    if (this._defaultMaterial && this._defaultMaterial.engine === engine) {
+      return this._defaultMaterial.clone();
     }
+    this._defaultMaterial = new SpineMaterial(engine);
+    this._defaultMaterial.isGCIgnored = true;
     return this._defaultMaterial.clone();
   }
 
@@ -77,7 +78,7 @@ export class SpineAnimation extends Script {
 
   setSkeletonData(skeletonData: SkeletonData, setting?: SpineRenderSetting) {
     if (!skeletonData) {
-      console.error('SkeletonData is undefined');
+      console.error("SkeletonData is undefined");
     }
     this.setting = setting;
     this._skeletonData = skeletonData;
@@ -92,11 +93,11 @@ export class SpineAnimation extends Script {
    */
   addSeparateSlot(slotName: string) {
     if (!this.skeleton) {
-      console.error('Skeleton not found!');
+      console.error("Skeleton not found!");
     }
     const meshRenderer = this.entity.getComponent(MeshRenderer);
     if (!meshRenderer) {
-      console.warn('You need add MeshRenderer component to entity first');
+      console.warn("You need add MeshRenderer component to entity first");
     }
     const slot = this.skeleton.findSlot(slotName);
     if (slot) {
@@ -121,16 +122,20 @@ export class SpineAnimation extends Script {
     this._meshGenerator.buildMesh(this._skeleton);
     const { separateSlots, subMeshItems } = this._meshGenerator;
     if (separateSlots.length === 0) {
-      console.warn('You need add separate slot');
+      console.warn("You need add separate slot");
       return;
     }
     if (separateSlots.includes(slotName)) {
       const meshRenderer = this.entity.getComponent(MeshRenderer);
-      const subMeshIndex = subMeshItems.findIndex(item => item.name === slotName);
+      const subMeshIndex = subMeshItems.findIndex(
+        (item) => item.name === slotName
+      );
       const mtl = meshRenderer.getMaterial(subMeshIndex);
-      mtl.shaderData.setTexture('material_SpineTexture', texture);
+      mtl.shaderData.setTexture("material_SpineTexture", texture);
     } else {
-      console.warn(`Slot ${slotName} is not separated. You should use addSeparateSlot to separate it`);
+      console.warn(
+        `Slot ${slotName} is not separated. You should use addSeparateSlot to separate it`
+      );
     }
   }
 
@@ -171,7 +176,11 @@ export class SpineAnimation extends Script {
     skeleton.getBounds(offset, size, temp);
     const drawOrder = skeleton.drawOrder;
     bounds.min.set(offset.x, offset.y, 0);
-    bounds.max.set(offset.x + size.x, offset.y + size.y, drawOrder.length * zSpacing);
+    bounds.max.set(
+      offset.x + size.x,
+      offset.y + size.y,
+      drawOrder.length * zSpacing
+    );
   }
 
   /**
@@ -179,7 +188,7 @@ export class SpineAnimation extends Script {
    */
   _cloneTo(target: SpineAnimation) {
     target.setSkeletonData(this.skeletonData);
-    const _cloneSetting = {...this.setting};
+    const _cloneSetting = { ...this.setting };
     target.setting = _cloneSetting;
   }
 
@@ -194,5 +203,4 @@ export class SpineAnimation extends Script {
     this._meshGenerator = null;
     this.setting = null;
   }
-
 }
