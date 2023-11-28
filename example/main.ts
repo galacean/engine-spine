@@ -147,13 +147,15 @@ import {
   WebGLEngine,
   Entity,
   SpriteRenderer,
+  Engine,
 } from "@galacean/engine";
 import { SpineAnimation, SpineRenderer } from "../src/index";
 
 Logger.enable();
 
-let globalEngine;
-let globalSpine;
+let globalEngine: Engine;
+const spines: Array<Entity> = [];
+let globalResource;
 
 // Create engine
 
@@ -165,6 +167,7 @@ function init() {
     const scene = engine.sceneManager.activeScene;
     const rootEntity = scene.createRootEntity();
 
+    // debugger;
     // camera
     const cameraEntity = rootEntity.createChild("camera_node");
     const camera = cameraEntity.addComponent(Camera);
@@ -181,18 +184,19 @@ function init() {
         type: "spine",
       })
       .then((spineResource: Entity) => {
-        // spineEntity.transform.setPosition(0, -15, 0);
-        // rootEntity.addChild(spineEntity);
-        // const spineAnimation = spineEntity.getComponent(SpineAnimation);
-        // spineAnimation.state.setAnimation(0, "walk", true);
-        // spineAnimation.scale = 0.05;
-        globalSpine = rootEntity.createChild("test");
-        const spineRenderer = globalSpine.addComponent(SpineRenderer);
-        // spineRenderer.autoPlay = false;
-        // spineRenderer.scale = 0.05;
-        spineRenderer.scale = 0.05;
-        spineRenderer.animationName = "shoot";
-        spineRenderer.resource = spineResource;
+        // debugger;
+        globalResource = spineResource;
+        for (let i = 0; i < 3; ++i) {
+          const spine = rootEntity.createChild(`spine-${i}`);
+          const renderer = spine.addComponent(SpineRenderer);
+          // debugger;
+          renderer.resource = spineResource;
+          renderer.scale = 0.05;
+          spine.transform.setPosition(-5 + 5 * i, 0, 0);
+          spines[i] = spine;
+        }
+        // 加载好的 spine 资源不用了也记得释放
+        globalResource.destroy();
       });
 
     engine.run();
@@ -201,10 +205,29 @@ function init() {
 
 init();
 
-// 模拟游戏过了一段时间结束之后销毁，重新玩游戏
 setTimeout(() => {
-  globalEngine.destroy();
-  // globalSPine.destroy();
-  
-  init();
-}, 5000);
+  // debugger;
+  // globalSpine.getComponent(SpineRenderer).resource = null;
+  spines[0].destroy();
+  // globalEngine.resourceManager.gc();
+  // tempSpine.destroy();
+  setTimeout(() => {
+    spines[1].destroy();
+    // globalEngine.resourceManager.gc();
+    setTimeout(() => {
+      spines[2].destroy();
+      // globalResource.destroy();
+      globalEngine.resourceManager.gc();
+      debugger;
+    }, 3000);
+  }, 3000);
+  // globalEngine.destroy();
+}, 3000);
+
+// // 模拟游戏过了一段时间结束之后销毁，重新玩游戏
+// setTimeout(() => {
+//   globalEngine.destroy();
+//   // globalSPine.destroy();
+
+//   init();
+// }, 5000);
