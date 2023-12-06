@@ -6,10 +6,13 @@ export class SpineRenderer extends Script {
   private _animationName = "";
   private _loop = true;
   private _autoPlay = true;
+  private _skinName = "";
   private _scale = 1.0;
   private _spineAnimation: SpineAnimation = null;
   /** @internal */
   _animationNames: Array<string> = [];
+  /** @internal */
+  _skinNames: Array<string> = [];
 
   get resource() {
     return this._resource;
@@ -24,16 +27,23 @@ export class SpineRenderer extends Script {
         this.entity.addChild(this._resource);
         this._spineAnimation = this._resource.getComponent(SpineAnimation);
         this._spineAnimation.scale = this._scale;
+
+        // 获取所有动画名和皮肤名
+        const { animations, skins } = this._spineAnimation.skeletonData;
+        const { _animationNames, _skinNames } = this;
+        _animationNames.length = 0;
+        for (let i = 0, l = animations.length; i < l; ++i) {
+          _animationNames.push(animations[i].name);
+        }
+        _skinNames.length = 0;
+        for (let i = 0, l = skins.length; i < l; ++i) {
+          _skinNames.push(skins[i].name);
+        }
+        this.skinName = this._skinName || _skinNames[0];
+
         // 如果设置了自动播放，默认就播放第一个动画
-        if (this._autoPlay) {
-          const { animations } = this._spineAnimation.skeletonData;
-          const { _animationNames } = this;
-          _animationNames.length = 0;
-          for (let i = 0, l = animations.length; i < l; ++i) {
-            _animationNames.push(animations[i].name);
-          }
-          _animationNames.length > 0 &&
-            this.play(this._animationName || _animationNames[0], this._loop);
+        if (this._autoPlay && _animationNames.length > 0) {
+          this.play(this._animationName || _animationNames[0], this._loop);
         }
       }
     } else {
@@ -87,6 +97,21 @@ export class SpineRenderer extends Script {
     }
   }
 
+  get skinName() {
+    return this._skinName;
+  }
+
+  set skinName(name: string) {
+    if (this._skinName !== name) {
+      this._skinName = name;
+      if (this._spineAnimation) {
+        const { skeleton } = this._spineAnimation;
+        skeleton.setSkinByName(name);
+        skeleton.setSlotsToSetupPose();
+      }
+    }
+  }
+
   get scale() {
     return this._scale;
   }
@@ -128,6 +153,7 @@ export class SpineRenderer extends Script {
       this._resource = null;
       this._spineAnimation = null;
       this._animationName = "";
+      this._skinName = "";
     }
   }
 }
