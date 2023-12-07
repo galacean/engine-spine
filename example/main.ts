@@ -7,6 +7,7 @@ import {
   Texture2D,
   Logger,
   Loader,
+  KTX2TargetFormat,
 } from "@galacean/engine";
 import { OrbitControl, Stats } from "@galacean/engine-toolkit";
 import { SpineAnimation, SpineRenderer } from "../src/index";
@@ -18,7 +19,17 @@ document.getElementById("canvas").oncontextmenu = function (e) {
   e.stopPropagation();
 };
 
-WebGLEngine.create({ canvas: "canvas" }).then((engine) => {
+WebGLEngine.create({
+  canvas: "canvas",
+  ktx2Loader: {
+    workerCount: 4,
+    priorityFormats: [
+      KTX2TargetFormat.ASTC,
+      KTX2TargetFormat.ETC,
+      KTX2TargetFormat.PVRTC,
+    ],
+  },
+}).then((engine) => {
   engine.canvas.resizeByClientSize();
   engine.run();
 
@@ -40,13 +51,18 @@ async function loadSpine(root, engine) {
     //   url: "https://mmtcdp.stable.alipay.net/oasis_be/afts/file/A*5QEzTZ_dVlYAAAAAAAAAAAAADnN-AQ/spineboy.json",
     //   type: "spine",
     // },
+    // {
+    //   // skin
+    //   urls: [
+    //     "https://gw.alipayobjects.com/os/OasisHub/c51a45ef-f248-4835-b601-6d31a901f298/1629713824525.json",
+    //     "https://gw.alipayobjects.com/os/OasisHub/b016738d-173a-4506-9112-045ebba84d82/1629713824527.atlas",
+    //     "https://gw.alipayobjects.com/zos/OasisHub/747a94f3-8734-47b3-92b3-2d7fe2d36e58/1629713824527.png",
+    //   ],
+    //   type: "spine",
+    // },
     {
-      // skin
-      urls: [
-        "https://gw.alipayobjects.com/os/OasisHub/c51a45ef-f248-4835-b601-6d31a901f298/1629713824525.json",
-        "https://gw.alipayobjects.com/os/OasisHub/b016738d-173a-4506-9112-045ebba84d82/1629713824527.atlas",
-        "https://gw.alipayobjects.com/zos/OasisHub/747a94f3-8734-47b3-92b3-2d7fe2d36e58/1629713824527.png",
-      ],
+      // ktx2
+      url: "https://mmtcdp.stable.alipay.net/oasis_be/afts/file/A*3QWQQ5ouElEAAAAAAAAAAAAADnN-AQ/spineboy.json",
       type: "spine",
     },
   ])) as [Entity];
@@ -55,10 +71,10 @@ async function loadSpine(root, engine) {
   spineEntity.transform.setPosition(0, -18, 0);
   const spineRenderer = spineEntity.addComponent(SpineRenderer);
   spineRenderer.scale = 0.05;
-  spineRenderer.animationName = "dance";
+  spineRenderer.animationName = "run";
   spineRenderer.resource = spineResource;
-  spineRenderer.skinName = "boy";
-  setTimeout(() => {
-    spineRenderer.skinName = "girl";
-  }, 3000);
+  // spineRenderer.skinName = "boy";
+  // setTimeout(() => {
+  //   spineRenderer.skinName = "girl";
+  // }, 3000);
 }

@@ -10,6 +10,7 @@ import {
   Engine,
   Entity,
   MeshRenderer,
+  AssetType,
 } from "@galacean/engine";
 import { AssetManager } from "./spine-core/AssetManager";
 import { TextureAtlas } from "./spine-core/TextureAtlas";
@@ -23,6 +24,7 @@ type SpineResouce = {
   skeletonFile: string;
   atlasFile: string;
   textureFile?: string;
+  textureType?: AssetType;
 };
 
 type SpineOpt = {
@@ -53,11 +55,10 @@ class SpineLoader extends Loader<Entity> {
           .then((res) => {
             // 来自编辑器
             if (res.jsonUrl && res.atlasUrl && res.pngUrl) {
-              resource = this.getResouceFromUrls([
-                res.jsonUrl,
-                res.atlasUrl,
-                res.pngUrl,
-              ]);
+              resource = this.getResouceFromUrls(
+                [res.jsonUrl, res.atlasUrl, res.pngUrl],
+                res.pngType
+              );
               this.handleResource(
                 resourceManager,
                 item,
@@ -109,8 +110,8 @@ class SpineLoader extends Loader<Entity> {
 
     let autoLoadTexture: boolean = false;
     let assetManager: AssetManager;
-    assetManager = new AssetManager(null, (img) => {
-      return this.createAdaptiveTexture(img, engine);
+    assetManager = new AssetManager(engine, null, (texture: Texture2D) => {
+      return this.createAdaptiveTexture(texture);
     });
 
     const { skeletonFile, atlasFile, textureFile } = resource;
@@ -159,7 +160,12 @@ class SpineLoader extends Loader<Entity> {
         assetManager.loadText(skeletonFile, null, reject);
       }
       assetManager.loadText(atlasFile, null, reject);
-      assetManager.loadTexture(textureFile, null, reject);
+      assetManager.loadEngineTexture(
+        textureFile,
+        resource.textureType,
+        null,
+        reject
+      );
     } else if (skeletonFile && atlasFile && !textureFile) {
       autoLoadTexture = true;
       if (isBinFile) {
@@ -177,8 +183,8 @@ class SpineLoader extends Loader<Entity> {
     return assetManager.get(textureFile);
   }
 
-  createAdaptiveTexture(img, engine) {
-    return new AdaptiveTexture(img, engine);
+  createAdaptiveTexture(texture: Texture2D) {
+    return new AdaptiveTexture(texture);
   }
 
   isBinFile(url: string): boolean {
@@ -219,7 +225,7 @@ class SpineLoader extends Loader<Entity> {
       return false;
     }
 
-    const { skeletonFile, atlasFile, textureFile } =
+    const { skeletonFile, atlasFile } =
       this.getResouceFromUrls(urls);
     if (skeletonFile && atlasFile) {
       return true;
@@ -232,11 +238,15 @@ class SpineLoader extends Loader<Entity> {
     return false;
   }
 
-  getResouceFromUrls(urls: string[]): SpineResouce {
+  getResouceFromUrls(
+    urls: string[],
+    type: AssetType = AssetType.Texture2D
+  ): SpineResouce {
     let skeletonFile: string;
     let atlasFile: string;
     let textureFile: string;
-    for (let i = 0; i < urls.length; i += 1) {
+    const textureType = type;
+    for (let i = 0; i < urls.length; ++i) {
       const url = urls[i];
       const ext = this.getExtFromUrl(url);
       if (ext === "json" || ext === "bin") {
@@ -245,7 +255,7 @@ class SpineLoader extends Loader<Entity> {
       if (ext === "atlas") {
         atlasFile = url;
       }
-      const imgMap = ["png", "jpg", "webp", "jpeg"];
+      const imgMap = ["png", "jpg", "webp", "jpeg", "ktx2"];
       if (imgMap.includes(ext)) {
         textureFile = url;
       }
@@ -254,6 +264,7 @@ class SpineLoader extends Loader<Entity> {
       skeletonFile,
       atlasFile,
       textureFile,
+      textureType,
     };
   }
 
@@ -263,12 +274,8 @@ class SpineLoader extends Loader<Entity> {
 }
 
 export class AdaptiveTexture extends Texture {
-  texture: Texture2D;
-
-  constructor(data: HTMLImageElement, engine: Engine) {
-    super(data);
-    this.texture = new Texture2D(engine, data.width, data.height);
-    this.texture.setImageSource(data);
+  constructor(texture: Texture2D) {
+    super(texture);
     this.texture.generateMipmaps();
   }
 
