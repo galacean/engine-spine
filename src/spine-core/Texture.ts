@@ -1,4 +1,4 @@
-import { Texture2D } from "@galacean/engine";
+import { Engine, Texture2D } from "@galacean/engine";
 
 export abstract class Texture {
   protected _texture: Texture2D;
@@ -90,6 +90,14 @@ export class TextureRegion {
 }
 
 export class FakeTexture extends Texture {
+  protected _image: HTMLImageElement | ImageBitmap;
+
+  constructor(engine: Engine, image: HTMLImageElement | ImageBitmap) {
+    const texture = new Texture2D(engine, 16, 16);
+    super(texture);
+    this._image = image;
+  }
+
   setFilters(minFilter: TextureFilter, magFilter: TextureFilter) {}
   setWraps(uWrap: TextureWrap, vWrap: TextureWrap) {}
   dispose() {}
