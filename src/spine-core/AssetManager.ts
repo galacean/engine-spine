@@ -227,7 +227,7 @@ export class AssetManager implements Disposable {
             let image = document.createElement("img") as HTMLImageElement;
             image.width = 16;
             image.height = 16;
-            return new FakeTexture(image);
+            return new FakeTexture(this.engine, image);
           });
         } catch (e) {
           let ex = e as Error;
