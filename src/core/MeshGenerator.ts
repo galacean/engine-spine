@@ -1,28 +1,39 @@
 import {
+  BlendFactor,
+  BlendOperation,
   Engine,
   Entity,
+  Material,
   MeshRenderer,
   SubMesh,
-} from '@galacean/engine';
-import { Skeleton } from '../spine-core/Skeleton';
-import { SkeletonData } from '../spine-core/SkeletonData';
-import { RegionAttachment } from '../spine-core/attachments/RegionAttachment';
-import { MeshAttachment } from '../spine-core/attachments/MeshAttachment';
-import { ClippingAttachment } from '../spine-core/attachments/ClippingAttachment';
-import { ArrayLike, Color } from '../spine-core/Utils';
-import { SkeletonClipping } from '../spine-core/SkeletonClipping';
-import { SpineMesh } from './SpineMesh';
-import { SpineRenderSetting } from '../types';
+  Texture2D,
+} from "@galacean/engine";
+import { Skeleton } from "../spine-core/Skeleton";
+import { SkeletonData } from "../spine-core/SkeletonData";
+import { RegionAttachment } from "../spine-core/attachments/RegionAttachment";
+import { MeshAttachment } from "../spine-core/attachments/MeshAttachment";
+import { ClippingAttachment } from "../spine-core/attachments/ClippingAttachment";
+import { ArrayLike, Color } from "../spine-core/Utils";
+import { SkeletonClipping } from "../spine-core/SkeletonClipping";
+import { SpineMesh } from "./SpineMesh";
+import { SpineRenderSetting } from "../types";
+import { SpineAnimation } from "../SpineAnimation";
+import { BlendMode } from "../spine-core/BlendMode";
+import { text } from "stream/consumers";
+import { AdaptiveTexture } from "../SpineLoader";
 
 type SubMeshItem = {
   subMesh: SubMesh;
-  name: string;
-}
+  blendMode: BlendMode;
+  texture: any;
+};
+
 export class MeshGenerator {
   static QUAD_TRIANGLES = [0, 1, 2, 2, 3, 0];
   static VERTEX_SIZE = 8; // 2 2 4 position without z, uv, color
   static VERTEX_STRIDE = 9; // 3 2 4 position with z, uv, color
   static tempColor: Color = new Color();
+  static tempBlendMode: BlendMode | null = null;
 
   private _setting: SpineRenderSetting;
   private _engine: Engine;
@@ -38,6 +49,7 @@ export class MeshGenerator {
   private _meshRenderer: MeshRenderer;
   private _subMeshItems: SubMeshItem[] = [];
   readonly separateSlots: string[] = [];
+  readonly separateSlotTextures: Map<string, Texture2D> = new Map();
 
   get mesh() {
     return this._spineMesh.mesh;
@@ -57,7 +69,7 @@ export class MeshGenerator {
 
     const meshRenderer = this._entity.getComponent(MeshRenderer);
     if (!meshRenderer) {
-      console.warn('You need add MeshRenderer component to entity first');
+      console.warn("You need add MeshRenderer component to entity first");
       return;
     }
     this._meshRenderer = meshRenderer;
@@ -67,7 +79,9 @@ export class MeshGenerator {
     }
 
     // Prepare buffer by using all attachment data but clippingAttachment
-    const { defaultSkin: { attachments } } = skeletonData;
+    const {
+      defaultSkin: { attachments },
+    } = skeletonData;
     let vertexCount: number = 0;
     const QUAD_TRIANGLE_LENGTH = MeshGenerator.QUAD_TRIANGLES.length;
     for (let i = 0, n = attachments.length; i < n; i++) {
@@ -92,53 +106,52 @@ export class MeshGenerator {
   }
 
   buildMesh(skeleton: Skeleton) {
-    const {
-      useClipping = true,
-      zSpacing = 0.01,
-    } = this._setting || {};
+    const { useClipping = true, zSpacing = 0.01 } = this._setting || {};
 
     let verticesLength = 0;
     let indicesLength = 0;
-    this._subMeshItems.length = 0;
-    
-    const meshRenderer = this._meshRenderer;
+
     const drawOrder = skeleton.drawOrder;
     const maxSlotCount = drawOrder.length;
     const { _clipper, _spineMesh } = this;
     const { mesh } = _spineMesh;
     const subMeshItems = this._subMeshItems;
+    subMeshItems.length = 0;
     let vertices: ArrayLike<number> = this._vertices;
     let triangles: Array<number>;
     let uvs: ArrayLike<number>;
+    // 记录当前
     let start = 0;
     let count = 0;
-    for (let slotIndex = 0; slotIndex < maxSlotCount; slotIndex += 1) {
+    let blend = BlendMode.Normal;
+    let texture = null;
+    MeshGenerator.tempBlendMode = null;
+    for (let slotIndex = 0; slotIndex < maxSlotCount; ++slotIndex) {
       const slot = drawOrder[slotIndex];
-
       if (!slot.bone.active) {
         _clipper.clipEndWithSlot(slot);
         continue;
       }
       const attachment = slot.getAttachment();
       let attachmentColor: Color = null;
-      let texture = null;
       const z = zSpacing * slotIndex;
       let numFloats = 0;
       let vertexSize = _clipper.isClipping() ? 2 : MeshGenerator.VERTEX_SIZE;
-      if (
-        attachment instanceof RegionAttachment
-      ) {
+      if (attachment instanceof RegionAttachment) {
         let regionAttachment = <RegionAttachment>attachment;
         attachmentColor = regionAttachment.color;
         vertices = this._vertices;
         numFloats = vertexSize * 4;
-        regionAttachment.computeWorldVertices(slot.bone, vertices, 0, vertexSize);
+        regionAttachment.computeWorldVertices(
+          slot.bone,
+          vertices,
+          0,
+          vertexSize
+        );
         triangles = MeshGenerator.QUAD_TRIANGLES;
         uvs = regionAttachment.uvs;
         texture = regionAttachment.region.renderObject.texture;
-      } else if (
-        attachment instanceof MeshAttachment
-      ) {
+      } else if (attachment instanceof MeshAttachment) {
         let meshAttachment = <MeshAttachment>attachment;
         attachmentColor = meshAttachment.color;
         vertices = this._vertices;
@@ -146,24 +159,51 @@ export class MeshGenerator {
         if (numFloats > vertices.length) {
           vertices = this._vertices = new Float32Array(numFloats);
         }
-        meshAttachment.computeWorldVertices(slot, 0, meshAttachment.worldVerticesLength, vertices, 0, vertexSize);
+        meshAttachment.computeWorldVertices(
+          slot,
+          0,
+          meshAttachment.worldVerticesLength,
+          vertices,
+          0,
+          vertexSize
+        );
         triangles = meshAttachment.triangles;
         uvs = meshAttachment.uvs;
         texture = meshAttachment.region.renderObject.texture;
-      }  else if (
-        attachment instanceof ClippingAttachment
-      ) {
+      } else if (attachment instanceof ClippingAttachment) {
         if (useClipping) {
-          let clip = <ClippingAttachment>(attachment);
+          let clip = <ClippingAttachment>attachment;
           _clipper.clipStart(slot, clip);
           continue;
         }
-      } else if (useClipping) { // attachment might be null or BoundingBoxAttachment
+      } else if (useClipping) {
+        // attachment might be null or BoundingBoxAttachment
         _clipper.clipEndWithSlot(slot);
         continue;
       }
 
       if (texture != null) {
+        const slotName = slot.data.name;
+        blend = slot.data.blendMode;
+        // 混合模式改了打断合并
+        if (
+          MeshGenerator.tempBlendMode !== null &&
+          MeshGenerator.tempBlendMode !== slot.data.blendMode
+        ) {
+          // 如果不能合并，需要分离，先把之前的生成一个 subMesh
+          if (count > 0) {
+            const subMesh = new SubMesh(start, count);
+            subMeshItems.push({
+              blendMode: MeshGenerator.tempBlendMode,
+              subMesh,
+              texture,
+            });
+            start = indicesLength;
+            count = 0;
+          }
+        }
+        MeshGenerator.tempBlendMode = slot.data.blendMode;
+
         let finalVertices: ArrayLike<number>;
         let finalVerticesLength: number;
         let finalIndices: ArrayLike<number>;
@@ -174,13 +214,24 @@ export class MeshGenerator {
         let slotColor = slot.color;
         let alpha = skeletonColor.a * slotColor.a * attachmentColor.a;
         let color = MeshGenerator.tempColor;
-        color.set(skeletonColor.r * slotColor.r * attachmentColor.r,
+        color.set(
+          skeletonColor.r * slotColor.r * attachmentColor.r,
           skeletonColor.g * slotColor.g * attachmentColor.g,
           skeletonColor.b * slotColor.b * attachmentColor.b,
-          alpha);
+          alpha
+        );
 
         if (_clipper.isClipping()) {
-          _clipper.clipTriangles(vertices, numFloats, triangles, triangles.length, uvs, color, null, false);
+          _clipper.clipTriangles(
+            vertices,
+            numFloats,
+            triangles,
+            triangles.length,
+            uvs,
+            color,
+            null,
+            false
+          );
           let clippedVertices = _clipper.clippedVertices;
           let clippedTriangles = _clipper.clippedTriangles;
           finalVertices = clippedVertices;
@@ -189,7 +240,11 @@ export class MeshGenerator {
           finalIndicesLength = clippedTriangles.length;
         } else {
           let verts = vertices;
-          for (let v = 2, u = 0, n = numFloats; v < n; v += vertexSize, u += 2) {
+          for (
+            let v = 2, u = 0, n = numFloats;
+            v < n;
+            v += vertexSize, u += 2
+          ) {
             verts[v] = color.r;
             verts[v + 1] = color.g;
             verts[v + 2] = color.b;
@@ -207,7 +262,7 @@ export class MeshGenerator {
         let verticesWithZ = this._verticesWithZ;
         let i = verticesLength;
         let j = 0;
-        for (; j < finalVerticesLength;) {
+        for (; j < finalVerticesLength; ) {
           verticesWithZ[i++] = finalVertices[j++];
           verticesWithZ[i++] = finalVertices[j++];
           verticesWithZ[i++] = z;
@@ -225,43 +280,40 @@ export class MeshGenerator {
           indicesArray[i] = finalIndices[j] + indexStart;
         }
 
-        // add submesh
-        const slotName = slot.data.name;
-        const needSeparate = this.separateSlots.includes(slotName);
-
-        if (needSeparate) {
-          const subMesh = new SubMesh(indicesLength, finalIndicesLength);
-          subMeshItems.push({
-            name: slotName,
-            subMesh,
-          });
+        // 当前 slot 需要单独渲染
+        if (this.separateSlots.includes(slotName)) {
           if (count > 0) {
-            const prevSubMesh = new SubMesh(start, count);
+            const subMesh = new SubMesh(start, count);
             subMeshItems.push({
-              name: 'default',
-              subMesh: prevSubMesh,
+              blendMode: MeshGenerator.tempBlendMode,
+              subMesh,
+              texture,
             });
-            count = 0;
+            start = indicesLength;
           }
-          start = indicesLength + finalIndicesLength;
+          const separateTexture = this.separateSlotTextures[slotName];
+          if (separateTexture) {
+            const oldTexture = texture.texture;
+            separateTexture.filterMode = oldTexture.filterMode;
+            separateTexture.wrapModeU = oldTexture.wrapModeU;
+            separateTexture.wrapModeV = oldTexture.wrapModeV;
+            texture = separateTexture;
+          }
+          const subMesh = new SubMesh(start, finalIndicesLength);
+          subMeshItems.push({
+            blendMode: blend,
+            subMesh,
+            texture,
+          });
+          start += finalIndicesLength;
+          count = 0;
         } else {
           count += finalIndicesLength;
         }
-        
         indicesLength += finalIndicesLength;
-
-        const materials = meshRenderer.getMaterials();
-        const materialLength = materials.length;
-        for (let i = 0; i < materialLength; i += 1) {
-          const mtl = materials[i];
-          if (!mtl.shaderData.getTexture('material_SpineTexture')) {
-            mtl.shaderData.setTexture('material_SpineTexture', texture.texture);
-          }
-        }
       }
 
       _clipper.clipEndWithSlot(slot);
-
     } // slot traverse end
 
     _clipper.clipEnd();
@@ -270,8 +322,9 @@ export class MeshGenerator {
     if (count > 0) {
       const subMesh = new SubMesh(start, count);
       subMeshItems.push({
-        name: 'default',
+        blendMode: blend,
         subMesh,
+        texture,
       });
       count = 0;
     }
@@ -291,9 +344,18 @@ export class MeshGenerator {
 
     // update sub-mesh
     mesh.clearSubMesh();
-    const subMeshItemLength = subMeshItems.length;
-    for (let i = 0; i < subMeshItemLength; i += 1) {
-      mesh.addSubMesh(subMeshItems[i].subMesh);
+    const renderer = this._meshRenderer;
+    for (let i = 0, l = subMeshItems.length; i < l; ++i) {
+      const item = subMeshItems[i];
+      const blendMode = item.blendMode;
+      mesh.addSubMesh(item.subMesh);
+      let material = renderer.getMaterial(i);
+      if (!material) {
+        material = SpineAnimation.getDefaultMaterial(this._engine);
+      }
+      material.shaderData.setTexture("material_SpineTexture", texture.texture);
+      this.setBlendMode(material, blendMode);
+      renderer.setMaterial(i, material);
     }
 
     if (this._needResize) {
@@ -308,9 +370,53 @@ export class MeshGenerator {
     this.separateSlots.push(slotName);
   }
 
+  addSeparateSlotTexture(slotName: string, texture: Texture2D) {
+    this.separateSlotTextures[slotName] = new AdaptiveTexture(texture);
+  }
+
   private _prepareBufferData(vertexCount: number) {
     this._vertices = new Float32Array(vertexCount * MeshGenerator.VERTEX_SIZE);
-    this._verticesWithZ = new Float32Array(vertexCount * MeshGenerator.VERTEX_STRIDE);
+    this._verticesWithZ = new Float32Array(
+      vertexCount * MeshGenerator.VERTEX_STRIDE
+    );
     this._indices = new Uint16Array(vertexCount);
+  }
+
+  private setBlendMode(material: Material, blendMode: BlendMode) {
+    const target = material.renderState.blendState.targetBlendState;
+    switch (blendMode) {
+      case BlendMode.Additive:
+        target.sourceColorBlendFactor = BlendFactor.SourceAlpha;
+        target.destinationColorBlendFactor = BlendFactor.One;
+        target.sourceAlphaBlendFactor = BlendFactor.One;
+        target.destinationAlphaBlendFactor = BlendFactor.One;
+        target.colorBlendOperation = target.alphaBlendOperation =
+          BlendOperation.Add;
+        break;
+      case BlendMode.Multiply:
+        target.sourceColorBlendFactor = BlendFactor.DestinationColor;
+        target.destinationColorBlendFactor = BlendFactor.Zero;
+        target.sourceAlphaBlendFactor = BlendFactor.One;
+        target.destinationAlphaBlendFactor = BlendFactor.Zero;
+        target.colorBlendOperation = target.alphaBlendOperation =
+          BlendOperation.Add;
+        break;
+      case BlendMode.Screen:
+        target.sourceColorBlendFactor = BlendFactor.One;
+        target.destinationColorBlendFactor = BlendFactor.OneMinusSourceColor;
+        target.sourceAlphaBlendFactor = BlendFactor.One;
+        target.destinationAlphaBlendFactor = BlendFactor.OneMinusSourceColor;
+        target.colorBlendOperation = target.alphaBlendOperation =
+          BlendOperation.Add;
+        break;
+      default: // Normal 混合模式，还不支持的混合模式都走这个
+        target.sourceColorBlendFactor = BlendFactor.SourceAlpha;
+        target.destinationColorBlendFactor = BlendFactor.OneMinusSourceAlpha;
+        target.sourceAlphaBlendFactor = BlendFactor.One;
+        target.destinationAlphaBlendFactor = BlendFactor.OneMinusSourceAlpha;
+        target.colorBlendOperation = target.alphaBlendOperation =
+          BlendOperation.Add;
+        break;
+    }
   }
 }
