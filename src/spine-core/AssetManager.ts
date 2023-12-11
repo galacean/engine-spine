@@ -224,10 +224,7 @@ export class AssetManager implements Disposable {
         try {
           let atlas = new TextureAtlas(atlasData, (path: string) => {
             atlasPages.push(parent == "" ? path : parent + "/" + path);
-            let image = document.createElement("img") as HTMLImageElement;
-            image.width = 16;
-            image.height = 16;
-            return new FakeTexture(this.engine, image);
+            return new FakeTexture(new Texture2D(this.engine, 16, 16));
           });
         } catch (e) {
           let ex = e as Error;
