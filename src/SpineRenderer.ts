@@ -1,17 +1,26 @@
-import { Script, Entity } from "@galacean/engine";
+import { Script, Entity, assignmentClone, ignoreClone } from "@galacean/engine";
 import { SpineAnimation } from "./SpineAnimation";
 
 export class SpineRenderer extends Script {
+  @ignoreClone
   private _resource: Entity;
+  @assignmentClone
   private _animationName = "";
+  @assignmentClone
   private _loop = true;
+  @assignmentClone
   private _autoPlay = true;
+  @assignmentClone
   private _skinName = "";
+  @assignmentClone
   private _scale = 1.0;
+  @ignoreClone
   private _spineAnimation: SpineAnimation = null;
   /** @internal */
+  @ignoreClone
   _animationNames: Array<string> = [];
   /** @internal */
+  @ignoreClone
   _skinNames: Array<string> = [];
 
   get resource() {
@@ -144,6 +153,11 @@ export class SpineRenderer extends Script {
     } else {
       this._animationName = name;
     }
+  }
+
+  _cloneTo(target: SpineRenderer) {
+    target.entity.clearChildren();
+    target.resource = this.resource;
   }
 
   private _removeResource() {

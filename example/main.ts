@@ -48,10 +48,10 @@ WebGLEngine.create({
 
 async function loadSpine(root, engine) {
   const [spineResource] = (await engine.resourceManager.load([
-    // {
-    //   url: "https://mmtcdp.stable.alipay.net/oasis_be/afts/file/A*5QEzTZ_dVlYAAAAAAAAAAAAADnN-AQ/spineboy.json",
-    //   type: "spine",
-    // },
+    {
+      url: "https://mmtcdp.stable.alipay.net/oasis_be/afts/file/A*5QEzTZ_dVlYAAAAAAAAAAAAADnN-AQ/spineboy.json",
+      type: "spine",
+    },
     // {
     //   // skin
     //   urls: [
@@ -66,21 +66,27 @@ async function loadSpine(root, engine) {
     //   url: "https://mdn.alipayobjects.com/oasis_be/afts/file/A*ZwvxRqyaAP4AAAAAAAAAAAAADkp5AQ/Test.json",
     //   type: "spine",
     // },
-    {
-      // hack slot texture
-      urls: [
-        "https://gw.alipayobjects.com/os/OasisHub/e675c9e1-2b19-4940-b8ed-474792e613d7/1629603245094.json",
-        "https://gw.alipayobjects.com/os/OasisHub/994dfadc-c498-4210-b9ba-0c3deed61fc5/1629603245095.atlas",
-        "https://gw.alipayobjects.com/zos/OasisHub/b52768b0-0374-4c64-a1bd-763b1a37ee5f/1629603245095.png",
-      ],
-      type: "spine",
-    },
+    // {
+    //   // hack slot texture
+    //   urls: [
+    //     "https://gw.alipayobjects.com/os/OasisHub/e675c9e1-2b19-4940-b8ed-474792e613d7/1629603245094.json",
+    //     "https://gw.alipayobjects.com/os/OasisHub/994dfadc-c498-4210-b9ba-0c3deed61fc5/1629603245095.atlas",
+    //     "https://gw.alipayobjects.com/zos/OasisHub/b52768b0-0374-4c64-a1bd-763b1a37ee5f/1629603245095.png",
+    //   ],
+    //   type: "spine",
+    // },
   ])) as [Entity];
 
   const spineEntity = root.createChild("spine");
   const spineRenderer = spineEntity.addComponent(SpineRenderer);
-  spineRenderer.scale = 0.05;
+  spineRenderer.scale = 0.01;
   spineRenderer.resource = spineResource;
+
+  // clone
+  const spine2 = spineEntity.clone();
+  root.addChild(spine2);
+  spine2.transform.setPosition(10, 0, 0);
+  spine2.getComponent(SpineRenderer).animationName = "run";
 
   // // 换皮
   // spineEntity.transform.setPosition(0, -15, 0);
@@ -91,18 +97,18 @@ async function loadSpine(root, engine) {
   //   spineRenderer.skinName = "girl";
   // }, 3000);
 
-  // slot texture
-  spineRenderer.skinName = "skin1";
-  spineRenderer.animationName = "02_walk";
-  const { spineAnimation } = spineRenderer;
-  spineAnimation.addSeparateSlot("defult/head_hair");
-  spineAnimation.addSeparateSlot("defult/arm_rigth_weapon");
-  spineAnimation.addSeparateSlot("defult/Sleeveless_01");
+  // // slot texture
+  // spineRenderer.skinName = "skin1";
+  // spineRenderer.animationName = "02_walk";
+  // const { spineAnimation } = spineRenderer;
+  // spineAnimation.addSeparateSlot("defult/head_hair");
+  // spineAnimation.addSeparateSlot("defult/arm_rigth_weapon");
+  // spineAnimation.addSeparateSlot("defult/Sleeveless_01");
 
-  const resource = generateSkinResource();
-  engine.resourceManager.load(resource).then((textures) => {
-    changeSlotTexture("hair_9", textures, spineAnimation);
-  });
+  // const resource = generateSkinResource();
+  // engine.resourceManager.load(resource).then((textures) => {
+  //   changeSlotTexture("hair_9", textures, spineAnimation);
+  // });
 }
 
 function generateSkinResource(): LoadItem[] {
