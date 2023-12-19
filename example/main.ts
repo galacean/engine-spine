@@ -40,18 +40,37 @@ WebGLEngine.create({
   scene.addRootEntity(root);
 
   const cameraEntity = root.createChild("camera");
+  cameraEntity.transform.position = new Vector3(0, 0, 1600);
   const camera = cameraEntity.addComponent(Camera);
-  cameraEntity.transform.position = new Vector3(0, 0, 60);
+  camera.isOrthographic = true;
+  camera.nearClipPlane = 0.1;
+  camera.farClipPlane = 2000;
 
   loadSpine(root, engine);
 });
 
 async function loadSpine(root, engine) {
-  const [spineResource] = (await engine.resourceManager.load([
+  const [spineResource, spineResource1] = (await engine.resourceManager.load([
+    // {
+    //   urls: [
+    //     "https://g.alicdn.com/eva-assets/097c0a76532bab33724b9e6c308807a4/0.0.1/tmp/78b308e/9e57381c-cdd2-4e7f-8bc0-84af6e5269a9.json",
+    //     "https://g.alicdn.com/eva-assets/c6f516d4d78488a5f0e2e9a9e1ac18bd/0.0.1/tmp/ddbdff7/2adeb8b8-2838-48f0-b116-f8fbefc9c6cb.atlas",
+    //     "https://gw.alicdn.com/imgextra/i2/O1CN014zvnCQ1Yqt416NMYQ_!!6000000003111-2-tps-1491-622.png"
+    //   ],
+    //   type: "spine",
+    // },
     {
-      url: "https://mmtcdp.stable.alipay.net/oasis_be/afts/file/A*5QEzTZ_dVlYAAAAAAAAAAAAADnN-AQ/spineboy.json",
+      url: "https://mdn.alipayobjects.com/oasis_be/afts/file/A*B3sdQ5pnQnAAAAAAAAAAAAAADkp5AQ/Dragonballs.json",
       type: "spine",
     },
+    {
+      url: "https://mdn.alipayobjects.com/oasis_be/afts/file/A*Tg79QLxYDCQAAAAAAAAAAAAADkp5AQ/Lantern.json",
+      type: "spine",
+    },
+    // {
+    //   url: "https://mmtcdp.stable.alipay.net/oasis_be/afts/file/A*5QEzTZ_dVlYAAAAAAAAAAAAADnN-AQ/spineboy.json",
+    //   type: "spine",
+    // },
     // {
     //   // skin
     //   urls: [
@@ -75,18 +94,49 @@ async function loadSpine(root, engine) {
     //   ],
     //   type: "spine",
     // },
-  ])) as [Entity];
+  ])) as [Entity, Entity];
 
   const spineEntity = root.createChild("spine");
+  spineEntity.transform.setPosition(0, -5, 0);
   const spineRenderer = spineEntity.addComponent(SpineRenderer);
   spineRenderer.scale = 0.01;
+  spineRenderer.loop = false;
   spineRenderer.resource = spineResource;
+  spineRenderer.animationName = "06";
+  setTimeout(() => {
+    spineRenderer.animationName = "05";
+    setTimeout(() => {
+      spineRenderer.animationName = "06";
+      setTimeout(() => {
+        spineRenderer.animationName = "pao";
+        spineRenderer.loop = true;
+      }, 3000);
+    }, 3000);
+  }, 3000);
 
-  // clone
-  const spine2 = spineEntity.clone();
-  root.addChild(spine2);
-  spine2.transform.setPosition(10, 0, 0);
-  spine2.getComponent(SpineRenderer).animationName = "run";
+  // const spineEntity1 = root.createChild("spine1");
+  // spineEntity1.transform.setPosition(5, -5, 0);
+  // const spineRenderer1 = spineEntity1.addComponent(SpineRenderer);
+  // spineRenderer1.scale = 0.01;
+  // spineRenderer1.loop = false;
+  // spineRenderer1.resource = spineResource1;
+  // spineRenderer1.animationName = "06";
+  // setTimeout(() => {
+  //   spineRenderer1.animationName = "05";
+  //   setTimeout(() => {
+  //     spineRenderer1.animationName = "06";
+  //     setTimeout(() => {
+  //       spineRenderer1.animationName = "pao";
+  //       spineRenderer1.loop = true;
+  //     }, 3000);
+  //   }, 3000);
+  // }, 3000);
+
+  // // clone
+  // const spine2 = spineEntity.clone();
+  // root.addChild(spine2);
+  // spine2.transform.setPosition(10, 0, 0);
+  // spine2.getComponent(SpineRenderer).animationName = "run";
 
   // // 换皮
   // spineEntity.transform.setPosition(0, -15, 0);
