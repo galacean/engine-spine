@@ -354,6 +354,8 @@ export class MeshGenerator {
         material = SpineAnimation.getDefaultMaterial(this._engine);
       }
       material.shaderData.setTexture("material_SpineTexture", texture.texture);
+      // @ts-ignore
+      material._priority = i;
       this.setBlendMode(material, blendMode);
       renderer.setMaterial(i, material);
     }
