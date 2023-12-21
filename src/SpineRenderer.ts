@@ -1,7 +1,14 @@
-import { Script, Entity, assignmentClone, ignoreClone } from "@galacean/engine";
+import {
+  Script,
+  Entity,
+  assignmentClone,
+  ignoreClone,
+  MeshRenderer,
+} from "@galacean/engine";
 import { SpineAnimation } from "./SpineAnimation";
 
 export class SpineRenderer extends Script {
+  private _priority: number = 0;
   @ignoreClone
   private _resource: Entity;
   @assignmentClone
@@ -23,6 +30,19 @@ export class SpineRenderer extends Script {
   @ignoreClone
   _skinNames: Array<string> = [];
 
+  get priority(): number {
+    return this._priority;
+  }
+
+  set priority(value: number) {
+    if (this._priority !== value) {
+      this._priority = value;
+      if (this._resource) {
+        this._resource.getComponent(MeshRenderer).priority = value;
+      }
+    }
+  }
+
   get resource() {
     return this._resource;
   }
@@ -33,6 +53,7 @@ export class SpineRenderer extends Script {
       if (resource !== value) {
         this._removeResource();
         this._resource = value.clone();
+        this._resource.getComponent(MeshRenderer).priority = this.priority;
         this.entity.addChild(this._resource);
         this._spineAnimation = this._resource.getComponent(SpineAnimation);
         this._spineAnimation.scale = this._scale;
