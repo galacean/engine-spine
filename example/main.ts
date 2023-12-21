@@ -102,6 +102,8 @@ async function loadSpine(root, engine) {
   spineRenderer.scale = 0.01;
   spineRenderer.loop = false;
   spineRenderer.resource = spineResource;
+  spineRenderer.priority = 100;
+  debugger;
   spineRenderer.animationName = "06";
   setTimeout(() => {
     spineRenderer.animationName = "05";
