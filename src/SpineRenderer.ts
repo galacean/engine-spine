@@ -16,6 +16,8 @@ export class SpineRenderer extends Script {
   @assignmentClone
   private _loop = true;
   @assignmentClone
+  private _paused = false;
+  @assignmentClone
   private _autoPlay = true;
   @assignmentClone
   private _skinName = "";
@@ -57,6 +59,7 @@ export class SpineRenderer extends Script {
         this.entity.addChild(this._resource);
         this._spineAnimation = this._resource.getComponent(SpineAnimation);
         this._spineAnimation.scale = this._scale;
+        this._spineAnimation.noPause = !this._paused;
 
         // 获取所有动画名和皮肤名
         const { animations, skins } = this._spineAnimation.skeletonData;
@@ -88,8 +91,8 @@ export class SpineRenderer extends Script {
   set animationName(name: string) {
     if (this._animationName != name) {
       this._animationName = name;
-      this._autoPlay && this._spineAnimation && this.play(name, this._loop);
     }
+    this._autoPlay && this._spineAnimation && this.play(name, this._loop);
   }
 
   get loop() {
@@ -110,6 +113,17 @@ export class SpineRenderer extends Script {
     }
   }
 
+  get paused(): boolean {
+    return this._paused;
+  }
+
+  set paused(value: boolean) {
+    if (this._paused !== value) {
+      this._paused = value;
+      this.spineAnimation && (this.spineAnimation.noPause = !value);
+    }
+  }
+
   get autoPlay() {
     return this._autoPlay;
   }
@@ -117,11 +131,7 @@ export class SpineRenderer extends Script {
   set autoPlay(value: boolean) {
     if (this._autoPlay !== value) {
       if (value && this._resource && this._spineAnimation) {
-        this._spineAnimation.state.setAnimation(
-          0,
-          this._animationName,
-          this._loop
-        );
+        this.play(this._animationName, this._loop);
       }
       this._autoPlay = value;
     }
