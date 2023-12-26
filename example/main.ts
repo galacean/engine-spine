@@ -9,6 +9,7 @@ import {
   Loader,
   KTX2TargetFormat,
   LoadItem,
+  Engine,
 } from "@galacean/engine";
 import { OrbitControl, Stats } from "@galacean/engine-toolkit";
 import { SpineAnimation, SpineRenderer } from "../src/index";
@@ -49,7 +50,7 @@ WebGLEngine.create({
   loadSpine(root, engine);
 });
 
-async function loadSpine(root, engine) {
+async function loadSpine(root: Entity, engine: Engine) {
   const [spineResource, spineResource1] = (await engine.resourceManager.load([
     // {
     //   urls: [
@@ -96,25 +97,44 @@ async function loadSpine(root, engine) {
     // },
   ])) as [Entity, Entity];
 
-  const spineEntity = root.createChild("spine");
+  const parent = root.createChild("parent")
+  const spineEntity = parent.createChild("spine");
   spineEntity.transform.setPosition(0, -5, 0);
   const spineRenderer = spineEntity.addComponent(SpineRenderer);
   spineRenderer.scale = 0.01;
-  spineRenderer.loop = false;
+  // spineRenderer.loop = false;
+  // spineRenderer.autoPlay = false;
   spineRenderer.resource = spineResource;
   spineRenderer.priority = 100;
-  debugger;
   spineRenderer.animationName = "06";
-  setTimeout(() => {
-    spineRenderer.animationName = "05";
-    setTimeout(() => {
-      spineRenderer.animationName = "06";
-      setTimeout(() => {
-        spineRenderer.animationName = "pao";
-        spineRenderer.loop = true;
-      }, 3000);
-    }, 3000);
-  }, 3000);
+
+  // // 来回切父节点
+  // const parent1 = root.createChild("parent1");
+  // const parent2 = root.createChild("parent2");
+  // const parent3 = root.createChild("parent3");
+  // const parent4 = root.createChild("parent4");
+  // parent1.transform.setPosition(0, -1, 0);
+  // parent2.transform.setPosition(0, 1, 0);
+  // parent3.transform.setPosition(-1, 0, 0);
+  // parent4.transform.setPosition(1, 0, 0);
+  // setTimeout(() => {
+  //   parent1.addChild(spineEntity);
+  //   spineRenderer.animationName = "06";
+  //   // spineRenderer.loop = false;
+  // }, 3000);
+  
+  // debugger;
+  // spineRenderer.animationName = "06";
+  // setTimeout(() => {
+  //   spineRenderer.animationName = "05";
+  //   setTimeout(() => {
+  //     spineRenderer.animationName = "06";
+  //     setTimeout(() => {
+  //       spineRenderer.animationName = "pao";
+  //       spineRenderer.loop = true;
+  //     }, 3000);
+  //   }, 3000);
+  // }, 3000);
 
   // const spineEntity1 = root.createChild("spine1");
   // spineEntity1.transform.setPosition(5, -5, 0);
@@ -134,11 +154,19 @@ async function loadSpine(root, engine) {
   //   }, 3000);
   // }, 3000);
 
+  // // pause
+  // setTimeout(() => {
+  //   spineRenderer.paused = true;
+  //   setTimeout(() => {
+  //     spineRenderer.paused = false;
+  //   }, 1000);
+  // }, 2000);
+
   // // clone
   // const spine2 = spineEntity.clone();
   // root.addChild(spine2);
-  // spine2.transform.setPosition(10, 0, 0);
-  // spine2.getComponent(SpineRenderer).animationName = "run";
+  // spine2.transform.setPosition(1, 0, 0);
+  // spine2.getComponent(SpineRenderer).animationName = "05";
 
   // // 换皮
   // spineEntity.transform.setPosition(0, -15, 0);

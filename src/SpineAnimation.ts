@@ -55,6 +55,7 @@ export class SpineAnimation extends Script {
 
   autoUpdate: boolean = true;
   autoUpdateBounds: boolean = false;
+  noPause: boolean = false;
 
   get skeletonData() {
     return this._skeletonData;
@@ -134,7 +135,7 @@ export class SpineAnimation extends Script {
   }
 
   onUpdate(delta: number) {
-    if (this.autoUpdate) {
+    if (this.autoUpdate && this.noPause) {
       this.updateState(delta);
     }
   }
