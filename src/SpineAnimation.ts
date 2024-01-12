@@ -53,7 +53,6 @@ export class SpineAnimation extends Script {
   @ignoreClone
   setting: SpineRenderSetting;
 
-  autoUpdate: boolean = true;
   autoUpdateBounds: boolean = false;
   noPause: boolean = false;
 
@@ -135,20 +134,13 @@ export class SpineAnimation extends Script {
   }
 
   onUpdate(delta: number) {
-    if (this.autoUpdate && this.noPause) {
-      this.updateState(delta);
-    }
-  }
-
-  updateState(deltaTime: number) {
     if (!this._skeleton || !this.state) return;
     const state = this._state;
     const skeleton = this._skeleton;
 
-    state.update(deltaTime);
+    this.noPause && state.update(delta);
     state.apply(skeleton);
     skeleton.updateWorldTransform();
-
     this.updateGeometry();
   }
 
