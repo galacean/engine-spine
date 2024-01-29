@@ -43,7 +43,7 @@ async function loadSpine(root, engine) {
   const [spineEntity, hackTexture] = await engine.resourceManager.load([
     {
       // url: 'https://sbfkcel.github.io/pixi-spine-debug/assets/spine/spineboy-pro.json',
-      url: 'https://mdn.alipayobjects.com/huamei_cgumyp/uri/file/as/2/cgumyp/4/mp/TkU3iZGqrG0fCSvW/demo/demo.json',
+      url: 'https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/kx5353rrNIDn4CsX/spineboy-pro/spineboy-pro.json',
       type: 'spine',
     },
     {

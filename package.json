@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0-beta.1",
+  "version": "1.0.0",
   "description": "galacean spine runtime",
   "name": "@galacean/engine-spine",
   "main": "dist/main.js",
@@ -19,7 +19,7 @@
     "@babel/core": "^7.22.5",
     "@swc/core": "^1.3.32",
     "@swc/helpers": "^0.5",
-    "@galacean/engine": "1.0.0-beta.15",
+    "@galacean/engine": "^1.0.0",
     "@galacean/engine-toolkit": "^1.0.0-alpha.18",
     "@rollup/plugin-terser": "^0.4.3",
     "@rollup/plugin-inject": "^4.0.2",
