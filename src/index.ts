@@ -1,4 +1,4 @@
-import "./SpineLoader";
+import "./loader/SpineLoader";
 import { Loader } from "@galacean/engine";
 import { SpineRenderer } from "./SpineRenderer";
 

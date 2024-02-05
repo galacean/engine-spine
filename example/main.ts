@@ -15,6 +15,7 @@ import { OrbitControl, Stats } from "@galacean/engine-toolkit";
 import { SpineAnimation, SpineRenderer } from "../src/index";
 
 Logger.enable();
+console.log(SpineAnimation);
 
 document.getElementById("canvas").oncontextmenu = function (e) {
   e.preventDefault();
@@ -52,26 +53,29 @@ WebGLEngine.create({
 
 async function loadSpine(root: Entity, engine: Engine) {
   const [spineResource, spineResource1] = (await engine.resourceManager.load([
-    // {
-    //   urls: [
-    //     "https://g.alicdn.com/eva-assets/097c0a76532bab33724b9e6c308807a4/0.0.1/tmp/78b308e/9e57381c-cdd2-4e7f-8bc0-84af6e5269a9.json",
-    //     "https://g.alicdn.com/eva-assets/c6f516d4d78488a5f0e2e9a9e1ac18bd/0.0.1/tmp/ddbdff7/2adeb8b8-2838-48f0-b116-f8fbefc9c6cb.atlas",
-    //     "https://gw.alicdn.com/imgextra/i2/O1CN014zvnCQ1Yqt416NMYQ_!!6000000003111-2-tps-1491-622.png"
-    //   ],
-    //   type: "spine",
-    // },
     {
-      url: "https://mdn.alipayobjects.com/oasis_be/afts/file/A*B3sdQ5pnQnAAAAAAAAAAAAAADkp5AQ/Dragonballs.json",
-      type: "spine",
-    },
-    {
-      url: "https://mdn.alipayobjects.com/oasis_be/afts/file/A*Tg79QLxYDCQAAAAAAAAAAAAADkp5AQ/Lantern.json",
+      urls: [
+        "https://g.alicdn.com/eva-assets/097c0a76532bab33724b9e6c308807a4/0.0.1/tmp/78b308e/9e57381c-cdd2-4e7f-8bc0-84af6e5269a9.json",
+        "https://g.alicdn.com/eva-assets/c6f516d4d78488a5f0e2e9a9e1ac18bd/0.0.1/tmp/ddbdff7/2adeb8b8-2838-48f0-b116-f8fbefc9c6cb.atlas",
+        "https://gw.alicdn.com/imgextra/i2/O1CN014zvnCQ1Yqt416NMYQ_!!6000000003111-2-tps-1491-622.png"
+      ],
       type: "spine",
     },
     // {
-    //   url: "https://mmtcdp.stable.alipay.net/oasis_be/afts/file/A*5QEzTZ_dVlYAAAAAAAAAAAAADnN-AQ/spineboy.json",
+    //   url: "https://mdn.alipayobjects.com/oasis_be/afts/file/A*B3sdQ5pnQnAAAAAAAAAAAAAADkp5AQ/Dragonballs.json",
+    //   type: 'spine',
+    // },
+    // {
+    //   url: "https://mdn.alipayobjects.com/huamei_kz4wfo/afts/img/A*Pf_ARp4NQ_EAAAAAAAAAAAAADsp6AQ/original",
+    // },
+    // {
+    //   url: "https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/kx5353rrNIDn4CsX/spineboy-pro/spineboy-pro.json",
     //   type: "spine",
     // },
+    // {
+    //   url: "https://s.momocdn.com/s1/u/jaieigedf/weather-god/spine/wind-god1-bin/bin/fengshen.bin",
+    //   type: "spine",
+    // }
     // {
     //   // skin
     //   urls: [
@@ -97,16 +101,17 @@ async function loadSpine(root: Entity, engine: Engine) {
     // },
   ])) as [Entity, Entity];
 
-  const parent = root.createChild("parent")
-  const spineEntity = parent.createChild("spine");
-  spineEntity.transform.setPosition(0, -5, 0);
-  const spineRenderer = spineEntity.addComponent(SpineRenderer);
-  spineRenderer.scale = 0.01;
-  // spineRenderer.loop = false;
-  // spineRenderer.autoPlay = false;
-  spineRenderer.resource = spineResource;
-  spineRenderer.priority = 100;
-  spineRenderer.animationName = "06";
+  console.log('loaded', spineResource);
+  // const parent = root.createChild("parent")
+  // const spineEntity = parent.createChild("spine");
+  // spineEntity.transform.setPosition(0, -5, 0);
+  // const spineRenderer = spineEntity.addComponent(SpineRenderer);
+  // spineRenderer.scale = 0.01;
+  // // spineRenderer.loop = false;
+  // // spineRenderer.autoPlay = false;
+  // spineRenderer.resource = spineResource;
+  // spineRenderer.priority = 100;
+  // spineRenderer.animationName = "06";
 
   // // 来回切父节点
   // const parent1 = root.createChild("parent1");

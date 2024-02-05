@@ -213,6 +213,7 @@ export class AssetManager implements Disposable {
       path.lastIndexOf("/") >= 0
         ? path.substring(0, path.lastIndexOf("/"))
         : "";
+    // parent is base URL
     path = this.pathPrefix + path;
     this.toLoad++;
 
