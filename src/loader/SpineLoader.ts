@@ -3,7 +3,6 @@ import {
   Loader,
   resourceLoader,
   ResourceManager,
-  Texture2D,
   Engine,
 } from "@galacean/engine";
 import { SpineLoadItem, SpineResource } from "./types";
@@ -70,12 +69,12 @@ class SpineLoader extends Loader<SkeletonData> {
     if (!ext) return;
     resource.skeletonPath = url;
     resource.skeletonSuffix = ext;
-    const baseUrl = new URL(url);
-    let baseUrlString = baseUrl.origin + baseUrl.pathname;
-    if (baseUrlString.endsWith('.json')) {
-      baseUrlString = baseUrlString.substring(0, baseUrlString.length - 5);
+    const extensionPattern: RegExp = /(\.(json|bin|skel))$/;
+    let baseUrl;
+    if (extensionPattern.test(url)) {
+      baseUrl = url.replace(extensionPattern, '');
     }
-    const atlasUrl = baseUrlString + '.atlas';
+    const atlasUrl = baseUrl + '.atlas';
     resource.atlasPath = atlasUrl;
   }
 
@@ -87,7 +86,7 @@ class SpineLoader extends Loader<SkeletonData> {
     if (skeletonPath && atlasPath && imagePaths.length > 0) {
       return AssetUtility.handleAllFiles(resource, engine, imageLoaderType);
     }
-    throw new Error("Lack spine resource.");
+    throw new Error('Lack spine resource');
   }
 
   private _normalizeFileSuffix(fileSuffix: string | string[], expectArray: boolean): string | string[] | null {
@@ -101,36 +100,7 @@ class SpineLoader extends Loader<SkeletonData> {
     }
     return fileSuffix;
   }
-
-  createAdaptiveTexture(texture: Texture2D) {
-    return new AdaptiveTexture();
-  }
   
-}
-
-export class AdaptiveTexture {
-  // constructor(texture: Texture2D) {
-  //   super(texture);
-  //   this.texture.generateMipmaps();
-  // }
-
-  // setFilters(minFilter: any, magFilter: any) {
-  //   if (minFilter === TextureFilter.Nearest) {
-  //     this.texture.filterMode = TextureFilterMode.Point;
-  //   } else if (magFilter === TextureFilter.MipMapLinearLinear) {
-  //     this.texture.filterMode = TextureFilterMode.Trilinear;
-  //   } else {
-  //     this.texture.filterMode = TextureFilterMode.Bilinear;
-  //   }
-  // }
-
-  // // @ts-ignore
-  // setWraps(uWrap: TextureWrapMode, vWrap: TextureWrapMode) {
-  //   this.texture.wrapModeU = uWrap;
-  //   this.texture.wrapModeV = vWrap;
-  // }
-
-  // dispose() {}
 }
 
 export { SpineLoader };

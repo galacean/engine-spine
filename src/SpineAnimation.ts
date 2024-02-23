@@ -54,7 +54,7 @@ export class SpineAnimation extends Script {
   setting: SpineRenderSetting;
 
   autoUpdateBounds: boolean = false;
-  noPause: boolean = false;
+  noPause: boolean = true;
 
   get skeletonData() {
     return this._skeletonData;
@@ -137,7 +137,7 @@ export class SpineAnimation extends Script {
     if (!this._skeleton || !this.state) return;
     const state = this._state;
     const skeleton = this._skeleton;
-
+    
     this.noPause && state.update(delta);
     state.apply(skeleton);
     skeleton.updateWorldTransform();

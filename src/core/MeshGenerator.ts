@@ -19,13 +19,13 @@ import { SpineMesh } from "./SpineMesh";
 import { SpineRenderSetting } from "../types";
 import { SpineAnimation } from "../SpineAnimation";
 import { BlendMode } from "../spine-core/BlendMode";
-import { text } from "stream/consumers";
-import { AdaptiveTexture } from "../loader/SpineLoader";
+import { AdaptiveTexture } from "../loader/AssetUtility";
 
 type SubMeshItem = {
   subMesh: SubMesh;
   blendMode: BlendMode;
-  texture: any;
+  slotName?: string;
+  texture: AdaptiveTexture;
 };
 
 export class MeshGenerator {
@@ -34,6 +34,7 @@ export class MeshGenerator {
   static VERTEX_STRIDE = 9; // 3 2 4 position with z, uv, color
   static tempColor: Color = new Color();
   static tempBlendMode: BlendMode | null = null;
+  static tempTexture: AdaptiveTexture | null = null;
 
   private _setting: SpineRenderSetting;
   private _engine: Engine;
@@ -126,6 +127,7 @@ export class MeshGenerator {
     let blend = BlendMode.Normal;
     let texture = null;
     MeshGenerator.tempBlendMode = null;
+    MeshGenerator.tempTexture = null;
     for (let slotIndex = 0; slotIndex < maxSlotCount; ++slotIndex) {
       const slot = drawOrder[slotIndex];
       if (!slot.bone.active) {
@@ -183,27 +185,6 @@ export class MeshGenerator {
       }
 
       if (texture != null) {
-        const slotName = slot.data.name;
-        blend = slot.data.blendMode;
-        // 混合模式改了打断合并
-        if (
-          MeshGenerator.tempBlendMode !== null &&
-          MeshGenerator.tempBlendMode !== slot.data.blendMode
-        ) {
-          // 如果不能合并，需要分离，先把之前的生成一个 subMesh
-          if (count > 0) {
-            const subMesh = new SubMesh(start, count);
-            subMeshItems.push({
-              blendMode: MeshGenerator.tempBlendMode,
-              subMesh,
-              texture,
-            });
-            start = indicesLength;
-            count = 0;
-          }
-        }
-        MeshGenerator.tempBlendMode = slot.data.blendMode;
-
         let finalVertices: ArrayLike<number>;
         let finalVerticesLength: number;
         let finalIndices: ArrayLike<number>;
@@ -280,35 +261,49 @@ export class MeshGenerator {
           indicesArray[i] = finalIndices[j] + indexStart;
         }
 
-        // 当前 slot 需要单独渲染
-        if (this.separateSlots.includes(slotName)) {
+        // In the following situations, it is necessary to split the subMesh."
+        const slotName = slot.data.name;
+        blend = slot.data.blendMode;
+        const blendModeChanged =  MeshGenerator.tempBlendMode !== null &&
+        MeshGenerator.tempBlendMode !== slot.data.blendMode;
+        const slotSeparated = this.separateSlots.includes(slotName);
+        const textureChanged = MeshGenerator.tempTexture !== null &&
+        MeshGenerator.tempTexture !== texture;
+
+        if (blendModeChanged || slotSeparated || textureChanged) {
           if (count > 0) {
             const subMesh = new SubMesh(start, count);
             subMeshItems.push({
               blendMode: MeshGenerator.tempBlendMode,
               subMesh,
-              texture,
+              texture: MeshGenerator.tempTexture,
             });
             start = indicesLength;
           }
-          const separateTexture = this.separateSlotTextures[slotName];
+          const separateTexture = this.separateSlotTextures.get(slotName);
           if (separateTexture) {
             const oldTexture = texture.texture;
             separateTexture.filterMode = oldTexture.filterMode;
             separateTexture.wrapModeU = oldTexture.wrapModeU;
             separateTexture.wrapModeV = oldTexture.wrapModeV;
-            texture = separateTexture;
           }
           const subMesh = new SubMesh(start, finalIndicesLength);
           subMeshItems.push({
             blendMode: blend,
             subMesh,
+            slotName,
             texture,
           });
           start += finalIndicesLength;
           count = 0;
+          // If the slot is split into subMeshes, tempTexture and tempBlendMode are reset to null.
+          MeshGenerator.tempBlendMode = null;
+          MeshGenerator.tempTexture = null;
         } else {
           count += finalIndicesLength;
+          // If not split, just set blend and texture.
+          MeshGenerator.tempBlendMode = slot.data.blendMode;
+          MeshGenerator.tempTexture = texture;
         }
         indicesLength += finalIndicesLength;
       }
@@ -316,9 +311,7 @@ export class MeshGenerator {
       _clipper.clipEndWithSlot(slot);
     } // slot traverse end
 
-    _clipper.clipEnd();
-
-    // add reset sub mesh
+    // add rest sub mesh
     if (count > 0) {
       const subMesh = new SubMesh(start, count);
       subMeshItems.push({
@@ -328,6 +321,8 @@ export class MeshGenerator {
       });
       count = 0;
     }
+
+    _clipper.clipEnd();
 
     // sort sub-mesh
     subMeshItems.sort((a, b) => a.subMesh.start - b.subMesh.start);
@@ -341,19 +336,22 @@ export class MeshGenerator {
         return;
       }
     }
-
+    
     // update sub-mesh
     mesh.clearSubMesh();
     const renderer = this._meshRenderer;
     for (let i = 0, l = subMeshItems.length; i < l; ++i) {
-      const item = subMeshItems[i];
-      const blendMode = item.blendMode;
-      mesh.addSubMesh(item.subMesh);
+      const { blendMode, subMesh, slotName, texture } = subMeshItems[i];
+      mesh.addSubMesh(subMesh);
       let material = renderer.getMaterial(i);
       if (!material) {
         material = SpineAnimation.getDefaultMaterial(this._engine);
       }
-      material.shaderData.setTexture("material_SpineTexture", texture.texture);
+      let subMeshTexture = texture.texture;
+      if (this.separateSlotTextures.has(slotName)) {
+        subMeshTexture = this.separateSlotTextures.get(slotName);
+      }
+      material.shaderData.setTexture("material_SpineTexture", subMeshTexture);
       // @ts-ignore
       material._priority = i;
       this.setBlendMode(material, blendMode);
@@ -373,7 +371,7 @@ export class MeshGenerator {
   }
 
   addSeparateSlotTexture(slotName: string, texture: Texture2D) {
-    this.separateSlotTextures[slotName] = new AdaptiveTexture(texture);
+    this.separateSlotTextures.set(slotName, texture);
   }
 
   private _prepareBufferData(vertexCount: number) {

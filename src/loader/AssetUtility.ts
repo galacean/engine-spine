@@ -155,12 +155,17 @@ export function getBaseUrl(url: string): string {
   return basePath.endsWith('/') ? basePath : basePath.substring(0, basePath.lastIndexOf('/') + 1);
 }
 
-class AdaptiveTexture extends Texture {
+export class AdaptiveTexture extends Texture {
   texture: Texture2D;
-  constructor(image, texture: Texture2D) {
+  constructor(image: HTMLImageElement | ImageBitmap, texture: Texture2D) {
     super(image);
     this.texture = texture;
     this.texture.generateMipmaps();
+  }
+
+  // rewrite getImage function, return galacean texture2D, then attachment can get size of texture
+  getImage(): any {
+    return this.texture;
   }
 
   setFilters(minFilter: TextureFilter, magFilter: TextureFilter) {
@@ -192,5 +197,29 @@ class AdaptiveTexture extends Texture {
         throw new Error("Unsupported texture wrap mode.");
     }
   }
-
 }
+
+// export class AdaptiveTexture extends Texture {
+//   constructor(texture: Texture2D) {
+//     super(texture);
+//     this.texture.generateMipmaps();
+//   }
+
+//   setFilters(minFilter: any, magFilter: any) {
+//     if (minFilter === TextureFilter.Nearest) {
+//       this.texture.filterMode = TextureFilterMode.Point;
+//     } else if (magFilter === TextureFilter.MipMapLinearLinear) {
+//       this.texture.filterMode = TextureFilterMode.Trilinear;
+//     } else {
+//       this.texture.filterMode = TextureFilterMode.Bilinear;
+//     }
+//   }
+
+//   // @ts-ignore
+//   setWraps(uWrap: TextureWrapMode, vWrap: TextureWrapMode) {
+//     this.texture.wrapModeU = uWrap;
+//     this.texture.wrapModeV = vWrap;
+//   }
+
+//   dispose() {}
+// }

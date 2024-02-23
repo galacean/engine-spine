@@ -10,6 +10,7 @@ export { TextureAtlas } from "./spine-core/TextureAtlas";
 export { AtlasAttachmentLoader } from "./spine-core/AtlasAttachmentLoader";
 export { SkeletonJson } from "./spine-core/SkeletonJson";
 export { SkeletonBinary } from "./spine-core/SkeletonBinary";
+export { SkeletonData } from "./spine-core/SkeletonData";
 export const version = `__buildVersion`;
 
 Loader.registerClass("SpineRenderer", SpineRenderer);
