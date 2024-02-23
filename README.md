@@ -39,7 +39,7 @@ async function addSpine() {
 
 ## npm
 ```sh
-npm install @galacean-engine/spine
+npm install @galacean/engine-spine
 ```
 
 
