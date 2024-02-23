@@ -198,28 +198,3 @@ export class AdaptiveTexture extends Texture {
     }
   }
 }
-
-// export class AdaptiveTexture extends Texture {
-//   constructor(texture: Texture2D) {
-//     super(texture);
-//     this.texture.generateMipmaps();
-//   }
-
-//   setFilters(minFilter: any, magFilter: any) {
-//     if (minFilter === TextureFilter.Nearest) {
-//       this.texture.filterMode = TextureFilterMode.Point;
-//     } else if (magFilter === TextureFilter.MipMapLinearLinear) {
-//       this.texture.filterMode = TextureFilterMode.Trilinear;
-//     } else {
-//       this.texture.filterMode = TextureFilterMode.Bilinear;
-//     }
-//   }
-
-//   // @ts-ignore
-//   setWraps(uWrap: TextureWrapMode, vWrap: TextureWrapMode) {
-//     this.texture.wrapModeU = uWrap;
-//     this.texture.wrapModeV = vWrap;
-//   }
-
-//   dispose() {}
-// }

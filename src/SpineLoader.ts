@@ -59,7 +59,6 @@ class SpineLoader extends Loader<Entity> {
                 [res.jsonUrl, res.atlasUrl, res.pngUrl],
                 res.pngType
               );
-              console.log(res)
               this.handleResource(
                 resourceManager,
                 item,

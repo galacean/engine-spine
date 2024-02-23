@@ -336,7 +336,7 @@ export class MeshGenerator {
         return;
       }
     }
-    
+
     // update sub-mesh
     mesh.clearSubMesh();
     const renderer = this._meshRenderer;
