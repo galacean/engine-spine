@@ -1,4 +1,4 @@
-import { LoadItem, AssetType } from '@galacean/engine';
+import { LoadItem } from '@galacean/engine';
 
 export type SpineResource = {
   skeletonPath: string;

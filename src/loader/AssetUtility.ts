@@ -143,9 +143,9 @@ export function getUrlSuffix(url: string, fileSuffix?: string): string | null {
   const regex = /\/([^\/?#]+)\.([a-zA-Z0-9]+)(\?|#|$)/;
   const match = url.match(regex);
   if (match && match[2]) {
-    return match[2]; // 返回匹配到的文件后缀
+    return match[2];
   } else {
-    return null; // 如果没有匹配到，返回null
+    return null;
   }
 }
 
