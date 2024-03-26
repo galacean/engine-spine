@@ -54,7 +54,7 @@ export class SpineAnimation extends Script {
   setting: SpineRenderSetting;
 
   autoUpdateBounds: boolean = false;
-  noPause: boolean = false;
+  noPause: boolean = true;
 
   get skeletonData() {
     return this._skeletonData;

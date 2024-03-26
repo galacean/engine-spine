@@ -60,7 +60,7 @@ export class MeshAttachment extends VertexAttachment {
 		let u = this.region.u, v = this.region.v, width = 0, height = 0;
 		if (this.region instanceof TextureAtlasRegion) {
 			let region = this.region;
-			let textureWidth = region.texture.width, textureHeight = region.texture.height;
+			let textureWidth = region.texture.getImage().width, textureHeight = region.texture.getImage().height;
 			switch(region.degrees) {
 			case 90:
 				u -= (region.originalHeight - region.offsetY - region.height) / textureWidth;
@@ -172,4 +172,3 @@ export class MeshAttachment extends VertexAttachment {
 		return copy;
 	}
 }
-
