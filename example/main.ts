@@ -40,12 +40,9 @@ WebGLEngine.create({
   const root = scene.createRootEntity();
   scene.addRootEntity(root);
 
-  const cameraEntity = root.createChild("camera");
-  cameraEntity.transform.position = new Vector3(0, 0, 1600);
+  const cameraEntity = root.createChild("camera_node");
   const camera = cameraEntity.addComponent(Camera);
-  camera.isOrthographic = true;
-  camera.nearClipPlane = 0.1;
-  camera.farClipPlane = 2000;
+  cameraEntity.transform.position = new Vector3(0, 0, 60);
 
   loadSpine(root, engine);
 });
@@ -99,9 +96,9 @@ async function loadSpine(root: Entity, engine: Engine) {
 
   const parent = root.createChild("parent")
   const spineEntity = parent.createChild("spine");
-  spineEntity.transform.setPosition(0, -5, 0);
+  spineEntity.transform.setPosition(0, -15, 0);
   const spineRenderer = spineEntity.addComponent(SpineRenderer);
-  spineRenderer.scale = 0.01;
+  spineRenderer.scale = 0.05;
   // spineRenderer.loop = false;
   // spineRenderer.autoPlay = false;
   spineRenderer.resource = spineResource;
