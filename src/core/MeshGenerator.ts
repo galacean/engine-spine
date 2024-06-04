@@ -19,8 +19,7 @@ import { SpineMesh } from "./SpineMesh";
 import { SpineRenderSetting } from "../types";
 import { SpineAnimation } from "../SpineAnimation";
 import { BlendMode } from "../spine-core/BlendMode";
-import { text } from "stream/consumers";
-import { AdaptiveTexture } from "../SpineLoader";
+import { AdaptiveTexture } from "../loader/LoaderUtils";
 
 type SubMeshItem = {
   subMesh: SubMesh;
@@ -373,7 +372,7 @@ export class MeshGenerator {
   }
 
   addSeparateSlotTexture(slotName: string, texture: Texture2D) {
-    this.separateSlotTextures[slotName] = new AdaptiveTexture(texture);
+    this.separateSlotTextures[slotName] = texture;
   }
 
   private _prepareBufferData(vertexCount: number) {

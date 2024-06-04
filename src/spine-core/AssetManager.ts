@@ -2,7 +2,7 @@ import { AssetType, Engine, Texture2D, request } from "@galacean/engine";
 import { Disposable, Map } from "./Utils";
 import { TextureAtlas } from "./TextureAtlas";
 import { FakeTexture } from "./Texture";
-import { AdaptiveTexture } from "../SpineLoader";
+import { AdaptiveTexture } from "../loader/LoaderUtils";
 
 export class AssetManager implements Disposable {
   private _engine: Engine;
