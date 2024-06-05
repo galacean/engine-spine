@@ -1,204 +1,154 @@
+import { Skeleton } from "./spine-core/Skeleton";
+import { SkeletonData } from "./spine-core/SkeletonData";
+import { MeshGenerator } from "./core/MeshGenerator";
+import { SpineRenderSetting } from "./types";
+import { Vector2 } from "./spine-core/Utils";
 import {
   Script,
   Entity,
-  assignmentClone,
   ignoreClone,
   MeshRenderer,
+  Texture2D,
+  Material,
+  Engine,
+  BoundingBox,
 } from "@galacean/engine";
-import { SpineAnimation } from "./SpineAnimation";
+import { SpineMaterial } from "./SpineMaterial";
 
 export class SpineRenderer extends Script {
-  private _priority: number = 0;
-  @ignoreClone
-  private _resource: Entity;
-  @assignmentClone
-  private _animationName = "";
-  @assignmentClone
-  private _loop = true;
-  @assignmentClone
-  private _paused = false;
-  @assignmentClone
-  private _autoPlay = true;
-  @assignmentClone
-  private _skinName = "";
-  @assignmentClone
-  private _scale = 1.0;
-  @ignoreClone
-  private _spineAnimation: SpineAnimation = null;
-  /** @internal */
-  @ignoreClone
-  _animationNames: Array<string> = [];
-  /** @internal */
-  @ignoreClone
-  _skinNames: Array<string> = [];
-
-  get priority(): number {
-    return this._priority;
-  }
-
-  set priority(value: number) {
-    if (this._priority !== value) {
-      this._priority = value;
-      if (this._resource) {
-        this._resource.getComponent(MeshRenderer).priority = value;
+  private static _defaultMaterial: Material;
+  static getDefaultMaterial(engine: Engine): Material {
+    let defaultMaterial = this._defaultMaterial;
+    if (defaultMaterial) {
+      if (defaultMaterial.engine === engine) {
+        return defaultMaterial.clone();
+      } else {
+        defaultMaterial.destroy(true);
+        defaultMaterial = null;
       }
     }
+    defaultMaterial = new SpineMaterial(engine);
+    defaultMaterial.isGCIgnored = true;
+    this._defaultMaterial = defaultMaterial;
+    return defaultMaterial.clone();
   }
 
-  get resource() {
-    return this._resource;
+  @ignoreClone
+  private _skeletonData: SkeletonData;
+  @ignoreClone
+  protected _skeleton: Skeleton;
+  @ignoreClone
+  private _tempOffset: Vector2 = new Vector2();
+  @ignoreClone
+  private _tempSize: Vector2 = new Vector2();
+  @ignoreClone
+  private _tempArray: Array<number> = [0, 0];
+  @ignoreClone
+  protected _meshGenerator: MeshGenerator;
+  @ignoreClone
+  setting: SpineRenderSetting;
+
+  autoUpdateBounds: boolean = false;
+
+  get skeleton() {
+    return this._skeleton;
   }
 
-  set resource(value: Entity | null) {
-    const resource = this._resource;
-    if (value) {
-      if (resource !== value) {
-        this._removeResource();
-        this._resource = value.clone();
-        this._resource.getComponent(MeshRenderer).priority = this.priority;
-        this.entity.addChild(this._resource);
-        this._spineAnimation = this._resource.getComponent(SpineAnimation);
-        this._spineAnimation.scale = this._scale;
-        this._spineAnimation.noPause = !this._paused;
+  constructor(entity: Entity) {
+    super(entity);
+    this._meshGenerator = new MeshGenerator(this.engine, entity);
+  }
 
-        // 获取所有动画名和皮肤名
-        const { animations, skins } = this._spineAnimation.skeletonData;
-        const { _animationNames, _skinNames } = this;
-        _animationNames.length = 0;
-        for (let i = 0, l = animations.length; i < l; ++i) {
-          _animationNames.push(animations[i].name);
-        }
-        _skinNames.length = 0;
-        for (let i = 0, l = skins.length; i < l; ++i) {
-          _skinNames.push(skins[i].name);
-        }
-        this.skinName = this._skinName || _skinNames[0];
+  initialize(skeletonData: SkeletonData, setting?: SpineRenderSetting) {
+    this.setting = setting;
+    this._skeletonData = skeletonData;
+    this._skeleton = new Skeleton(skeletonData);
+    this._meshGenerator.initialize(this._skeleton, this.setting);
+  }
 
-        // 如果设置了自动播放，默认就播放第一个动画
-        if (this._autoPlay && _animationNames.length > 0) {
-          this.play(this._animationName || _animationNames[0], this._loop);
-        }
-      }
+  /**
+   * Separate slot by slot name. This will add a new sub mesh, and new materials.
+   */
+  addSeparateSlot(slotName: string) {
+    if (!this._skeleton) {
+      console.error("Skeleton not found!");
+    }
+    const meshRenderer = this.entity.getComponent(MeshRenderer);
+    if (!meshRenderer) {
+      console.warn("You need add MeshRenderer component to entity first");
+    }
+    const slot = this._skeleton.findSlot(slotName);
+    if (slot) {
+      this._meshGenerator.addSeparateSlot(slotName);
     } else {
-      this._removeResource();
+      console.warn(`Slot: ${slotName} not find.`);
     }
   }
 
-  get animationName() {
-    return this._animationName;
-  }
-
-  set animationName(name: string) {
-    if (this._animationName != name) {
-      this._animationName = name;
+  /**
+   * Change texture of a separated slot by name.
+   */
+  hackSeparateSlotTexture(slotName: string, texture: Texture2D) {
+    const { separateSlots } = this._meshGenerator;
+    if (separateSlots.length === 0) {
+      console.warn("You need add separate slot");
+      return;
     }
-    this._autoPlay && this._spineAnimation && this.play(name, this._loop);
-  }
-
-  get loop() {
-    return this._loop;
-  }
-
-  set loop(value: boolean) {
-    if (this._loop !== value) {
-      if (this._resource && this._spineAnimation) {
-        if (value) {
-          this._autoPlay && this.play(this._animationName, value);
-        } else {
-          this.play(this._animationName, value);
-        }
-      }
-
-      this._loop = value;
+    if (separateSlots.includes(slotName)) {
+      this._meshGenerator.addSeparateSlotTexture(slotName, texture);
+    } else {
+      console.warn(
+        `Slot ${slotName} is not separated. You should use addSeparateSlot to separate it`
+      );
     }
   }
 
-  get paused(): boolean {
-    return this._paused;
-  }
-
-  set paused(value: boolean) {
-    if (this._paused !== value) {
-      this._paused = value;
-      this.spineAnimation && (this.spineAnimation.noPause = !value);
+  onLateUpdate() {
+    if (!this._skeleton) return;
+    this._meshGenerator.buildMesh(this._skeleton);
+    if (this.autoUpdateBounds) {
+      this.updateBounds();
     }
   }
 
-  get autoPlay() {
-    return this._autoPlay;
+  updateBounds() {
+    const meshRenderer = this.entity.getComponent(MeshRenderer);
+    const bounds = meshRenderer.bounds;
+    const offset = this._tempOffset;
+    const size = this._tempSize;
+    const temp = this._tempArray;
+    const zSpacing = this.setting?.zSpacing || 0.01;
+    const skeleton = this._skeleton;
+    skeleton.getBounds(offset, size, temp);
+    const drawOrder = skeleton.drawOrder;
+    const minX = offset.x;
+    const maxX = offset.x + size.x;
+    const minY = offset.y;
+    const maxY = offset.y + size.y;
+    const minZ = 0;
+    const maxZ = drawOrder.length * zSpacing;
+    bounds.min.set(minX, minY, minZ);
+    bounds.max.set(maxX, maxY, maxZ);
+    BoundingBox.transform(bounds, this.entity.transform.worldMatrix, bounds);
   }
 
-  set autoPlay(value: boolean) {
-    if (this._autoPlay !== value) {
-      if (value && this._resource && this._spineAnimation) {
-        this.play(this._animationName, this._loop);
-      }
-      this._autoPlay = value;
-    }
+  /**
+   * Spine animation custom clone.
+   */
+  _cloneTo(target: SpineRenderer) {
+    target.initialize(this._skeletonData);
+    const _cloneSetting = { ...this.setting };
+    target.setting = _cloneSetting;
   }
 
-  get skinName() {
-    return this._skinName;
-  }
-
-  set skinName(name: string) {
-    if (this._skinName !== name) {
-      this._skinName = name;
-      if (this._spineAnimation) {
-        const { skeleton } = this._spineAnimation;
-        skeleton.setSkinByName(name);
-        skeleton.setSlotsToSetupPose();
-      }
-    }
-  }
-
-  get scale() {
-    return this._scale;
-  }
-
-  set scale(value: number) {
-    if (this._scale !== value) {
-      this._scale = value;
-      this._spineAnimation && (this._spineAnimation.scale = value);
-    }
-  }
-
-  get spineAnimation() {
-    return this._spineAnimation;
+  private _disposeCurrentSkeleton() {
+    this._skeletonData = null;
+    this._skeleton = null;
   }
 
   onDestroy() {
-    this.resource = null;
-  }
-
-  play(name: string = "", loop: boolean = true) {
-    const { _animationNames } = this;
-    if (_animationNames.length > 0) {
-      if (_animationNames.indexOf(name) !== -1) {
-        this._animationName = name;
-        this._loop = loop;
-        if (this._resource && this._spineAnimation) {
-          this._spineAnimation.state.setAnimation(0, name, loop);
-        }
-      }
-    } else {
-      this._animationName = name;
-    }
-  }
-
-  _cloneTo(target: SpineRenderer) {
-    target.entity.clearChildren();
-    target.resource = this.resource;
-  }
-
-  private _removeResource() {
-    if (this._resource && this._spineAnimation) {
-      this.entity.removeChild(this._resource);
-      this._resource.destroy();
-      this._resource = null;
-      this._spineAnimation = null;
-      this._animationName = "";
-      this._skinName = "";
-    }
+    this._disposeCurrentSkeleton();
+    this._meshGenerator = null;
+    this.setting = null;
   }
 }

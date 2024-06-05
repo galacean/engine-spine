@@ -50,6 +50,11 @@ class SpineLoader extends Loader<SkeletonData> {
         const fileExtension = verifyFileExtensions(fileExtensions, false);
         deriveAndAssignSpineAsset(item.url, fileExtension as string, spineAssetBundle);
       }
+      const { skeletonPath, atlasPath } = spineAssetBundle;
+      if (!skeletonPath || !atlasPath) {
+        reject('Failed to load spine assets. Please check the file path and ensure the file extension is included.');
+        return;
+      }
       loadAndCreateSpineSkeletonData(spineAssetBundle, resourceManager.engine, imageLoaderType)
       .then((skeletonData) => {
         resolve(skeletonData);
@@ -106,7 +111,5 @@ function verifyFileExtensions(fileExtensions: string | string[], expectArray: bo
   }
   return fileExtensions;
 }
-
-
 
 export { SpineLoader };

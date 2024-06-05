@@ -12,11 +12,11 @@ import {
 } from "@galacean/engine";
 import { OrbitControl, Stats } from "@galacean/engine-toolkit";
 import * as dat from 'dat.gui';
-import { SpineAnimation, SkeletonData } from "../src/index";
+import { SpineAnimation, SkeletonData, SpineRenderer } from "../src/index";
+import BoundingBoxLine from './outline';
 
 Logger.enable();
 console.log(SpineAnimation);
-
 
 document.getElementById("canvas")!.oncontextmenu = function (e) {
   e.preventDefault();
@@ -29,10 +29,11 @@ let animationController; // 动画切换
 let skinController; // 皮肤切换
 let slotHackController1, slotHackController2, slotHackController3; // 小人换装切换
 let attachmentController; // 小鸡部件替换
+let outline; // 包围盒
 const blobResource: any = {
   urls: [],
   params: {
-    fileSuffix: [],
+    fileExtensions: [],
   }
 };
 
@@ -55,7 +56,7 @@ const demos = {
       "https://mdn.alipayobjects.com/portal_h1wdez/afts/img/A*drsPS5Sc55MAAAAAAAAAAAAAAQAAAQ/original",
     ],
     params: {
-      fileSuffix: [
+      fileExtensions: [
         'bin', // skel
         'atlas',
         'png',
@@ -120,7 +121,7 @@ const demos = {
       "https://mdn.alipayobjects.com/portal_h1wdez/afts/img/A*wWJdRIp_Kf0AAAAAAAAAAAAAAQAAAQ",
     ],
     params: {
-      fileSuffix: [
+      fileExtensions: [
         'json',
         'atlas',
         'png',
@@ -162,6 +163,9 @@ WebGLEngine.create({
   cameraEntity.addComponent(OrbitControl);
   cameraEntity.addComponent(Stats);
 
+  const outlineEntity = root.createChild('outline');
+  outline = outlineEntity.addComponent(BoundingBoxLine);
+
   loadSpine(root, engine, demos[baseDemo]);
 
   gui.add({ name: baseDemo }, 'name', Object.keys(demos)).onChange((demoName) => {
@@ -182,7 +186,7 @@ async function loadSpine(root: Entity, engine: Engine, resource) {
       type: 'spine'
     })) as SkeletonData;
   } catch (err) {
-    console.log('spine asset load error: ', err);
+    console.error('spine asset load error: ', err);
   }
   if (!skeletonData) return;
   if (scene === 'upload') {
@@ -198,11 +202,18 @@ async function loadSpine(root: Entity, engine: Engine, resource) {
   const spineEntity = root.createChild('spine-entity');
   spineEntity.transform.setPosition(0, -15, 0);
   const meshRenderer = spineEntity.addComponent(MeshRenderer);
-  const mtl = SpineAnimation.getDefaultMaterial(engine);
+  const mtl = SpineRenderer.getDefaultMaterial(engine);
   meshRenderer.setMaterial(mtl);
   const spineAnimation = spineEntity.addComponent(SpineAnimation);
-  spineAnimation.setSkeletonData(skeletonData);
-  spineAnimation.scale = 0.05;
+  spineAnimation.initialize(skeletonData);
+  spineAnimation.skeleton.scaleX = 0.05;
+  spineAnimation.skeleton.scaleY = 0.05;
+
+  // outline.attachToEntity(spineEntity);
+  // outline.isActive = true;
+  // setInterval(() => {
+  //   outline.updateVertices();
+  // }, 67);
 
   spineAnimation.state.setAnimation(0, firstAnimation, true);
   animationController = gui.add({ animation: firstAnimation  }, 'animation', animationNames).onChange((animationName) => {
@@ -223,7 +234,6 @@ function handleChangeAttachment(spineAnimation: SpineAnimation, skeletonData: Sk
   skeleton.setSkinByName("fullskin/0101"); // 1. Set the active skin
   skeleton.setSlotsToSetupPose(); // 2. Use setup pose to set base attachments.
   state.apply(skeleton);
-  spineAnimation.scale = 0.05;
   const slotName = "fBody";
   const info = {
     更换衣服部件: "fullskin/0101",
@@ -278,7 +288,8 @@ function handleChangeSkinScene(spineAnimation: SpineAnimation) {
 
 async function handleHackSlotTexture(spineAnimation: SpineAnimation, engine: Engine) {
   spineAnimation.skeleton.setSkinByName("skin1");
-  spineAnimation.scale = 0.07;
+  spineAnimation.skeleton.scaleX = 0.07;
+  spineAnimation.skeleton.scaleY = 0.07;
 
   spineAnimation.addSeparateSlot("defult/head_hair");
   spineAnimation.addSeparateSlot("defult/arm_rigth_weapon");
@@ -365,12 +376,30 @@ function changeSlotTexture(selectItem, textures: Texture2D[], spineAnimation: Sp
 }
 
 function removeController() {
-  animationController && animationController.remove();
-  skinController && skinController.remove();
-  slotHackController1 && slotHackController1.remove();
-  slotHackController2 && slotHackController2.remove();
-  slotHackController3 && slotHackController3.remove();
-  attachmentController && attachmentController.remove();
+  if (animationController) {
+    animationController.remove();
+    animationController = null;
+  }
+  if (skinController) {
+    skinController.remove();
+    skinController = null;
+  }
+  if (slotHackController1) {
+    slotHackController1.remove();
+    slotHackController1 = null;
+  }
+  if (slotHackController2) {
+    slotHackController2.remove();
+    slotHackController2 = null;
+  }
+  if (slotHackController3) {
+    slotHackController3.remove();
+    slotHackController3 = null;
+  }
+  if (attachmentController) {
+    attachmentController.remove();
+    attachmentController = null;
+  }
 }
 
 window.onload = function() {
@@ -389,7 +418,8 @@ window.onload = function() {
         const tempLink = URL.createObjectURL(file);
         const ext = getFileExtension(file);
         blobResource.urls.push(tempLink);
-        blobResource.params.fileSuffix.push(ext);
+        blobResource.params.fileExtensions.push(ext);
+        console.log(blobResource);
       });
     }
   });
@@ -402,4 +432,12 @@ function getFileExtension(file: File): string {
     return '';
   }
   return fileName.substring(lastDotIndex + 1);
+}
+
+function delay(time: number) {
+  return new Promise((res) => {
+    setTimeout(() => {
+      res(true);
+    }, time);
+  });
 }

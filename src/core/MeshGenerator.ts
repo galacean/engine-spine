@@ -17,7 +17,7 @@ import { ArrayLike, Color } from "../spine-core/Utils";
 import { SkeletonClipping } from "../spine-core/SkeletonClipping";
 import { SpineMesh } from "./SpineMesh";
 import { SpineRenderSetting } from "../types";
-import { SpineAnimation } from "../SpineAnimation";
+import { SpineRenderer } from "../SpineRenderer";
 import { BlendMode } from "../spine-core/BlendMode";
 import { AdaptiveTexture } from "../loader/LoaderUtils";
 
@@ -25,6 +25,7 @@ type SubMeshItem = {
   subMesh: SubMesh;
   blendMode: BlendMode;
   texture: any;
+  slotName?: string;
 };
 
 export class MeshGenerator {
@@ -33,6 +34,7 @@ export class MeshGenerator {
   static VERTEX_STRIDE = 9; // 3 2 4 position with z, uv, color
   static tempColor: Color = new Color();
   static tempBlendMode: BlendMode | null = null;
+  static tempTexture: AdaptiveTexture | null = null;
 
   private _setting: SpineRenderSetting;
   private _engine: Engine;
@@ -41,6 +43,7 @@ export class MeshGenerator {
   private _spineMesh: SpineMesh = new SpineMesh();
 
   private _vertexCount: number;
+  private _triangleCount: number;
   private _vertices: Float32Array;
   private _verticesWithZ: Float32Array;
   private _indices: Uint16Array;
@@ -48,7 +51,7 @@ export class MeshGenerator {
   private _meshRenderer: MeshRenderer;
   private _subMeshItems: SubMeshItem[] = [];
   readonly separateSlots: string[] = [];
-  readonly separateSlotTextures: Map<string, Texture2D> = new Map();
+  readonly separateSlotTextureMap: Map<string, Texture2D> = new Map();
 
   get mesh() {
     return this._spineMesh.mesh;
@@ -63,44 +66,36 @@ export class MeshGenerator {
     this._entity = entity;
   }
 
-  initialize(skeletonData: SkeletonData, setting?: SpineRenderSetting) {
-    if (!skeletonData) return;
-
+  initialize(skeleton: Skeleton, setting?: SpineRenderSetting) {
     const meshRenderer = this._entity.getComponent(MeshRenderer);
     if (!meshRenderer) {
       console.warn("You need add MeshRenderer component to entity first");
       return;
     }
     this._meshRenderer = meshRenderer;
-
     if (setting) {
       this._setting = setting;
     }
-
-    // Prepare buffer by using all attachment data but clippingAttachment
-    const {
-      defaultSkin: { attachments },
-    } = skeletonData;
-    let vertexCount: number = 0;
-    const QUAD_TRIANGLE_LENGTH = MeshGenerator.QUAD_TRIANGLES.length;
-    for (let i = 0, n = attachments.length; i < n; i++) {
-      const slotAttachment = attachments[i];
-      for (let key in slotAttachment) {
-        const attachment = slotAttachment[key];
-        if (!attachment) {
-          continue;
-        } else if (attachment instanceof RegionAttachment) {
-          vertexCount += QUAD_TRIANGLE_LENGTH;
-        } else if (attachment instanceof MeshAttachment) {
-          let mesh = attachment;
-          vertexCount += mesh.triangles.length;
-        } else continue;
+    const drawOrder = skeleton.drawOrder;
+    const drawOrderCount = drawOrder.length;
+    let triangleCount = 0;
+    let vertexCount = 0;
+    for (let slotIndex = 0; slotIndex < drawOrderCount; slotIndex += 1) {
+      const slot = drawOrder[slotIndex];
+      const attachment = slot.attachment;
+      if (attachment instanceof RegionAttachment) {
+        vertexCount += 4;
+        triangleCount += 6;
+      } else if (attachment instanceof MeshAttachment) {
+        vertexCount += attachment.worldVerticesLength >> 1;
+        triangleCount += attachment.triangles.length;
       }
     }
     this._vertexCount = vertexCount;
-    this._prepareBufferData(this._vertexCount);
+    this._triangleCount = triangleCount;
+    this._prepareBufferData(this._vertexCount, this._triangleCount);
     const { _spineMesh } = this;
-    _spineMesh.initialize(this._engine, this._vertexCount);
+    _spineMesh.initialize(this._engine, this._vertexCount, this._triangleCount);
     meshRenderer.mesh = _spineMesh.mesh;
   }
 
@@ -124,7 +119,9 @@ export class MeshGenerator {
     let count = 0;
     let blend = BlendMode.Normal;
     let texture = null;
+    let vertexCount = 0;
     MeshGenerator.tempBlendMode = null;
+    MeshGenerator.tempTexture = null;
     for (let slotIndex = 0; slotIndex < maxSlotCount; ++slotIndex) {
       const slot = drawOrder[slotIndex];
       if (!slot.bone.active) {
@@ -150,6 +147,7 @@ export class MeshGenerator {
         triangles = MeshGenerator.QUAD_TRIANGLES;
         uvs = regionAttachment.uvs;
         texture = regionAttachment.region.renderObject.texture;
+        vertexCount += 4;
       } else if (attachment instanceof MeshAttachment) {
         let meshAttachment = <MeshAttachment>attachment;
         attachmentColor = meshAttachment.color;
@@ -169,6 +167,7 @@ export class MeshGenerator {
         triangles = meshAttachment.triangles;
         uvs = meshAttachment.uvs;
         texture = meshAttachment.region.renderObject.texture;
+        vertexCount += meshAttachment.worldVerticesLength >> 1;
       } else if (attachment instanceof ClippingAttachment) {
         if (useClipping) {
           let clip = <ClippingAttachment>attachment;
@@ -182,27 +181,6 @@ export class MeshGenerator {
       }
 
       if (texture != null) {
-        const slotName = slot.data.name;
-        blend = slot.data.blendMode;
-        // 混合模式改了打断合并
-        if (
-          MeshGenerator.tempBlendMode !== null &&
-          MeshGenerator.tempBlendMode !== slot.data.blendMode
-        ) {
-          // 如果不能合并，需要分离，先把之前的生成一个 subMesh
-          if (count > 0) {
-            const subMesh = new SubMesh(start, count);
-            subMeshItems.push({
-              blendMode: MeshGenerator.tempBlendMode,
-              subMesh,
-              texture,
-            });
-            start = indicesLength;
-            count = 0;
-          }
-        }
-        MeshGenerator.tempBlendMode = slot.data.blendMode;
-
         let finalVertices: ArrayLike<number>;
         let finalVerticesLength: number;
         let finalIndices: ArrayLike<number>;
@@ -278,44 +256,58 @@ export class MeshGenerator {
         for (i = indicesLength, j = 0; j < finalIndicesLength; i++, j++) {
           indicesArray[i] = finalIndices[j] + indexStart;
         }
+        indicesLength += finalIndicesLength;
 
-        // 当前 slot 需要单独渲染
-        if (this.separateSlots.includes(slotName)) {
+        const slotName = slot.data.name;
+        blend = slot.data.blendMode;
+        const blendModeChanged =  MeshGenerator.tempBlendMode !== null &&
+        MeshGenerator.tempBlendMode !== slot.data.blendMode;
+        const textureChanged = MeshGenerator.tempTexture !== null && 
+        MeshGenerator.tempTexture !== texture;
+        const slotNeedSeparate = this.separateSlots.includes(slotName);
+        
+        if (slotNeedSeparate || blendModeChanged || textureChanged) {
+          // Finish accumulated count first
           if (count > 0) {
             const subMesh = new SubMesh(start, count);
             subMeshItems.push({
+              subMesh,
+              texture: MeshGenerator.tempTexture,
               blendMode: MeshGenerator.tempBlendMode,
+            });
+            start += count;
+            count = 0;
+          }
+          if (slotNeedSeparate) {
+            // If separatedTexture exist, set texture params
+            const separateTexture = this.separateSlotTextureMap.get(slotName);
+            if (separateTexture) {
+              const oldTexture = texture.texture;
+              separateTexture.filterMode = oldTexture.filterMode;
+              separateTexture.wrapModeU = oldTexture.wrapModeU;
+              separateTexture.wrapModeV = oldTexture.wrapModeV;
+            }
+            const subMesh = new SubMesh(start, finalIndicesLength);
+            subMeshItems.push({
+              blendMode: blend,
               subMesh,
               texture,
+              slotName,
             });
-            start = indicesLength;
+            start += finalIndicesLength;
+            count = 0;
+          } else {
+            count += finalIndicesLength;
           }
-          const separateTexture = this.separateSlotTextures[slotName];
-          if (separateTexture) {
-            const oldTexture = texture.texture;
-            separateTexture.filterMode = oldTexture.filterMode;
-            separateTexture.wrapModeU = oldTexture.wrapModeU;
-            separateTexture.wrapModeV = oldTexture.wrapModeV;
-            texture = separateTexture;
-          }
-          const subMesh = new SubMesh(start, finalIndicesLength);
-          subMeshItems.push({
-            blendMode: blend,
-            subMesh,
-            texture,
-          });
-          start += finalIndicesLength;
-          count = 0;
         } else {
           count += finalIndicesLength;
         }
-        indicesLength += finalIndicesLength;
+        MeshGenerator.tempBlendMode = blend;
+        MeshGenerator.tempTexture = texture;
       }
 
       _clipper.clipEndWithSlot(slot);
     } // slot traverse end
-
-    _clipper.clipEnd();
 
     // add reset sub mesh
     if (count > 0) {
@@ -328,14 +320,17 @@ export class MeshGenerator {
       count = 0;
     }
 
+    _clipper.clipEnd();
+
     // sort sub-mesh
     subMeshItems.sort((a, b) => a.subMesh.start - b.subMesh.start);
 
     // update buffer when vertex count change
-    if (indicesLength > 0 && indicesLength !== this._vertexCount) {
-      if (indicesLength > this._vertexCount) {
-        this._vertexCount = indicesLength;
-        this._prepareBufferData(this._vertexCount);
+    if (vertexCount > 0 && vertexCount !== this._vertexCount) {
+      if (vertexCount > this._vertexCount) {
+        this._vertexCount = vertexCount;
+        this._triangleCount = indicesLength;
+        this._prepareBufferData(this._vertexCount, this._triangleCount);
         this._needResize = true;
         return;
       }
@@ -346,13 +341,17 @@ export class MeshGenerator {
     const renderer = this._meshRenderer;
     for (let i = 0, l = subMeshItems.length; i < l; ++i) {
       const item = subMeshItems[i];
-      const blendMode = item.blendMode;
+      const { slotName, blendMode, texture } = item;
       mesh.addSubMesh(item.subMesh);
       let material = renderer.getMaterial(i);
       if (!material) {
-        material = SpineAnimation.getDefaultMaterial(this._engine);
+        material = SpineRenderer.getDefaultMaterial(this._engine);
       }
-      material.shaderData.setTexture("material_SpineTexture", texture.texture);
+      let subMeshTexture = texture.texture;
+      if (this.separateSlotTextureMap.has(slotName)) {
+        subMeshTexture = this.separateSlotTextureMap.get(slotName);
+      }
+      material.shaderData.setTexture("material_SpineTexture", subMeshTexture);
       // @ts-ignore
       material._priority = i;
       this.setBlendMode(material, blendMode);
@@ -360,7 +359,7 @@ export class MeshGenerator {
     }
 
     if (this._needResize) {
-      _spineMesh.changeBuffer(this._engine, this._vertexCount);
+      _spineMesh.changeBuffer(this._engine, this._vertexCount, this._triangleCount);
       this._needResize = false;
     }
     _spineMesh.vertexBuffer.setData(this._verticesWithZ);
@@ -372,15 +371,15 @@ export class MeshGenerator {
   }
 
   addSeparateSlotTexture(slotName: string, texture: Texture2D) {
-    this.separateSlotTextures[slotName] = texture;
+    this.separateSlotTextureMap.set(slotName, texture);
   }
 
-  private _prepareBufferData(vertexCount: number) {
+  private _prepareBufferData(vertexCount: number, triangleCount: number) {
     this._vertices = new Float32Array(vertexCount * MeshGenerator.VERTEX_SIZE);
     this._verticesWithZ = new Float32Array(
       vertexCount * MeshGenerator.VERTEX_STRIDE
     );
-    this._indices = new Uint16Array(vertexCount);
+    this._indices = new Uint16Array(triangleCount);
   }
 
   private setBlendMode(material: Material, blendMode: BlendMode) {
