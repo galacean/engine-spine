@@ -150,14 +150,14 @@ export class MeshGenerator {
         vertices = this._vertices;
         numFloats = vertexSize * 4;
         regionAttachment.computeWorldVertices(
-          slot.bone,
+          slot,
           vertices,
           0,
           vertexSize
         );
         triangles = MeshGenerator.QUAD_TRIANGLES;
         uvs = regionAttachment.uvs;
-        texture = regionAttachment.region.renderObject.page.texture;
+        texture = regionAttachment.region.texture;
         vertexCount += 4;
       } else if (attachment instanceof MeshAttachment) {
         let meshAttachment = <MeshAttachment>attachment;
@@ -173,11 +173,11 @@ export class MeshGenerator {
           meshAttachment.worldVerticesLength,
           vertices,
           0,
-          vertexSize
+          vertexSize,
         );
         triangles = meshAttachment.triangles;
         uvs = meshAttachment.uvs;
-        texture = meshAttachment.region.renderObject.page.texture;
+        texture = meshAttachment.region.texture;
         vertexCount += meshAttachment.worldVerticesLength >> 1;
       } else if (attachment instanceof ClippingAttachment) {
         if (useClipping) {
