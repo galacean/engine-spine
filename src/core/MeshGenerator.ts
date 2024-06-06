@@ -143,7 +143,8 @@ export class MeshGenerator {
       let attachmentColor: Color = null;
       const z = zSpacing * slotIndex;
       let numFloats = 0;
-      let vertexSize = _clipper.isClipping() ? 2 : MeshGenerator.VERTEX_SIZE;
+      const isClipping = _clipper.isClipping();
+      let vertexSize = isClipping ? 2 : MeshGenerator.VERTEX_SIZE;
       if (attachment instanceof RegionAttachment) {
         let regionAttachment = <RegionAttachment>attachment;
         attachmentColor = regionAttachment.color;
@@ -209,7 +210,7 @@ export class MeshGenerator {
           alpha
         );
 
-        if (_clipper.isClipping()) {
+        if (isClipping) {
           _clipper.clipTriangles(
             vertices,
             numFloats,
@@ -245,7 +246,6 @@ export class MeshGenerator {
           finalIndices = triangles;
           finalIndicesLength = triangles.length;
         }
-
         let indexStart = verticesLength / MeshGenerator.VERTEX_STRIDE;
         let verticesWithZ = this._verticesWithZ;
         let i = verticesLength;
@@ -264,6 +264,8 @@ export class MeshGenerator {
         verticesLength = i;
 
         let indicesArray = this._indices;
+        console.log(finalIndices, indexStart);
+        debugger
         for (i = indicesLength, j = 0; j < finalIndicesLength; i++, j++) {
           indicesArray[i] = finalIndices[j] + indexStart;
         }

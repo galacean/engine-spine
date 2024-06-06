@@ -186,7 +186,7 @@ async function loadSpine(root: Entity, engine: Engine, resource) {
   //   outline.updateVertices();
   // }, 67);
 
-  spineAnimation.state.setAnimation(0, firstAnimation, true);
+  spineAnimation.state.setAnimation(0, 'portal', false);
   animationController = gui.add({ animation: firstAnimation  }, 'animation', animationNames).onChange((animationName) => {
 		spineAnimation.state.setAnimation(0, animationName, true);
 	});
