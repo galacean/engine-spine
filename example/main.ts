@@ -40,7 +40,7 @@ const blobResource: any = {
 const baseDemo = 'spineBoy-单json';
 const demos = {
   'spineBoy-单json': {
-    url: "https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/oP9vu3gAVaoXN9T2/spineboy/spineboy.json",
+    url: "https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/I49uo8uSnbN9DUnN/spineboy/spineboy.json",
   },
   'raptor-三文件json': {
     urls: [
@@ -79,9 +79,9 @@ const demos = {
   },
   '皮肤切换': {
     urls: [
-      "https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/kfBdctpMQ9C6Ltdd/mix-and-match/mix-and-match.json",
-      "https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/kfBdctpMQ9C6Ltdd/mix-and-match/mix-and-match.atlas",
-      "https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/kfBdctpMQ9C6Ltdd/mix-and-match/mix-and-match.png",
+      "https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/24ejL92gvbWxsXRi/mix-and-match/mix-and-match.json",
+      "https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/24ejL92gvbWxsXRi/mix-and-match/mix-and-match.atlas",
+      "https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/24ejL92gvbWxsXRi/mix-and-match/mix-and-match.png",
     ],
     scene: 'changeSkin'
   },

@@ -6,7 +6,7 @@
   "browser": "dist/browser.js",
   "module": "dist/module.js",
   "dependencies": {
-    "@esotericsoftware/spine-core": "~4.1.1"
+    "@esotericsoftware/spine-core": "~4.2.1"
   },
   "peerDependencies": {
     "@galacean/engine": ">=1.1.0-beta.0"

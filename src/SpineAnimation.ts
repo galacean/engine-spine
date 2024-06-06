@@ -1,4 +1,4 @@
-import { SkeletonData, AnimationState, AnimationStateData } from "@esotericsoftware/spine-core";
+import { SkeletonData, AnimationState, AnimationStateData, Physics } from "@esotericsoftware/spine-core";
 import { Entity, ignoreClone } from "@galacean/engine";
 import { SpineRenderer } from "./SpineRenderer";
 export class SpineAnimation extends SpineRenderer {
@@ -25,6 +25,6 @@ export class SpineAnimation extends SpineRenderer {
     const skeleton = this._skeleton;
     state.update(delta);
     state.apply(skeleton);
-    skeleton.updateWorldTransform();
+    skeleton.updateWorldTransform(Physics.update);
   }
 }
