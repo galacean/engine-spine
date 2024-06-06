@@ -66,36 +66,44 @@ export class MeshGenerator {
     this._entity = entity;
   }
 
-  initialize(skeleton: Skeleton, setting?: SpineRenderSetting) {
+  initialize(skeletonData: SkeletonData, setting?: SpineRenderSetting) {
+    if (!skeletonData) return;
+
     const meshRenderer = this._entity.getComponent(MeshRenderer);
     if (!meshRenderer) {
       console.warn("You need add MeshRenderer component to entity first");
       return;
     }
     this._meshRenderer = meshRenderer;
+
     if (setting) {
       this._setting = setting;
     }
-    const drawOrder = skeleton.drawOrder;
-    const drawOrderCount = drawOrder.length;
-    let triangleCount = 0;
-    let vertexCount = 0;
-    for (let slotIndex = 0; slotIndex < drawOrderCount; slotIndex += 1) {
-      const slot = drawOrder[slotIndex];
-      const attachment = slot.attachment;
-      if (attachment instanceof RegionAttachment) {
-        vertexCount += 4;
-        triangleCount += 6;
-      } else if (attachment instanceof MeshAttachment) {
-        vertexCount += attachment.worldVerticesLength >> 1;
-        triangleCount += attachment.triangles.length;
+
+    // Prepare buffer by using all attachment data but clippingAttachment
+    const {
+      defaultSkin: { attachments },
+    } = skeletonData;
+    let vertexCount: number = 0;
+    const QUAD_TRIANGLE_LENGTH = MeshGenerator.QUAD_TRIANGLES.length;
+    for (let i = 0, n = attachments.length; i < n; i++) {
+      const slotAttachment = attachments[i];
+      for (let key in slotAttachment) {
+        const attachment = slotAttachment[key];
+        if (!attachment) {
+          continue;
+        } else if (attachment instanceof RegionAttachment) {
+          vertexCount += QUAD_TRIANGLE_LENGTH;
+        } else if (attachment instanceof MeshAttachment) {
+          let mesh = attachment;
+          vertexCount += mesh.triangles.length;
+        } else continue;
       }
     }
     this._vertexCount = vertexCount;
-    this._triangleCount = triangleCount;
-    this._prepareBufferData(this._vertexCount, this._triangleCount);
+    this._prepareBufferData(this._vertexCount);
     const { _spineMesh } = this;
-    _spineMesh.initialize(this._engine, this._vertexCount, this._triangleCount);
+    _spineMesh.initialize(this._engine, this._vertexCount);
     meshRenderer.mesh = _spineMesh.mesh;
   }
 
@@ -326,11 +334,10 @@ export class MeshGenerator {
     subMeshItems.sort((a, b) => a.subMesh.start - b.subMesh.start);
 
     // update buffer when vertex count change
-    if (vertexCount > 0 && vertexCount !== this._vertexCount) {
-      if (vertexCount > this._vertexCount) {
-        this._vertexCount = vertexCount;
-        this._triangleCount = indicesLength;
-        this._prepareBufferData(this._vertexCount, this._triangleCount);
+    if (indicesLength > 0 && indicesLength !== this._vertexCount) {
+      if (indicesLength > this._vertexCount) {
+        this._vertexCount = indicesLength;
+        this._prepareBufferData(this._vertexCount);
         this._needResize = true;
         return;
       }
@@ -374,12 +381,12 @@ export class MeshGenerator {
     this.separateSlotTextureMap.set(slotName, texture);
   }
 
-  private _prepareBufferData(vertexCount: number, triangleCount: number) {
+  private _prepareBufferData(vertexCount: number) {
     this._vertices = new Float32Array(vertexCount * MeshGenerator.VERTEX_SIZE);
     this._verticesWithZ = new Float32Array(
       vertexCount * MeshGenerator.VERTEX_STRIDE
     );
-    this._indices = new Uint16Array(triangleCount);
+    this._indices = new Uint16Array(vertexCount);
   }
 
   private setBlendMode(material: Material, blendMode: BlendMode) {
