@@ -8,17 +8,19 @@ import {
   SubMesh,
   Texture2D,
 } from "@galacean/engine";
-import { Skeleton } from "../spine-core/Skeleton";
-import { SkeletonData } from "../spine-core/SkeletonData";
-import { RegionAttachment } from "../spine-core/attachments/RegionAttachment";
-import { MeshAttachment } from "../spine-core/attachments/MeshAttachment";
-import { ClippingAttachment } from "../spine-core/attachments/ClippingAttachment";
-import { ArrayLike, Color } from "../spine-core/Utils";
-import { SkeletonClipping } from "../spine-core/SkeletonClipping";
+import { 
+  Skeleton,
+  RegionAttachment,
+  MeshAttachment,
+  ClippingAttachment,
+  ArrayLike,
+  Color,
+  SkeletonClipping,
+  BlendMode,
+} from "@esotericsoftware/spine-core";
 import { SpineMesh } from "./SpineMesh";
 import { SpineRenderSetting } from "../types";
 import { SpineRenderer } from "../SpineRenderer";
-import { BlendMode } from "../spine-core/BlendMode";
 import { AdaptiveTexture } from "../loader/LoaderUtils";
 
 type SubMeshItem = {
@@ -146,7 +148,7 @@ export class MeshGenerator {
         );
         triangles = MeshGenerator.QUAD_TRIANGLES;
         uvs = regionAttachment.uvs;
-        texture = regionAttachment.region.renderObject.texture;
+        texture = regionAttachment.region.renderObject.page.texture;
         vertexCount += 4;
       } else if (attachment instanceof MeshAttachment) {
         let meshAttachment = <MeshAttachment>attachment;
@@ -166,7 +168,7 @@ export class MeshGenerator {
         );
         triangles = meshAttachment.triangles;
         uvs = meshAttachment.uvs;
-        texture = meshAttachment.region.renderObject.texture;
+        texture = meshAttachment.region.renderObject.page.texture;
         vertexCount += meshAttachment.worldVerticesLength >> 1;
       } else if (attachment instanceof ClippingAttachment) {
         if (useClipping) {
@@ -179,7 +181,7 @@ export class MeshGenerator {
         _clipper.clipEndWithSlot(slot);
         continue;
       }
-
+      
       if (texture != null) {
         let finalVertices: ArrayLike<number>;
         let finalVerticesLength: number;

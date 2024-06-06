@@ -5,7 +5,7 @@ import {
   resourceLoader,
   ResourceManager,
 } from "@galacean/engine";
-import { SkeletonData } from "../spine-core/SkeletonData";
+import { SkeletonData } from "@esotericsoftware/spine-core";
 import { getUrlExtension, loadAndCreateSpineSkeletonData } from "./LoaderUtils";
 
 export type SpineAssetBundle = {
@@ -13,6 +13,7 @@ export type SpineAssetBundle = {
   skeletonExtension: string;
   atlasPath: string;
   imagePaths: string[];
+  imageExtensions: string[];
 }
 
 type SpineLoaderParams =  {
@@ -35,6 +36,7 @@ class SpineLoader extends Loader<SkeletonData> {
         skeletonExtension: '',
         atlasPath: '',
         imagePaths: [],
+        imageExtensions: [],
       };
       let { fileExtensions, imageLoaderType } = item.params || {};
       if (item.urls) {
@@ -50,6 +52,7 @@ class SpineLoader extends Loader<SkeletonData> {
         const fileExtension = verifyFileExtensions(fileExtensions, false);
         deriveAndAssignSpineAsset(item.url, fileExtension as string, spineAssetBundle);
       }
+      console.log(spineAssetBundle);
       const { skeletonPath, atlasPath } = spineAssetBundle;
       if (!skeletonPath || !atlasPath) {
         reject('Failed to load spine assets. Please check the file path and ensure the file extension is included.');
@@ -81,6 +84,7 @@ function parseAndAssignSpineAsset(url: string, fileExtension: string | null, bun
   }
   if (imageExtension.includes(ext)) {
     bundle.imagePaths.push(url);
+    bundle.imageExtensions.push(ext);
   }
 }
 

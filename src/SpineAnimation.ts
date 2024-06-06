@@ -1,6 +1,4 @@
-import { SkeletonData } from "./spine-core/SkeletonData";
-import { AnimationState } from "./spine-core/AnimationState";
-import { AnimationStateData } from "./spine-core/AnimationStateData";
+import { SkeletonData, AnimationState, AnimationStateData } from "@esotericsoftware/spine-core";
 import { Entity, ignoreClone } from "@galacean/engine";
 import { SpineRenderer } from "./SpineRenderer";
 export class SpineAnimation extends SpineRenderer {

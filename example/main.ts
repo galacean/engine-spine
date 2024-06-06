@@ -37,23 +37,23 @@ const blobResource: any = {
   }
 };
 
-const baseDemo = 'spineBoy-单json';
+const baseDemo = '鱼-多贴图';
 const demos = {
   'spineBoy-单json': {
-    url: "https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/kx5353rrNIDn4CsX/spineboy-pro/spineboy-pro.json",
+    url: "https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/7nFdjoEMDrIhD5DC/spineboy/spineboy.json",
   },
-  '小鸭子-三文件json': {
+  'raptor-三文件json': {
     urls: [
-      "https://g.alicdn.com/eva-assets/097c0a76532bab33724b9e6c308807a4/0.0.1/tmp/78b308e/9e57381c-cdd2-4e7f-8bc0-84af6e5269a9.json",
-      "https://g.alicdn.com/eva-assets/c6f516d4d78488a5f0e2e9a9e1ac18bd/0.0.1/tmp/ddbdff7/2adeb8b8-2838-48f0-b116-f8fbefc9c6cb.atlas",
-      "https://gw.alicdn.com/imgextra/i2/O1CN014zvnCQ1Yqt416NMYQ_!!6000000003111-2-tps-1491-622.png"
+      "https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/l2dB0YnwaP1PUMkl/raptor/raptor.json",
+      "https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/l2dB0YnwaP1PUMkl/raptor/raptor.atlas",
+      "https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/l2dB0YnwaP1PUMkl/raptor/raptor.png",
     ],
   },
   '三文件-无后缀bin': {
     urls: [
-      "https://mdn.alipayobjects.com/portal_h1wdez/afts/file/A*2r1LSpY4eiMAAAAAAAAAAAAAAQAAAQ",
-      "https://mdn.alipayobjects.com/portal_h1wdez/afts/file/A*9OGxSZo4qUAAAAAAAAAAAAAAAQAAAQ",
-      "https://mdn.alipayobjects.com/portal_h1wdez/afts/img/A*drsPS5Sc55MAAAAAAAAAAAAAAQAAAQ/original",
+      'https://mdn.alipayobjects.com/portal_h1wdez/afts/file/A*Rk3CRppqDZ0AAAAAAAAAAAAAAQAAAQ',
+      'https://mdn.alipayobjects.com/portal_h1wdez/afts/file/A*5ygeSLpO9W0AAAAAAAAAAAAAAQAAAQ',
+      'https://mdn.alipayobjects.com/portal_h1wdez/afts/img/A*MPAYRbBDhFsAAAAAAAAAAAAAAQAAAQ/original',
     ],
     params: {
       fileExtensions: [
@@ -63,71 +63,42 @@ const demos = {
       ],
     }
   },
-  '单文件-bin': {
-    url: "https://s.momocdn.com/s1/u/jaieigedf/weather-god/spine/wind-god1-bin/bin/fengshen.bin",
-  },
-  '龙珠-三文件json-ktx2': {
+  'ktx2': {
     urls: [
-      "https://mdn.alipayobjects.com/oasis_be/afts/file/A*gNECQLhUGCQAAAAAAAAAAAAADkp5AQ/Dragonballs.json",
-      "https://mdn.alipayobjects.com/oasis_be/afts/file/A*vQntSrNfC7sAAAAAAAAAAAAADkp5AQ/Dragonballs.atlas",
-      "https://mdn.alipayobjects.com/oasis_be/afts/img/A*8YR5QZGa83gAAAAAAAAAAAAADkp5AQ/original/Dragonballs.ktx2",
+      "https://mdn.alipayobjects.com/portal_h1wdez/afts/file/A*Rk3CRppqDZ0AAAAAAAAAAAAAAQAAAQ",
+      "https://mdn.alipayobjects.com/portal_h1wdez/afts/file/A*5ygeSLpO9W0AAAAAAAAAAAAAAQAAAQ",
+      //"https://mdn.alipayobjects.com/oasis_be/afts/img/A*M0r_SJID4m0AAAAAAAAAAAAADkp5AQ/original/DR.ktx2",
+      "https://mdn.alipayobjects.com/portal_h1wdez/afts/file/A*KX8kSrNciCcAAAAAAAAAAAAAAQAAAQ?a=1&query=.ktx2",
     ],
     params: {
-      imageLoaderType: 'KTX2',
+      fileExtensions: [
+        'bin',
+        'atlas',
+      ],
     }
   },
   '皮肤切换': {
     urls: [
-      "https://gw.alipayobjects.com/os/OasisHub/c51a45ef-f248-4835-b601-6d31a901f298/1629713824525.json",
-      "https://gw.alipayobjects.com/os/OasisHub/b016738d-173a-4506-9112-045ebba84d82/1629713824527.atlas",
-      "https://gw.alipayobjects.com/zos/OasisHub/747a94f3-8734-47b3-92b3-2d7fe2d36e58/1629713824527.png",
+      'https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/cvoqFrmAXZnsTECM/mix-and-match/mix-and-match.json',
+      'https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/cvoqFrmAXZnsTECM/mix-and-match/mix-and-match.atlas',
+      'https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/cvoqFrmAXZnsTECM/mix-and-match/mix-and-match.png',
     ],
     scene: 'changeSkin'
   },
-  '混合模式-KTX2': {
-    urls: [
-      "https://mdn.alipayobjects.com/oasis_be/afts/file/A*uM32TqxJJwYAAAAAAAAAAAAADkp5AQ/Test.json",
-      "https://mdn.alipayobjects.com/oasis_be/afts/file/A*Y35SS6q_N18AAAAAAAAAAAAADkp5AQ/Test.atlas",
-      "https://mdn.alipayobjects.com/oasis_be/afts/img/A*GhClTIcYXaEAAAAAAAAAAAAADkp5AQ/original/Test.ktx2",
-    ],
-    params: {
-      imageLoaderType: 'KTX2'
-    }
-  },
-  '混合模式': {
-    url: "https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/Rzdak4IiWMPotfTV/labayu/labayu.json",
-  },
-  '小人换装-hackSlotTexture': {
-    urls: [
-      "https://gw.alipayobjects.com/os/OasisHub/e675c9e1-2b19-4940-b8ed-474792e613d7/1629603245094.json",
-      "https://gw.alipayobjects.com/os/OasisHub/994dfadc-c498-4210-b9ba-0c3deed61fc5/1629603245095.atlas",
-      "https://gw.alipayobjects.com/zos/OasisHub/b52768b0-0374-4c64-a1bd-763b1a37ee5f/1629603245095.png",
-    ],
-    scene: 'hackSlotTexture'
-  },
-  '小鸡-部件替换': {
-    urls: [
-      "https://gw.alipayobjects.com/os/OasisHub/01c23386-ae6d-41b3-ab51-08b023a0dc3f/1629864253199.json",
-      "https://gw.alipayobjects.com/os/OasisHub/27b76dd2-01b3-4282-83e8-17be20b910ae/1629864253200.atlas",
-      "https://gw.alipayobjects.com/zos/OasisHub/99bc4468-02c6-4f35-8fef-ac5a711fc641/1629864253200.png",
-    ],
-    scene: 'changeAttachment'
-  },
   '鱼-多贴图': {
     urls: [
-      "https://mdn.alipayobjects.com/portal_h1wdez/afts/file/A*GJqKR4kutNgAAAAAAAAAAAAAAQAAAQ",
-      "https://mdn.alipayobjects.com/portal_h1wdez/afts/file/A*8RzqTLZaJowAAAAAAAAAAAAAAQAAAQ",
-      "https://mdn.alipayobjects.com/portal_h1wdez/afts/img/A*EX8tQKC_8u4AAAAAAAAAAAAAAQAAAQ/original",
-      "https://mdn.alipayobjects.com/portal_h1wdez/afts/img/A*wWJdRIp_Kf0AAAAAAAAAAAAAAQAAAQ",
+      "https://mdn.alipayobjects.com/portal_h1wdez/afts/file/A*aNM1TqIt7QUAAAAAAAAAAAAAAQAAAQ?af_fileName=dr.skel",
+      "https://mdn.alipayobjects.com/portal_h1wdez/afts/file/A*0aNHR7VY4tcAAAAAAAAAAAAAAQAAAQ?af_fileName=dr.atlas",
+      "https://mdn.alipayobjects.com/portal_h1wdez/afts/img/A*K0NVS6ncInMAAAAAAAAAAAAAAQAAAQ/original?af_fileName=your_file1.png",
+      "https://mdn.alipayobjects.com/portal_h1wdez/afts/img/A*Z9umQrI1AlUAAAAAAAAAAAAAAQAAAQ/original?af_fileName=your_file2.png",
+      "https://mdn.alipayobjects.com/portal_h1wdez/afts/img/A*IH_uT67UEvQAAAAAAAAAAAAAAQAAAQ/original?af_fileName=your_file3.png",
+      "https://mdn.alipayobjects.com/portal_h1wdez/afts/img/A*Q3edT7Ufj1wAAAAAAAAAAAAAAQAAAQ/original?af_fileName=your_file4.png",
+      "https://mdn.alipayobjects.com/portal_h1wdez/afts/img/A*NnZIRZ6jMu8AAAAAAAAAAAAAAQAAAQ/original?af_fileName=your_file5.png",
+      "https://mdn.alipayobjects.com/portal_h1wdez/afts/img/A*SvlJRpWf6hoAAAAAAAAAAAAAAQAAAQ/original?af_fileName=your_file6.png",
+      "https://mdn.alipayobjects.com/portal_h1wdez/afts/img/A*AQfdQpb0u54AAAAAAAAAAAAAAQAAAQ/original?af_fileName=your_file7.png",
+      "https://mdn.alipayobjects.com/portal_h1wdez/afts/img/A*otBQSrDL3aMAAAAAAAAAAAAAAQAAAQ/original?af_fileName=your_file8.png",
+      "https://mdn.alipayobjects.com/portal_h1wdez/afts/img/A*QabPS4gzIBwAAAAAAAAAAAAAAQAAAQ/original?af_fileName=your_file9.png",
     ],
-    params: {
-      fileExtensions: [
-        'json',
-        'atlas',
-        'png',
-        'png',
-      ]
-    }
   },
   '本地上传文件': {
     url: "https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/kx5353rrNIDn4CsX/spineboy-pro/spineboy-pro.json",
@@ -266,18 +237,18 @@ function handleChangeAttachment(spineAnimation: SpineAnimation, skeletonData: Sk
 
 function handleChangeSkinScene(spineAnimation: SpineAnimation) {
   const { skeleton, state } = spineAnimation;
-  skeleton.setSkinByName("girl"); // 1. Set the active skin
+  skeleton.setSkinByName("full-skins/girl"); // 1. Set the active skin
   skeleton.setSlotsToSetupPose(); // 2. Use setup pose to set base attachments.
   state.apply(skeleton);
   const info = {
-    skin: "girl",
+    skin: "full-skins/girl",
   };
   skinController = gui
   .add(info, "skin", [
-    "girl",
-    "girl-blue-cape",
-    "girl-spring-dress",
-    "boy",
+    "full-skins/girl",
+    "full-skins/girl-blue-cape",
+    "full-skins/girl-spring-dress",
+    "full-skins/boy",
   ])
   .onChange((skinName) => {
     skeleton.setSkinByName(skinName); // 1. Set the active skin

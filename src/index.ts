@@ -1,13 +1,12 @@
 import "./loader/SpineLoader";
 export { SpineRenderer } from "./SpineRenderer";
 export { SpineAnimation } from "./SpineAnimation";
-export { AssetManager } from "./spine-core/AssetManager";
-export { Texture } from "./spine-core/Texture";
-export { TextureAtlas } from "./spine-core/TextureAtlas";
-export { AtlasAttachmentLoader } from "./spine-core/AtlasAttachmentLoader";
-export { SkeletonJson } from "./spine-core/SkeletonJson";
-export { SkeletonBinary } from "./spine-core/SkeletonBinary";
-export { SkeletonData } from "./spine-core/SkeletonData";
+export { Texture } from "@esotericsoftware/spine-core";
+export { TextureAtlas } from "@esotericsoftware/spine-core";
+export { AtlasAttachmentLoader } from "@esotericsoftware/spine-core";
+export { SkeletonJson } from "@esotericsoftware/spine-core";
+export { SkeletonBinary } from "@esotericsoftware/spine-core";
+export { SkeletonData } from "@esotericsoftware/spine-core";
 export const version = `__buildVersion`;
 
 console.log(`Galacean spine version: ${version}`);

@@ -1,8 +1,6 @@
-import { Skeleton } from "./spine-core/Skeleton";
-import { SkeletonData } from "./spine-core/SkeletonData";
+import { Skeleton, SkeletonData, Vector2 } from "@esotericsoftware/spine-core";
 import { MeshGenerator } from "./core/MeshGenerator";
 import { SpineRenderSetting } from "./types";
-import { Vector2 } from "./spine-core/Utils";
 import {
   Script,
   Entity,
