@@ -29,7 +29,7 @@ export class SpineMesh {
     return this._vertexBuffer;
   }
 
-  initialize(engine: Engine, vertexCount: number, triangleCount: number) {
+  initialize(engine: Engine, vertexCount: number) {
     const mesh = this._mesh = new BufferMesh(engine);
 
     const vertexElements = [
@@ -50,7 +50,7 @@ export class SpineMesh {
     const indexBuffer = new Buffer(
       engine,
       BufferBindFlag.IndexBuffer,
-      triangleCount * 2,
+      vertexCount * 2,
       BufferUsage.Dynamic
     );
 
@@ -63,7 +63,7 @@ export class SpineMesh {
     mesh.addSubMesh(0, vertexCount);
   }
 
-  changeBuffer(engine: Engine, vertexCount: number, triangleCount: number) {
+  changeBuffer(engine: Engine, vertexCount: number) {
     const vertexStride = (MeshGenerator.VERTEX_STRIDE) * 4; // position + color + uv * Float32 byteLen
     const byteLength = vertexStride * vertexCount;
     const vertexBuffer = new Buffer(
@@ -76,7 +76,7 @@ export class SpineMesh {
     const indexBuffer = new Buffer(
       engine,
       BufferBindFlag.IndexBuffer,
-      triangleCount * 2,
+      vertexCount * 2,
       BufferUsage.Dynamic
     );
     const mesh = this._mesh;

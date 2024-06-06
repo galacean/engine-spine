@@ -61,7 +61,7 @@ export class SpineRenderer extends Script {
     this.setting = setting;
     this._skeletonData = skeletonData;
     this._skeleton = new Skeleton(skeletonData);
-    this._meshGenerator.initialize(this._skeleton, this.setting);
+    this._meshGenerator.initialize(this._skeletonData, this.setting);
   }
 
   /**
