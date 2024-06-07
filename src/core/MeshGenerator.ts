@@ -265,7 +265,6 @@ export class MeshGenerator {
         verticesLength = i;
 
         let indicesArray = this._indices;
-        console.log(finalIndices, verticesLength, indexStart);
         for (i = indicesLength, j = 0; j < finalIndicesLength; i++, j++) {
           indicesArray[i] = finalIndices[j] + indexStart;
         }
