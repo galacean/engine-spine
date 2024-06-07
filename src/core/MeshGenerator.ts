@@ -11,12 +11,12 @@ import {
 import {
   Skeleton,
   SkeletonData,
+  SkeletonClipping,
   RegionAttachment,
   MeshAttachment,
   ClippingAttachment,
   ArrayLike,
   Color,
-  SkeletonClipping,
   BlendMode,
 } from "@esotericsoftware/spine-core";
 import { SpineMesh } from "./SpineMesh";
@@ -36,6 +36,7 @@ export class MeshGenerator {
   static VERTEX_SIZE = 8; // 2 2 4 position without z, uv, color
   static VERTEX_STRIDE = 9; // 3 2 4 position with z, uv, color
   static tempColor: Color = new Color();
+  static tempDark: Color = new Color();
   static tempBlendMode: BlendMode | null = null;
   static tempTexture: AdaptiveTexture | null = null;
 
@@ -46,7 +47,6 @@ export class MeshGenerator {
   private _spineMesh: SpineMesh = new SpineMesh();
 
   private _vertexCount: number;
-  private _triangleCount: number;
   private _vertices: Float32Array;
   private _verticesWithZ: Float32Array;
   private _indices: Uint16Array;
@@ -130,7 +130,6 @@ export class MeshGenerator {
     let count = 0;
     let blend = BlendMode.Normal;
     let texture = null;
-    let vertexCount = 0;
     MeshGenerator.tempBlendMode = null;
     MeshGenerator.tempTexture = null;
     for (let slotIndex = 0; slotIndex < maxSlotCount; ++slotIndex) {
@@ -154,12 +153,11 @@ export class MeshGenerator {
           slot,
           vertices,
           0,
-          vertexSize
+          vertexSize,
         );
         triangles = MeshGenerator.QUAD_TRIANGLES;
         uvs = regionAttachment.uvs;
         texture = regionAttachment.region.texture;
-        vertexCount += 4;
       } else if (attachment instanceof MeshAttachment) {
         let meshAttachment = <MeshAttachment>attachment;
         attachmentColor = meshAttachment.color;
@@ -179,7 +177,6 @@ export class MeshGenerator {
         triangles = meshAttachment.triangles;
         uvs = meshAttachment.uvs;
         texture = meshAttachment.region.texture;
-        vertexCount += meshAttachment.worldVerticesLength >> 1;
       } else if (attachment instanceof ClippingAttachment) {
         if (useClipping) {
           let clip = <ClippingAttachment>attachment;
@@ -191,7 +188,7 @@ export class MeshGenerator {
         _clipper.clipEndWithSlot(slot);
         continue;
       }
-      
+
       if (texture != null) {
         let finalVertices: ArrayLike<number>;
         let finalVerticesLength: number;
@@ -203,6 +200,7 @@ export class MeshGenerator {
         let slotColor = slot.color;
         let alpha = skeletonColor.a * slotColor.a * attachmentColor.a;
         let color = MeshGenerator.tempColor;
+        let dark = MeshGenerator.tempDark;
         color.set(
           skeletonColor.r * slotColor.r * attachmentColor.r,
           skeletonColor.g * slotColor.g * attachmentColor.g,
@@ -218,8 +216,8 @@ export class MeshGenerator {
             triangles.length,
             uvs,
             color,
-            null,
-            false
+            dark,
+            false,
           );
           let clippedVertices = _clipper.clippedVertices;
           let clippedTriangles = _clipper.clippedTriangles;
@@ -246,6 +244,12 @@ export class MeshGenerator {
           finalIndices = triangles;
           finalIndicesLength = triangles.length;
         }
+
+        if (finalVerticesLength == 0 || finalIndicesLength == 0) {
+					_clipper.clipEndWithSlot(slot);
+					continue;
+				}
+
         let indexStart = verticesLength / MeshGenerator.VERTEX_STRIDE;
         let verticesWithZ = this._verticesWithZ;
         let i = verticesLength;
@@ -264,8 +268,6 @@ export class MeshGenerator {
         verticesLength = i;
 
         let indicesArray = this._indices;
-        console.log(finalIndices, indexStart);
-        debugger
         for (i = indicesLength, j = 0; j < finalIndicesLength; i++, j++) {
           indicesArray[i] = finalIndices[j] + indexStart;
         }
@@ -371,7 +373,7 @@ export class MeshGenerator {
     }
 
     if (this._needResize) {
-      _spineMesh.changeBuffer(this._engine, this._vertexCount, this._triangleCount);
+      _spineMesh.changeBuffer(this._engine, this._vertexCount);
       this._needResize = false;
     }
     _spineMesh.vertexBuffer.setData(this._verticesWithZ);
