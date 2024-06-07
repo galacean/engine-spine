@@ -67,6 +67,7 @@ export async function loadAndCreateSpineSkeletonData(
     }
   }
   const atlasLoader = new AtlasAttachmentLoader(textureAtlas);
+  console.log(skeletonTextData);
   if (skeletonExtension === 'json') {
     return new SkeletonJson(atlasLoader).readSkeletonData(skeletonTextData);
   } else {

@@ -92,6 +92,13 @@ const demos = {
       "https://mdn.alipayobjects.com/portal_h1wdez/afts/img/A*uFteTLdSAuQAAAAAAAAAAAAAAQAAAQ/original?b=.png",
     ],
   },
+  '帧动画': {
+    urls: [
+      "https://mdn.alipayobjects.com/portal_h1wdez/afts/file/A*__X7QbwDzjgAAAAAAAAAAAAAAQAAAQ?a=.bin",
+      "https://mdn.alipayobjects.com/portal_h1wdez/afts/file/A*bAviT4n8FMIAAAAAAAAAAAAAAQAAAQ?b=.atlas",
+      "https://mdn.alipayobjects.com/portal_h1wdez/afts/img/A*0enYSYMq9VgAAAAAAAAAAAAAAQAAAQ/original?c=.png",
+    ],
+  },
   '本地上传文件': {
     url: "https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/kx5353rrNIDn4CsX/spineboy-pro/spineboy-pro.json",
     scene: 'upload',
