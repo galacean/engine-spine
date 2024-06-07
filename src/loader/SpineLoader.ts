@@ -18,7 +18,6 @@ export type SpineAssetBundle = {
 
 type SpineLoaderParams =  {
   fileExtensions?: string | string[];
-  imageLoaderType?: string;
 }
 
 type SpineLoadItem = LoadItem & { params?: SpineLoaderParams };
@@ -58,7 +57,7 @@ class SpineLoader extends Loader<SkeletonData> {
         reject('Failed to load spine assets. Please check the file path and ensure the file extension is included.');
         return;
       }
-      loadAndCreateSpineSkeletonData(spineAssetBundle, resourceManager.engine, imageLoaderType)
+      loadAndCreateSpineSkeletonData(spineAssetBundle, resourceManager.engine)
       .then((skeletonData) => {
         resolve(skeletonData);
       })

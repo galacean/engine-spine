@@ -44,16 +44,16 @@ const demos = {
   },
   'raptor-三文件json': {
     urls: [
-      "https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/l2dB0YnwaP1PUMkl/raptor/raptor.json",
-      "https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/l2dB0YnwaP1PUMkl/raptor/raptor.atlas",
-      "https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/l2dB0YnwaP1PUMkl/raptor/raptor.png",
+      "https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/jdjQ6mGxWknZ7TtQ/raptor/raptor.json",
+      "https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/jdjQ6mGxWknZ7TtQ/raptor/raptor.atlas",
+      "https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/jdjQ6mGxWknZ7TtQ/raptor/raptor.png",
     ],
   },
   '三文件-无后缀bin': {
     urls: [
-      'https://mdn.alipayobjects.com/portal_h1wdez/afts/file/A*Rk3CRppqDZ0AAAAAAAAAAAAAAQAAAQ',
-      'https://mdn.alipayobjects.com/portal_h1wdez/afts/file/A*5ygeSLpO9W0AAAAAAAAAAAAAAQAAAQ',
-      'https://mdn.alipayobjects.com/portal_h1wdez/afts/img/A*MPAYRbBDhFsAAAAAAAAAAAAAAQAAAQ/original',
+      "https://mdn.alipayobjects.com/portal_h1wdez/afts/file/A*Go0FQ6FlurEAAAAAAAAAAAAAAQAAAQ",
+      "https://mdn.alipayobjects.com/portal_h1wdez/afts/file/A*AjmGS7wM-2UAAAAAAAAAAAAAAQAAAQ",
+      "https://mdn.alipayobjects.com/portal_h1wdez/afts/img/A*BXnORpJ85ywAAAAAAAAAAAAAAQAAAQ/original",
     ],
     params: {
       fileExtensions: [
@@ -65,10 +65,9 @@ const demos = {
   },
   'ktx2': {
     urls: [
-      "https://mdn.alipayobjects.com/portal_h1wdez/afts/file/A*Rk3CRppqDZ0AAAAAAAAAAAAAAQAAAQ",
-      "https://mdn.alipayobjects.com/portal_h1wdez/afts/file/A*5ygeSLpO9W0AAAAAAAAAAAAAAQAAAQ",
-      //"https://mdn.alipayobjects.com/oasis_be/afts/img/A*M0r_SJID4m0AAAAAAAAAAAAADkp5AQ/original/DR.ktx2",
-      "https://mdn.alipayobjects.com/portal_h1wdez/afts/file/A*KX8kSrNciCcAAAAAAAAAAAAAAQAAAQ?a=1&query=.ktx2",
+      "https://mdn.alipayobjects.com/portal_h1wdez/afts/file/A*Go0FQ6FlurEAAAAAAAAAAAAAAQAAAQ",
+      "https://mdn.alipayobjects.com/portal_h1wdez/afts/file/A*AjmGS7wM-2UAAAAAAAAAAAAAAQAAAQ",
+      "https://mdn.alipayobjects.com/oasis_be/afts/img/A*i5qRTKgPlYMAAAAAAAAAAAAADkp5AQ/original/DR.ktx2",
     ],
     params: {
       fileExtensions: [
@@ -85,19 +84,19 @@ const demos = {
     ],
     scene: 'changeSkin'
   },
-  '鱼-多贴图': {
+  '多贴图': {
     urls: [
-      "https://mdn.alipayobjects.com/portal_h1wdez/afts/file/A*aNM1TqIt7QUAAAAAAAAAAAAAAQAAAQ?af_fileName=dr.skel",
-      "https://mdn.alipayobjects.com/portal_h1wdez/afts/file/A*0aNHR7VY4tcAAAAAAAAAAAAAAQAAAQ?af_fileName=dr.atlas",
-      "https://mdn.alipayobjects.com/portal_h1wdez/afts/img/A*K0NVS6ncInMAAAAAAAAAAAAAAQAAAQ/original?af_fileName=your_file1.png",
-      "https://mdn.alipayobjects.com/portal_h1wdez/afts/img/A*Z9umQrI1AlUAAAAAAAAAAAAAAQAAAQ/original?af_fileName=your_file2.png",
-      "https://mdn.alipayobjects.com/portal_h1wdez/afts/img/A*IH_uT67UEvQAAAAAAAAAAAAAAQAAAQ/original?af_fileName=your_file3.png",
-      "https://mdn.alipayobjects.com/portal_h1wdez/afts/img/A*Q3edT7Ufj1wAAAAAAAAAAAAAAQAAAQ/original?af_fileName=your_file4.png",
-      "https://mdn.alipayobjects.com/portal_h1wdez/afts/img/A*NnZIRZ6jMu8AAAAAAAAAAAAAAQAAAQ/original?af_fileName=your_file5.png",
-      "https://mdn.alipayobjects.com/portal_h1wdez/afts/img/A*SvlJRpWf6hoAAAAAAAAAAAAAAQAAAQ/original?af_fileName=your_file6.png",
-      "https://mdn.alipayobjects.com/portal_h1wdez/afts/img/A*AQfdQpb0u54AAAAAAAAAAAAAAQAAAQ/original?af_fileName=your_file7.png",
-      "https://mdn.alipayobjects.com/portal_h1wdez/afts/img/A*otBQSrDL3aMAAAAAAAAAAAAAAQAAAQ/original?af_fileName=your_file8.png",
-      "https://mdn.alipayobjects.com/portal_h1wdez/afts/img/A*QabPS4gzIBwAAAAAAAAAAAAAAQAAAQ/original?af_fileName=your_file9.png",
+      "https://mdn.alipayobjects.com/portal_h1wdez/afts/file/A*yN21QbvPtQUAAAAAAAAAAAAAAQAAAQ?af_fileName=dr.skel",
+      "https://mdn.alipayobjects.com/portal_h1wdez/afts/file/A*BPMZQqwNlYQAAAAAAAAAAAAAAQAAAQ?af_fileName=dr.atlas",
+      "https://mdn.alipayobjects.com/portal_h1wdez/afts/img/A*A6ObTo3ME8sAAAAAAAAAAAAAAQAAAQ/original?a=.png",
+      "https://mdn.alipayobjects.com/portal_h1wdez/afts/img/A*85eWSZYpWKgAAAAAAAAAAAAAAQAAAQ/original?b=.png",
+    ],
+  },
+  '物理': {
+    urls: [
+      "https://mdn.alipayobjects.com/portal_h1wdez/afts/file/A*cVzySIX09aQAAAAAAAAAAAAAAQAAAQ?af_fileName=dr.skel",
+      "https://mdn.alipayobjects.com/portal_h1wdez/afts/file/A*7LzLSJLjBK4AAAAAAAAAAAAAAQAAAQ?af_fileName=dr.atlas",
+      "https://mdn.alipayobjects.com/portal_h1wdez/afts/img/A*uySHT5k_PU0AAAAAAAAAAAAAAQAAAQ/original?a=.png",
     ],
   },
   '本地上传文件': {
@@ -186,7 +185,7 @@ async function loadSpine(root: Entity, engine: Engine, resource) {
   //   outline.updateVertices();
   // }, 67);
 
-  spineAnimation.state.setAnimation(0, 'portal', false);
+  spineAnimation.state.setAnimation(0, firstAnimation, true);
   animationController = gui.add({ animation: firstAnimation  }, 'animation', animationNames).onChange((animationName) => {
 		spineAnimation.state.setAnimation(0, animationName, true);
 	});

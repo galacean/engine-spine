@@ -36,6 +36,7 @@ export class MeshGenerator {
   static VERTEX_SIZE = 8; // 2 2 4 position without z, uv, color
   static VERTEX_STRIDE = 9; // 3 2 4 position with z, uv, color
   static tempColor: Color = new Color();
+  static darkColor: Color = new Color();
   static tempBlendMode: BlendMode | null = null;
   static tempTexture: AdaptiveTexture | null = null;
 
@@ -203,6 +204,7 @@ export class MeshGenerator {
         let slotColor = slot.color;
         let alpha = skeletonColor.a * slotColor.a * attachmentColor.a;
         let color = MeshGenerator.tempColor;
+        let dark = MeshGenerator.darkColor;
         color.set(
           skeletonColor.r * slotColor.r * attachmentColor.r,
           skeletonColor.g * slotColor.g * attachmentColor.g,
@@ -218,7 +220,7 @@ export class MeshGenerator {
             triangles.length,
             uvs,
             color,
-            null,
+            dark,
             false
           );
           let clippedVertices = _clipper.clippedVertices;
@@ -264,8 +266,6 @@ export class MeshGenerator {
         verticesLength = i;
 
         let indicesArray = this._indices;
-        console.log(finalIndices, indexStart);
-        debugger
         for (i = indicesLength, j = 0; j < finalIndicesLength; i++, j++) {
           indicesArray[i] = finalIndices[j] + indexStart;
         }

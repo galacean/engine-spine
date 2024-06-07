@@ -25,6 +25,7 @@ export class SpineAnimation extends SpineRenderer {
     const skeleton = this._skeleton;
     state.update(delta);
     state.apply(skeleton);
+    skeleton.update(delta);
     skeleton.updateWorldTransform(Physics.update);
   }
 }
