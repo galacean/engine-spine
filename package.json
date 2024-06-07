@@ -1,7 +1,7 @@
 {
-  "version": "1.1.0-beta.22",
+  "version": "2.0.0",
   "description": "galacean spine runtime",
-  "name": "@galacean/engine-spine",
+  "name": "@galacean/engine-spine-4.1",
   "main": "dist/main.js",
   "browser": "dist/browser.js",
   "module": "dist/module.js",
@@ -9,7 +9,7 @@
     "@esotericsoftware/spine-core": "~4.1.1"
   },
   "peerDependencies": {
-    "@galacean/engine": ">=1.1.0-beta.0"
+    "@galacean/engine": "latest"
   },
   "devDependencies": {
     "@babel/core": "^7.22.5",
