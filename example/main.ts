@@ -40,7 +40,7 @@ const blobResource: any = {
 const baseDemo = 'spineBoy-单json';
 const demos = {
   'spineBoy-单json': {
-    url: "https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/I49uo8uSnbN9DUnN/spineboy/spineboy.json",
+    url: "https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/yKbdfgijyLGzQDyQ/spineboy/spineboy.json",
   },
   'raptor-三文件json': {
     urls: [
