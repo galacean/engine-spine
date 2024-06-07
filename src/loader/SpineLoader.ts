@@ -13,11 +13,11 @@ export type SpineAssetBundle = {
   skeletonExtension: string;
   atlasPath: string;
   imagePaths: string[];
+  imageExtensions: string[];
 }
 
 type SpineLoaderParams =  {
   fileExtensions?: string | string[];
-  imageLoaderType?: string;
 }
 
 type SpineLoadItem = LoadItem & { params?: SpineLoaderParams };
@@ -35,6 +35,7 @@ class SpineLoader extends Loader<SkeletonData> {
         skeletonExtension: '',
         atlasPath: '',
         imagePaths: [],
+        imageExtensions: [],
       };
       let { fileExtensions, imageLoaderType } = item.params || {};
       if (item.urls) {
@@ -55,7 +56,7 @@ class SpineLoader extends Loader<SkeletonData> {
         reject('Failed to load spine assets. Please check the file path and ensure the file extension is included.');
         return;
       }
-      loadAndCreateSpineSkeletonData(spineAssetBundle, resourceManager.engine, imageLoaderType)
+      loadAndCreateSpineSkeletonData(spineAssetBundle, resourceManager.engine)
       .then((skeletonData) => {
         resolve(skeletonData);
       })
@@ -81,6 +82,7 @@ function parseAndAssignSpineAsset(url: string, fileExtension: string | null, bun
   }
   if (imageExtension.includes(ext)) {
     bundle.imagePaths.push(url);
+    bundle.imageExtensions.push(ext);
   }
 }
 

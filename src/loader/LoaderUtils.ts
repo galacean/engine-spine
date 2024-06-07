@@ -19,9 +19,8 @@ import { SpineAssetBundle } from "./SpineLoader";
 export async function loadAndCreateSpineSkeletonData(
   bundle: SpineAssetBundle,
   engine: Engine,
-  imageLoaderType: string,
 ): Promise<SkeletonData> {
-  const { skeletonPath, atlasPath, imagePaths, skeletonExtension } = bundle;
+  const { skeletonPath, atlasPath, imagePaths, skeletonExtension, imageExtensions } = bundle;
   const skeletonLoadFunc = skeletonExtension === 'json' ? loadText : loadBinary;
   let skeletonTextData: string | ArrayBuffer;
   let textureAtlas: TextureAtlas;
@@ -32,7 +31,13 @@ export async function loadAndCreateSpineSkeletonData(
       skeletonLoadFunc(skeletonPath),
       loadText(atlasPath),
     ];
-    const texturePromises: AssetPromise<any>[] = imagePaths.map((imagePath) => loadTexture(imagePath, engine, imageLoaderType));
+    const texturePromises: AssetPromise<any>[] = imagePaths.map((imagePath, index) => {
+      const ext = imageExtensions[index];
+      let imageLoaderType = AssetType.Texture2D;
+      if (ext === 'ktx') imageLoaderType = AssetType.KTX;
+      if (ext === 'ktx2') imageLoaderType = AssetType.KTX2;
+      return loadTexture(imagePath, engine, imageLoaderType);
+    });
     loadQueue.push(AssetPromise.all(texturePromises));
     try {
       [skeletonTextData, atlasText, textures] = await Promise.all(loadQueue);
@@ -50,7 +55,7 @@ export async function loadAndCreateSpineSkeletonData(
     try {
       [skeletonTextData, textureAtlas] = await Promise.all([
         skeletonLoadFunc(skeletonPath),
-        loadTextureAtlas(atlasPath, engine, imageLoaderType),
+        loadTextureAtlas(atlasPath, engine),
       ]);
     } catch(error) {
       throw error;
@@ -83,7 +88,6 @@ function loadTexture(
 async function loadTextureAtlas(
   url: string, 
   engine: Engine,
-  imageLoaderType: string = AssetType.Texture2D
 ): Promise<TextureAtlas> {
   const textureUrls: string[] = [];
   const baseUrl = getBaseUrl(url);
@@ -105,7 +109,7 @@ async function loadTextureAtlas(
   }
   const loadTexturePromises = [];
   for (let textureUrl of textureUrls) {
-    loadTexturePromises.push(loadTexture(textureUrl, engine, imageLoaderType));
+    loadTexturePromises.push(loadTexture(textureUrl, engine));
   }
   try {
     textures = await Promise.all(loadTexturePromises);
