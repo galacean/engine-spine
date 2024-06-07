@@ -143,7 +143,8 @@ export class MeshGenerator {
       let attachmentColor: Color = null;
       const z = zSpacing * slotIndex;
       let numFloats = 0;
-      let vertexSize = _clipper.isClipping() ? 2 : MeshGenerator.VERTEX_SIZE;
+      const isClipping = _clipper.isClipping();
+      let vertexSize = isClipping ? 2 : MeshGenerator.VERTEX_SIZE;
       if (attachment instanceof RegionAttachment) {
         let regionAttachment = <RegionAttachment>attachment;
         attachmentColor = regionAttachment.color;
@@ -190,7 +191,7 @@ export class MeshGenerator {
         _clipper.clipEndWithSlot(slot);
         continue;
       }
-      
+
       if (texture != null) {
         let finalVertices: ArrayLike<number>;
         let finalVerticesLength: number;
@@ -209,7 +210,7 @@ export class MeshGenerator {
           alpha
         );
 
-        if (_clipper.isClipping()) {
+        if (isClipping) {
           _clipper.clipTriangles(
             vertices,
             numFloats,
@@ -369,7 +370,7 @@ export class MeshGenerator {
     }
 
     if (this._needResize) {
-      _spineMesh.changeBuffer(this._engine, this._vertexCount, this._triangleCount);
+      _spineMesh.changeBuffer(this._engine, this._vertexCount);
       this._needResize = false;
     }
     _spineMesh.vertexBuffer.setData(this._verticesWithZ);
