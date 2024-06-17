@@ -189,7 +189,6 @@ export class TextureAtlasRegion extends TextureRegion {
 	x: number;
 	y: number;
 	index: number;
-	rotate: boolean;
 	degrees: number;
 	texture: Texture;
 }

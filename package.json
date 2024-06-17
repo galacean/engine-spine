@@ -1,11 +1,10 @@
 {
-  "version": "2.0.0",
+  "version": "1.1.0-alpha.5",
   "description": "galacean spine runtime",
-  "name": "@galacean/engine-spine-3.8",
+  "name": "@galacean/engine-spine",
   "main": "dist/main.js",
   "browser": "dist/browser.js",
   "module": "dist/module.js",
-  "dependencies": {},
   "peerDependencies": {
     "@galacean/engine": "latest"
   },
@@ -55,6 +54,7 @@
     "test-cov": "jest --coverage",
     "dev": "rollup -cw",
     "build": "npm run b:types && cross-env BUILD_TYPE=ALL rollup -c",
+    "build:watch": "npm run b:types && cross-env BUILD_TYPE=ALL rollup -c --watch",
     "ci": "npm run lint && npm run test-cov",
     "lint": "eslint src --fix --ext .ts,.tsx",
     "b:types": "tsc --emitDeclarationOnly"

@@ -224,7 +224,7 @@ export class AssetManager implements Disposable {
         try {
           let atlas = new TextureAtlas(atlasData, (path: string) => {
             atlasPages.push(parent == "" ? path : parent + "/" + path);
-            return new FakeTexture(new Texture2D(this.engine, 16, 16));
+            return new FakeTexture(new Image());
           });
         } catch (e) {
           let ex = e as Error;

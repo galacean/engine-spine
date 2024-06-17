@@ -366,7 +366,7 @@ export class MeshGenerator {
     }
 
     if (this._needResize) {
-      _spineMesh.changeBuffer(this._engine, this._vertexCount, this._triangleCount);
+      _spineMesh.changeBuffer(this._engine, this._vertexCount);
       this._needResize = false;
     }
     _spineMesh.vertexBuffer.setData(this._verticesWithZ);

@@ -124,6 +124,11 @@ async function loadTextureAtlas(
   return textureAtlas;
 }
 
+export function generateTextureAtlas(atlasText: string, texturesMap: Record<string, Texture2D>) {
+  const textureAtlas = new TextureAtlas(atlasText, (path: string) => createAdaptiveTexture(texturesMap[path]));
+  return textureAtlas;
+}
+
 function createAdaptiveTexture(texture: Texture2D) {
   return new AdaptiveTexture(new Image(), texture);
 }
