@@ -12,7 +12,7 @@ import {
 } from "@galacean/engine";
 import { OrbitControl, Stats } from "@galacean/engine-toolkit";
 import * as dat from 'dat.gui';
-import { SpineAnimation, SkeletonData, SpineRenderer } from "../src/index";
+import { SpineAnimation, SkeletonData } from "../src/index";
 import BoundingBoxLine from './outline';
 
 Logger.enable();
@@ -37,7 +37,7 @@ const blobResource: any = {
   }
 };
 
-const baseDemo = '鱼-多贴图';
+const baseDemo = 'spineBoy-单json';
 const demos = {
   'spineBoy-单json': {
     url: "https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/7nFdjoEMDrIhD5DC/spineboy/spineboy.json",
@@ -172,10 +172,9 @@ async function loadSpine(root: Entity, engine: Engine, resource) {
 
   const spineEntity = root.createChild('spine-entity');
   spineEntity.transform.setPosition(0, -15, 0);
-  const meshRenderer = spineEntity.addComponent(MeshRenderer);
-  const mtl = SpineRenderer.getDefaultMaterial(engine);
-  meshRenderer.setMaterial(mtl);
   const spineAnimation = spineEntity.addComponent(SpineAnimation);
+  const mtl = SpineAnimation.getDefaultMaterial(engine);
+  spineAnimation.setMaterial(mtl);
   spineAnimation.initialize(skeletonData);
   spineAnimation.skeleton.scaleX = 0.05;
   spineAnimation.skeleton.scaleY = 0.05;

@@ -126,6 +126,15 @@ async function loadTextureAtlas(
   return textureAtlas;
 }
 
+export function generateTextureAtlas(atlasText: string, textureMap: Record<string, Texture2D>) {
+  const textureAtlas = new TextureAtlas(atlasText);
+  for (let page of textureAtlas.pages) {
+    const texture = createAdaptiveTexture(textureMap[page.name]);
+    page.setTexture(texture);
+  }
+  return textureAtlas;
+}
+
 function createAdaptiveTexture(texture: Texture2D) {
   return new AdaptiveTexture(new Image(), texture);
 }

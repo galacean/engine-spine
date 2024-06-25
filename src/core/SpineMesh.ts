@@ -30,7 +30,7 @@ export class SpineMesh {
   }
 
   initialize(engine: Engine, vertexCount: number) {
-    const mesh = this._mesh = new BufferMesh(engine);
+    const mesh = this._mesh = new BufferMesh(engine, "spine-mesh");
 
     const vertexElements = [
       new VertexElement('POSITION', 0, VertexElementFormat.Vector3, 0),
