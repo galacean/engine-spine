@@ -4,7 +4,6 @@ import {
   Engine,
   Entity,
   Material,
-  MeshRenderer,
   SubMesh,
   Texture2D,
 } from "@galacean/engine";
@@ -21,8 +20,8 @@ import {
 } from "@esotericsoftware/spine-core";
 import { SpineMesh } from "./SpineMesh";
 import { SpineRenderSetting } from "../types";
-import { SpineRenderer } from "../SpineRenderer";
 import { AdaptiveTexture } from "../loader/LoaderUtils";
+import { SpineAnimation } from "../SpineAnimation";
 
 type SubMeshItem = {
   subMesh: SubMesh;
@@ -42,16 +41,15 @@ export class MeshGenerator {
 
   private _setting: SpineRenderSetting;
   private _engine: Engine;
-  private _entity: Entity;
   private _clipper: SkeletonClipping = new SkeletonClipping();
   private _spineMesh: SpineMesh = new SpineMesh();
+  private _renderer: SpineAnimation;
 
   private _vertexCount: number;
   private _vertices: Float32Array;
   private _verticesWithZ: Float32Array;
   private _indices: Uint16Array;
   private _needResize: boolean = false;
-  private _meshRenderer: MeshRenderer;
   private _subMeshItems: SubMeshItem[] = [];
   readonly separateSlots: string[] = [];
   readonly separateSlotTextureMap: Map<string, Texture2D> = new Map();
@@ -64,20 +62,13 @@ export class MeshGenerator {
     return this._subMeshItems;
   }
 
-  constructor(engine: Engine, entity: Entity) {
+  constructor(engine: Engine, renderer: SpineAnimation) {
     this._engine = engine;
-    this._entity = entity;
+    this._renderer = renderer;
   }
 
   initialize(skeletonData: SkeletonData, setting?: SpineRenderSetting) {
     if (!skeletonData) return;
-
-    const meshRenderer = this._entity.getComponent(MeshRenderer);
-    if (!meshRenderer) {
-      console.warn("You need add MeshRenderer component to entity first");
-      return;
-    }
-    this._meshRenderer = meshRenderer;
 
     if (setting) {
       this._setting = setting;
@@ -107,7 +98,7 @@ export class MeshGenerator {
     this._prepareBufferData(this._vertexCount);
     const { _spineMesh } = this;
     _spineMesh.initialize(this._engine, this._vertexCount);
-    meshRenderer.mesh = _spineMesh.mesh;
+    this._renderer.setMesh(_spineMesh.mesh);
   }
 
   buildMesh(skeleton: Skeleton) {
@@ -211,7 +202,6 @@ export class MeshGenerator {
         if (isClipping) {
           _clipper.clipTriangles(
             vertices,
-            numFloats,
             triangles,
             triangles.length,
             uvs,
@@ -352,14 +342,14 @@ export class MeshGenerator {
 
     // update sub-mesh
     mesh.clearSubMesh();
-    const renderer = this._meshRenderer;
+    const renderer = this._renderer;
     for (let i = 0, l = subMeshItems.length; i < l; ++i) {
       const item = subMeshItems[i];
       const { slotName, blendMode, texture } = item;
       mesh.addSubMesh(item.subMesh);
       let material = renderer.getMaterial(i);
       if (!material) {
-        material = SpineRenderer.getDefaultMaterial(this._engine);
+        material = SpineAnimation.getDefaultMaterial(this._engine);
       }
       let subMeshTexture = texture.texture;
       if (this.separateSlotTextureMap.has(slotName)) {

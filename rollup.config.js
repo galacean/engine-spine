@@ -39,7 +39,7 @@ const commonPlugins = [
       jsc: {
         loose: true,
         externalHelpers: true,
-        target: "es5",
+        target: "esnext",
       },
       sourceMaps: true,
     })
@@ -181,7 +181,7 @@ function getMini() {
 }
 
 function getAll() {
-  return [...getModule(), ...getMini(), ...getUMD()];
+  return [...getUMD(), ...getModule()];
 }
 
 export default Promise.all(promises);

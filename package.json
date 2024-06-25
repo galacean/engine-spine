@@ -19,7 +19,7 @@
     "@babel/plugin-transform-object-assign": "^7.12.1",
     "@babel/preset-env": "^7.12.1",
     "@babel/preset-typescript": "^7.12.1",
-    "@galacean/engine": "^1.1.0-beta.11",
+    "@galacean/engine": "latest",
     "@galacean/engine-toolkit": "^1.1.0-beta.0",
     "@rollup/plugin-babel": "^5.2.1",
     "@rollup/plugin-commonjs": "^16.0.0",
@@ -57,6 +57,7 @@
     "test-cov": "jest --coverage",
     "dev": "rollup -cw",
     "build": "npm run b:types && cross-env BUILD_TYPE=ALL rollup -c",
+    "build:watch": "npm run b:types && cross-env BUILD_TYPE=ALL rollup -c --watch",
     "ci": "npm run lint && npm run test-cov",
     "lint": "eslint src --fix --ext .ts,.tsx",
     "b:types": "tsc --emitDeclarationOnly"
