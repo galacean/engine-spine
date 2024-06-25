@@ -67,7 +67,6 @@ export async function loadAndCreateSpineSkeletonData(
     }
   }
   const atlasLoader = new AtlasAttachmentLoader(textureAtlas);
-  console.log(skeletonTextData);
   if (skeletonExtension === 'json') {
     return new SkeletonJson(atlasLoader).readSkeletonData(skeletonTextData);
   } else {
@@ -122,6 +121,15 @@ async function loadTextureAtlas(
   for (let page of textureAtlas.pages) {
     const textureUrl = baseUrl + page.name;
     const texture = createAdaptiveTexture(textureMap[textureUrl]);
+    page.setTexture(texture);
+  }
+  return textureAtlas;
+}
+
+export function generateTextureAtlas(atlasText: string, textureMap: Record<string, Texture2D>) {
+  const textureAtlas = new TextureAtlas(atlasText);
+  for (let page of textureAtlas.pages) {
+    const texture = createAdaptiveTexture(textureMap[page.name]);
     page.setTexture(texture);
   }
   return textureAtlas;

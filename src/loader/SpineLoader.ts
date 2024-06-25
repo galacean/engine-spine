@@ -56,7 +56,6 @@ class SpineLoader extends Loader<SkeletonData> {
         reject('Failed to load spine assets. Please check the file path and ensure the file extension is included.');
         return;
       }
-      console.log(spineAssetBundle);
       loadAndCreateSpineSkeletonData(spineAssetBundle, resourceManager.engine)
       .then((skeletonData) => {
         resolve(skeletonData);

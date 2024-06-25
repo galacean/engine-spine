@@ -12,7 +12,7 @@ import {
 } from "@galacean/engine";
 import { OrbitControl, Stats } from "@galacean/engine-toolkit";
 import * as dat from 'dat.gui';
-import { SpineAnimation, SkeletonData, SpineRenderer } from "../src/index";
+import { SpineAnimation, SkeletonData } from "../src/index";
 import BoundingBoxLine from './outline';
 
 Logger.enable();
@@ -171,10 +171,9 @@ async function loadSpine(root: Entity, engine: Engine, resource) {
 
   const spineEntity = root.createChild('spine-entity');
   spineEntity.transform.setPosition(0, -15, 0);
-  const meshRenderer = spineEntity.addComponent(MeshRenderer);
-  const mtl = SpineRenderer.getDefaultMaterial(engine);
-  meshRenderer.setMaterial(mtl);
+  const mtl = SpineAnimation.getDefaultMaterial(engine);
   const spineAnimation = spineEntity.addComponent(SpineAnimation);
+  spineAnimation.setMaterial(mtl);
   spineAnimation.initialize(skeletonData);
   spineAnimation.skeleton.scaleX = 0.05;
   spineAnimation.skeleton.scaleY = 0.05;
