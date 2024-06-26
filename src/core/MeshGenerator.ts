@@ -97,7 +97,7 @@ export class MeshGenerator {
     this._prepareBufferData(this._vertexCount);
     const { _spineMesh } = this;
     _spineMesh.initialize(this._engine, this._vertexCount);
-    this._renderer.setMesh(_spineMesh.mesh);
+    this._renderer.mesh = _spineMesh.mesh;
   }
 
   buildMesh(skeleton: Skeleton) {
