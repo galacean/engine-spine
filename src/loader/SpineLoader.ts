@@ -51,7 +51,6 @@ class SpineLoader extends Loader<SkeletonData> {
         const fileExtension = verifyFileExtensions(fileExtensions, false);
         deriveAndAssignSpineAsset(item.url, fileExtension as string, spineAssetBundle);
       }
-      console.log(spineAssetBundle);
       const { skeletonPath, atlasPath } = spineAssetBundle;
       if (!skeletonPath || !atlasPath) {
         reject('Failed to load spine assets. Please check the file path and ensure the file extension is included.');
