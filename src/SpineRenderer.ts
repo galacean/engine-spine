@@ -72,7 +72,10 @@ export class SpineRenderer extends Script {
         for (let i = 0, l = skins.length; i < l; ++i) {
           _skinNames.push(skins[i].name);
         }
-        this.skinName = this._skinName || _skinNames[0];
+        const skinName = this._skinName || _skinNames[0];
+        const { skeleton } = this._spineAnimation;
+        skeleton.setSkinByName(skinName);
+        skeleton.setSlotsToSetupPose();
 
         // 如果设置了自动播放，默认就播放第一个动画
         if (this._autoPlay && _animationNames.length > 0) {
