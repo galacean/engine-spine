@@ -5,9 +5,11 @@
   "main": "dist/main.js",
   "browser": "dist/browser.js",
   "module": "dist/module.js",
-  "dependencies": {},
+  "dependencies": {
+    "@galacean/engine-spine-4.2": "../engine-spine_copy"
+  },
   "peerDependencies": {
-    "@galacean/engine": ">=1.1.0-beta.0"
+    "@galacean/engine": "latest"
   },
   "devDependencies": {
     "@babel/core": "^7.22.5",
@@ -17,8 +19,8 @@
     "@babel/plugin-transform-object-assign": "^7.12.1",
     "@babel/preset-env": "^7.12.1",
     "@babel/preset-typescript": "^7.12.1",
-    "@galacean/engine": "^1.1.0-beta.11",
-    "@galacean/engine-toolkit": "^1.1.0-beta.0",
+    "@galacean/engine": "../../engine/packages/galacean",
+    "@galacean/engine-toolkit": "beta",
     "@rollup/plugin-babel": "^5.2.1",
     "@rollup/plugin-commonjs": "^16.0.0",
     "@rollup/plugin-inject": "^4.0.2",
