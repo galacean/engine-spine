@@ -11,10 +11,22 @@
     #canvas {
       outline: none;
     }
+    /* CSS: Center the button and link container */
+    .bottom {
+      position: absolute;
+      left: 0;
+      bottom: 0;
+    }
+    input[type="file"] {
+      margin-bottom: 20px;
+    }
   </style>
 </head>
 <body>
     <canvas id="canvas" style="width: 100vw; height: 100vh"></canvas>
+    <div class="bottom">
+      <input type="file" id="fileInput" multiple />
+    </div>
     <script type="module" src="/example/main.ts"></script>
 </body>
 </html>
