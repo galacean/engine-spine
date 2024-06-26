@@ -97,11 +97,11 @@ export class MeshGenerator {
     this._prepareBufferData(this._vertexCount);
     const { _spineMesh } = this;
     _spineMesh.initialize(this._engine, this._vertexCount);
-    this._renderer.setMesh(_spineMesh.mesh);
+    this._renderer.mesh = _spineMesh.mesh;
   }
 
   buildMesh(skeleton: Skeleton) {
-    const { useClipping = true, zSpacing = 0.01 } = this._setting || {};
+    const { useClipping = true, zSpacing = 0.001 } = this._setting || {};
 
     let verticesLength = 0;
     let indicesLength = 0;

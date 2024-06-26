@@ -61,6 +61,20 @@ export class SpineAnimation extends Renderer {
 
   loop = true;
 
+  /**
+   * Mesh assigned to the renderer.
+   */
+  get mesh(): Mesh {
+    return this._mesh;
+  }
+
+  set mesh(value: Mesh) {
+    if (this._mesh !== value) {
+      this._setMesh(value);
+    }
+  }
+
+
   get animationName() {
     return this._animationName;
   }
@@ -135,14 +149,6 @@ export class SpineAnimation extends Renderer {
     }
   }
 
-  setMesh(mesh: Mesh): void {
-    if (mesh.name === 'spine-mesh') {
-      this._mesh = mesh;
-    } else {
-      Logger.error('setMesh method should not be called directly.');
-    }
-  }
-
   /**
    * @internal
    */
@@ -161,18 +167,18 @@ export class SpineAnimation extends Renderer {
   // @ts-ignore
   override _prepareRender(context: RenderContext): void {
     if (!this._mesh) {
-      Logger.error("mesh is null.");
+      Logger.error("Spine mesh doesn't exist, please call initialize first");
       return;
     }
     if (this._mesh.destroyed) {
-      Logger.error("mesh is destroyed.");
+      Logger.error("Spine mesh is destroyed, please call initialize to reset");
       return;
     }
-    // @ts-ignore
-    super._prepareRender(context);
     if (this._skeleton) {
       this._meshGenerator.buildMesh(this._skeleton);
     }
+    // @ts-ignore
+    super._prepareRender(context);
   }
 
   /**
@@ -202,27 +208,31 @@ export class SpineAnimation extends Renderer {
       this._dirtyUpdateFlag &= ~SpineAnimationUpdateFlags.VertexElementMacro;
     }
 
-    const materials = this._materials;
+    const { _materials: materials, _engine: engine } = this;
     const subMeshes = mesh.subMeshes;
     // @ts-ignore
-    const renderPipeline = context.camera._renderPipeline;
+    const renderElement = engine._renderElementPool.get();
     // @ts-ignore
-    const meshRenderDataPool = this._engine._renderDataPool;
+    renderElement.set(this.priority, this._distanceForSort);
+    // @ts-ignore
+    const subRenderElementPool = engine._subRenderElementPool;
     for (let i = 0, n = subMeshes.length; i < n; i++) {
       let material = materials[i];
       if (!material) {
         continue;
       }
-      // @ts-ignore
       if (material.destroyed || material.shader.destroyed) {
         // @ts-ignore
         material = this.engine._meshMagentaMaterial;
       }
-      const renderData = meshRenderDataPool.getFromPool();
+
+      const subRenderElement = subRenderElementPool.get();
       // @ts-ignore
-      renderData.setX(this, material, mesh._primitive, subMeshes[i]);
-      renderPipeline.pushRenderData(context, renderData);
+      subRenderElement.set(this, material, mesh._primitive, subMeshes[i]);
+      renderElement.addSubRenderElement(subRenderElement);
     }
+    // @ts-ignore
+    context.camera._renderPipeline.pushRenderElement(context, renderElement);
   }
 
   /**
@@ -267,7 +277,6 @@ export class SpineAnimation extends Renderer {
   protected override _onDestroy(): void {
     const mesh = this._mesh;
     if (mesh) {
-      // @ts-ignore
       mesh.destroyed || this._addResourceReferCount(mesh, -1);
       this._mesh = null;
     }
@@ -278,11 +287,13 @@ export class SpineAnimation extends Renderer {
     super._onDestroy();
   }
 
-  private _addResourceReferCount(resource: IReferable, count: number): void {
-    // @ts-ignore
-    this._entity._isTemplate || resource._addReferCount(count);
+  private _setMesh(mesh: Mesh): void {
+    if (mesh.name === 'spine-mesh') {
+      this._mesh = mesh;
+    } else {
+      Logger.error('The SetMesh method of Spine Animation can only be called internally.');
+    }
   }
-
 }
 
 /**
@@ -291,17 +302,6 @@ export class SpineAnimation extends Renderer {
 enum SpineAnimationUpdateFlags {
   /** VertexElementMacro. */
   VertexElementMacro = 0x2,
-}
-
-export interface IReferable {
-  /**
-   * @internal
-   */
-  _getReferCount(): number;
-  /**
-   * @internal
-   */
-  _addReferCount(count: number): void;
 }
 
 type RenderContext = { camera: Camera, _renderPipeline: BasicRenderPipeline };
