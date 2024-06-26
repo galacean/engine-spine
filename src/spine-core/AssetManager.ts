@@ -2,7 +2,7 @@ import { AssetType, Engine, Texture2D, request } from "@galacean/engine";
 import { Disposable, Map } from "./Utils";
 import { TextureAtlas } from "./TextureAtlas";
 import { FakeTexture } from "./Texture";
-import { AdaptiveTexture } from "../SpineLoader";
+import { AdaptiveTexture } from "../loader/LoaderUtils";
 
 export class AssetManager implements Disposable {
   private _engine: Engine;
@@ -224,7 +224,7 @@ export class AssetManager implements Disposable {
         try {
           let atlas = new TextureAtlas(atlasData, (path: string) => {
             atlasPages.push(parent == "" ? path : parent + "/" + path);
-            return new FakeTexture(new Texture2D(this.engine, 16, 16));
+            return new FakeTexture(new Image());
           });
         } catch (e) {
           let ex = e as Error;
