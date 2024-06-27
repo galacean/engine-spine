@@ -114,10 +114,11 @@ async function loadTextureAtlas(
   } catch (err) {
     throw new Error(`Spine Texture: ${url} load error: ${err}`);
   }
-  textures.forEach((texture) => {
+  for (let i = 0; i < textures.length; i += 1) {
+    const texture = textures[i];
     const textureUrl = baseUrl + texture.name;
     textureMap[textureUrl] = texture;
-  });
+  }
   for (let page of textureAtlas.pages) {
     const textureUrl = baseUrl + page.name;
     const texture = createAdaptiveTexture(textureMap[textureUrl]);

@@ -248,16 +248,14 @@ export class SpineAnimation extends Renderer {
     const zSpacing = this.setting?.zSpacing || 0.01;
     const skeleton = this._skeleton;
     skeleton.getBounds(offset, size, temp);
-    const drawOrder = skeleton.drawOrder;
-    const minX = offset.x;
-    const maxX = offset.x + size.x;
-    const minY = offset.y;
-    const maxY = offset.y + size.y;
-    const minZ = 0;
-    const maxZ = drawOrder.length * zSpacing;
-    bounds.min.set(minX, minY, minZ);
-    bounds.max.set(maxX, maxY, maxZ);
-    BoundingBox.transform(bounds, this.entity.transform.worldMatrix, bounds);
+    const { x, y } = offset;
+    bounds.min.set(x, y, 0);
+    bounds.max.set(x + size.x, y + size.y, skeleton.drawOrder.length * zSpacing);
+    BoundingBox.transform(
+      bounds,
+      this.entity.transform.worldMatrix,
+      bounds,
+    );
   }
 
   /**

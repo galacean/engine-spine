@@ -24,6 +24,8 @@ type SpineLoadItem = LoadItem & { params?: SpineLoaderParams };
 
 @resourceLoader("spine", ["json", "bin", "skel"])
 class SpineLoader extends Loader<SkeletonData> {
+  static imageExtensions = ["png", "jpg", "webp", "jpeg", "ktx", "ktx2"];
+  static skeletonExtensions = ["skel", "json", "bin"];
   load(
     item: SpineLoadItem,
     resourceManager: ResourceManager
@@ -37,7 +39,7 @@ class SpineLoader extends Loader<SkeletonData> {
         imagePaths: [],
         imageExtensions: [],
       };
-      let { fileExtensions, imageLoaderType } = item.params || {};
+      let { fileExtensions } = item.params || {};
       if (item.urls) {
         // multiple resource 
         fileExtensions = verifyFileExtensions(fileExtensions, true);
@@ -68,8 +70,8 @@ class SpineLoader extends Loader<SkeletonData> {
 }
 
 function parseAndAssignSpineAsset(url: string, fileExtension: string | null, bundle: SpineAssetBundle) {
-  const imageExtension = ["png", "jpg", "webp", "jpeg", "ktx", "ktx2"];
-  const skeletonExtension = ["skel", "json", "bin"];
+  const imageExtension = SpineLoader.imageExtensions;
+  const skeletonExtension = SpineLoader.skeletonExtensions;
   const ext = getUrlExtension(url, fileExtension);
   if (!ext) return;
 
