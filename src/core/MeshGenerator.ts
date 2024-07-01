@@ -2,7 +2,6 @@ import {
   BlendFactor,
   BlendOperation,
   Engine,
-  Entity,
   Material,
   SubMesh,
   Texture2D,
@@ -98,7 +97,7 @@ export class MeshGenerator {
     this._prepareBufferData(this._vertexCount);
     const { _spineMesh } = this;
     _spineMesh.initialize(this._engine, this._vertexCount);
-    this._renderer.mesh = _spineMesh.mesh;
+    this._renderer._mesh = _spineMesh.mesh;
   }
 
   buildMesh(skeleton: Skeleton) {
@@ -356,8 +355,6 @@ export class MeshGenerator {
         subMeshTexture = this.separateSlotTextureMap.get(slotName);
       }
       material.shaderData.setTexture("material_SpineTexture", subMeshTexture);
-      // @ts-ignore
-      material._priority = i;
       this.setBlendMode(material, blendMode);
       renderer.setMaterial(i, material);
     }

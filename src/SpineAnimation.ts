@@ -21,6 +21,9 @@ export class SpineAnimation extends Renderer {
   private static _defaultMaterial: Material;
   private static _uvMacro = ShaderMacro.getByName("RENDERER_HAS_UV");
   private static _enableVertexColorMacro = ShaderMacro.getByName("RENDERER_ENABLE_VERTEXCOLOR");
+  private static _tempOffset: Vector2 = new Vector2();
+  private static _tempSize: Vector2 = new Vector2();
+  private static _tempArray: Array<number> = [0, 0];
 
   static getDefaultMaterial(engine: Engine): Material {
     let defaultMaterial = this._defaultMaterial;
@@ -45,34 +48,17 @@ export class SpineAnimation extends Renderer {
   @ignoreClone
   protected _state: AnimationState;
   @ignoreClone
-  private _tempOffset: Vector2 = new Vector2();
-  @ignoreClone
-  private _tempSize: Vector2 = new Vector2();
-  @ignoreClone
-  private _tempArray: Array<number> = [0, 0];
-  @ignoreClone
   protected _meshGenerator: MeshGenerator;
-  @ignoreClone
-  _mesh: Mesh;
   @ignoreClone
   _animationName: string;
   @ignoreClone
+  _loop: boolean = false;
+  @ignoreClone
   setting: SpineRenderSetting;
 
-  loop = true;
-
-  /**
-   * Mesh assigned to the renderer.
-   */
-  get mesh(): Mesh {
-    return this._mesh;
-  }
-
-  set mesh(value: Mesh) {
-    if (this._mesh !== value) {
-      this._setMesh(value);
-    }
-  }
+  /* @internal */
+  @ignoreClone
+  _mesh: Mesh;
 
 
   get animationName() {
@@ -87,6 +73,18 @@ export class SpineAnimation extends Renderer {
       } else {
         this.state.setEmptyAnimation(0, 0);
       }
+    }
+  }
+
+  get loop() {
+    return this._loop;
+  }
+
+  set loop(value: boolean) {
+    const entry = this.state.getCurrent(0);
+    this._loop = value;
+    if (entry) {
+      entry.loop = value;
     }
   }
 
@@ -242,9 +240,9 @@ export class SpineAnimation extends Renderer {
   // @ts-ignore
   protected override _updateBounds(worldBounds: BoundingBox): void {
     const bounds = worldBounds;
-    const offset = this._tempOffset;
-    const size = this._tempSize;
-    const temp = this._tempArray;
+    const offset = SpineAnimation._tempOffset;
+    const size = SpineAnimation._tempSize;
+    const temp = SpineAnimation._tempArray;
     const zSpacing = this.setting?.zSpacing || 0.01;
     const skeleton = this._skeleton;
     skeleton.getBounds(offset, size, temp);
@@ -284,14 +282,6 @@ export class SpineAnimation extends Renderer {
     this._meshGenerator = null;
     this.setting = null;
     super._onDestroy();
-  }
-
-  private _setMesh(mesh: Mesh): void {
-    if (mesh.name === 'spine-mesh') {
-      this._mesh = mesh;
-    } else {
-      Logger.error('The SetMesh method of Spine Animation can only be called internally.');
-    }
   }
 }
 
