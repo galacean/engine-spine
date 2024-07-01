@@ -164,7 +164,7 @@ export class SpineAnimation extends Renderer {
    * @internal
    */
   // @ts-ignore
-  override _prepareRender(context: RenderContext): void {
+  override _prepareRender(context: any): void {
     if (!this._mesh) {
       Logger.error("Spine mesh doesn't exist, please call initialize first");
       return;
@@ -184,7 +184,7 @@ export class SpineAnimation extends Renderer {
    * @internal
    */
   // @ts-ignore
-  protected override _render(context: RenderContext): void {
+  protected override _render(context: any): void {
     const mesh = this._mesh;
     if (this._dirtyUpdateFlag & SpineAnimationUpdateFlags.VertexElementMacro) {
       const shaderData = this.shaderData;
@@ -292,5 +292,3 @@ enum SpineAnimationUpdateFlags {
   /** VertexElementMacro. */
   VertexElementMacro = 0x2,
 }
-
-type RenderContext = { camera: Camera, _renderPipeline: BasicRenderPipeline };
