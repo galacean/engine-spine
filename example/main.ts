@@ -36,7 +36,7 @@ const blobResource: any = {
   }
 };
 
-const baseDemo = 'spineBoy-单json';
+const baseDemo = '皮肤切换'//'spineBoy-单json';
 const demos = {
   'spineBoy-单json': {
     url: "https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/yKbdfgijyLGzQDyQ/spineboy/spineboy.json",
@@ -173,7 +173,8 @@ async function loadSpine(root: Entity, engine: Engine, resource) {
   const mtl = SpineAnimation.getDefaultMaterial(engine);
   const spineAnimation = spineEntity.addComponent(SpineAnimation);
   spineAnimation.setMaterial(mtl);
-  spineAnimation.initialize(skeletonData);
+  spineAnimation.skeletonData = skeletonData;
+  spineAnimation.initialize();
   spineAnimation.skeleton.scaleX = 0.05;
   spineAnimation.skeleton.scaleY = 0.05;
 

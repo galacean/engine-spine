@@ -1,5 +1,5 @@
 import { Skeleton, SkeletonData, AnimationState, AnimationStateData, Physics, Vector2 } from "@esotericsoftware/spine-core";
-import { MeshGenerator } from "./core/MeshGenerator";
+import { SpineGenerator } from "./core/SpineGenerator";
 import { SpineRenderSetting } from "./types";
 import {
   Renderer,
@@ -9,13 +9,12 @@ import {
   Material,
   Engine,
   BoundingBox,
-  Camera,
-  BasicRenderPipeline,
-  Mesh,
   ShaderMacro,
+  Primitive,
   Logger,
 } from "@galacean/engine";
 import { SpineMaterial } from "./SpineMaterial";
+import { SubPrimitive } from "./core/SpinePrimitive";
 
 export class SpineAnimation extends Renderer {
   private static _defaultMaterial: Material;
@@ -42,24 +41,27 @@ export class SpineAnimation extends Renderer {
   }
 
   @ignoreClone
-  private _skeletonData: SkeletonData;
+  setting: SpineRenderSetting;
+  @ignoreClone
+  skeletonData: SkeletonData;
+  @ignoreClone
+  initialSkinName: string;
+  /* @internal */
+  @ignoreClone
+  _primitive: Primitive;
+  /* @internal */
+  @ignoreClone
+  _subPrimitives: SubPrimitive[];
   @ignoreClone
   protected _skeleton: Skeleton;
   @ignoreClone
   protected _state: AnimationState;
   @ignoreClone
-  protected _meshGenerator: MeshGenerator;
+  protected _spineGenerator: SpineGenerator;
   @ignoreClone
-  _animationName: string;
+  private _animationName: string;
   @ignoreClone
-  _loop: boolean = false;
-  @ignoreClone
-  setting: SpineRenderSetting;
-
-  /* @internal */
-  @ignoreClone
-  _mesh: Mesh;
-
+  private _loop: boolean = false;
 
   get animationName() {
     return this._animationName;
@@ -81,7 +83,7 @@ export class SpineAnimation extends Renderer {
   }
 
   set loop(value: boolean) {
-    const entry = this.state.getCurrent(0);
+    const entry = this.state && this.state.getCurrent(0);
     this._loop = value;
     if (entry) {
       entry.loop = value;
@@ -96,26 +98,32 @@ export class SpineAnimation extends Renderer {
     return this._skeleton;
   }
 
-  get skeletonData() {
-    return this._skeletonData;
-  }
-
   constructor(entity: Entity) {
     super(entity);
-    this._meshGenerator = new MeshGenerator(this.engine, this);
+    this._spineGenerator = new SpineGenerator(this.engine, this);
   }
 
-  initialize(skeletonData: SkeletonData, setting?: SpineRenderSetting) {
-    this.setting = setting;
-    this._skeletonData = skeletonData;
+  initialize(setting?: SpineRenderSetting) {
+    const { skeletonData } = this;
+    if (!skeletonData) {
+      Logger.error('No spine skeleton data');
+      return;
+    }
+    if (setting) this.setting = setting;
     this._skeleton = new Skeleton(skeletonData);
     const animationData = new AnimationStateData(skeletonData);
     this._state = new AnimationState(animationData);
-    this._meshGenerator.initialize(this._skeletonData, this.setting);
+    this._spineGenerator.initialize(skeletonData, this.setting);
+    const { _skeleton, _state, initialSkinName } = this;
+    if (initialSkinName) {
+      _skeleton.setSkinByName(this.initialSkinName);
+      _skeleton.setSlotsToSetupPose();
+      _state.apply(_skeleton);
+    }
   }
 
   /**
-   * Separate slot by slot name. This will add a new sub mesh, and new materials.
+   * Separate slot by slot name. This will add a new sub primitive, and new materials.
    */
   addSeparateSlot(slotName: string) {
     if (!this._skeleton) {
@@ -123,7 +131,7 @@ export class SpineAnimation extends Renderer {
     }
     const slot = this._skeleton.findSlot(slotName);
     if (slot) {
-      this._meshGenerator.addSeparateSlot(slotName);
+      this._spineGenerator.addSeparateSlot(slotName);
     } else {
       console.warn(`Slot: ${slotName} not find.`);
     }
@@ -133,13 +141,13 @@ export class SpineAnimation extends Renderer {
    * Change texture of a separated slot by name.
    */
   hackSeparateSlotTexture(slotName: string, texture: Texture2D) {
-    const { separateSlots } = this._meshGenerator;
+    const { separateSlots } = this._spineGenerator;
     if (separateSlots.length === 0) {
       console.warn("You need add separate slot");
       return;
     }
     if (separateSlots.includes(slotName)) {
-      this._meshGenerator.addSeparateSlotTexture(slotName, texture);
+      this._spineGenerator.addSeparateSlotTexture(slotName, texture);
     } else {
       console.warn(
         `Slot ${slotName} is not separated. You should use addSeparateSlot to separate it`
@@ -163,21 +171,11 @@ export class SpineAnimation extends Renderer {
   /**
    * @internal
    */
-  // @ts-ignore
-  override _prepareRender(context: any): void {
-    if (!this._mesh) {
-      Logger.error("Spine mesh doesn't exist, please call initialize first");
-      return;
-    }
-    if (this._mesh.destroyed) {
-      Logger.error("Spine mesh is destroyed, please call initialize to reset");
-      return;
-    }
+  override _updateRendererShaderData(context: any): void {
+    super._updateRendererShaderData(context);
     if (this._skeleton) {
-      this._meshGenerator.buildMesh(this._skeleton);
+      this._spineGenerator.buildPrimitive(this._skeleton);
     }
-    // @ts-ignore
-    super._prepareRender(context);
   }
 
   /**
@@ -185,11 +183,11 @@ export class SpineAnimation extends Renderer {
    */
   // @ts-ignore
   protected override _render(context: any): void {
-    const mesh = this._mesh;
+    const primitive = this._primitive;
+    const subPrimitives = this._subPrimitives;
     if (this._dirtyUpdateFlag & SpineAnimationUpdateFlags.VertexElementMacro) {
       const shaderData = this.shaderData;
-      // @ts-ignore
-      const vertexElements = mesh._primitive.vertexElements;
+      const vertexElements = primitive.vertexElements;
 
       shaderData.disableMacro(SpineAnimation._uvMacro);
       shaderData.disableMacro(SpineAnimation._enableVertexColorMacro);
@@ -208,14 +206,14 @@ export class SpineAnimation extends Renderer {
     }
 
     const { _materials: materials, _engine: engine } = this;
-    const subMeshes = mesh.subMeshes;
     // @ts-ignore
     const renderElement = engine._renderElementPool.get();
     // @ts-ignore
     renderElement.set(this.priority, this._distanceForSort);
     // @ts-ignore
     const subRenderElementPool = engine._subRenderElementPool;
-    for (let i = 0, n = subMeshes.length; i < n; i++) {
+    if (!subPrimitives) return;
+    for (let i = 0, n = subPrimitives.length; i < n; i++) {
       let material = materials[i];
       if (!material) {
         continue;
@@ -227,7 +225,7 @@ export class SpineAnimation extends Renderer {
 
       const subRenderElement = subRenderElementPool.get();
       // @ts-ignore
-      subRenderElement.set(this, material, mesh._primitive, subMeshes[i]);
+      subRenderElement.set(this, material, primitive, subPrimitives[i]);
       renderElement.addSubRenderElement(subRenderElement);
     }
     // @ts-ignore
@@ -263,23 +261,28 @@ export class SpineAnimation extends Renderer {
   override _cloneTo(target: SpineAnimation, srcRoot: Entity, targetRoot: Entity): void {
     // @ts-ignore
     super._cloneTo(target, srcRoot, targetRoot);
-    target.initialize(this._skeletonData);
+    target.skeletonData = this.skeletonData;
     const _cloneSetting = { ...this.setting };
     target.setting = _cloneSetting;
+    target.initialize(target.setting);
   }
 
   /**
    * @internal
    */
   protected override _onDestroy(): void {
-    const mesh = this._mesh;
-    if (mesh) {
-      mesh.destroyed || this._addResourceReferCount(mesh, -1);
-      this._mesh = null;
+    const primitive = this._primitive;
+    const subPrimitives = this._subPrimitives;
+    if (primitive) {
+      primitive.destroyed || this._addResourceReferCount(primitive, -1);
+      this._primitive = null;
     }
-    this._skeletonData = null;
+    if (subPrimitives) {
+      this._subPrimitives.length = 0;
+    }
+    this.skeletonData = null;
     this._skeleton = null;
-    this._meshGenerator = null;
+    this._spineGenerator = null;
     this.setting = null;
     super._onDestroy();
   }
