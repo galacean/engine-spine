@@ -7,7 +7,7 @@ import glslify from "rollup-plugin-glslify";
 import serve from "rollup-plugin-serve";
 import miniProgramPlugin from "./rollup.miniprogram.plugin";
 import replace from "@rollup/plugin-replace";
-import { swc, defineRollupSwcOption, minify } from "rollup-plugin-swc3";
+import { swc, defineRollupSwcOption } from "rollup-plugin-swc3";
 import { terser } from "rollup-plugin-terser";
 
 const { BUILD_TYPE, NODE_ENV } = process.env;
@@ -39,7 +39,7 @@ const commonPlugins = [
       jsc: {
         loose: true,
         externalHelpers: true,
-        target: "es5",
+        target: "esnext",
       },
       sourceMaps: true,
     })
@@ -181,7 +181,7 @@ function getMini() {
 }
 
 function getAll() {
-  return [...getModule(), ...getMini(), ...getUMD()];
+  return [...getUMD(), ...getModule()];
 }
 
 export default Promise.all(promises);
