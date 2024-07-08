@@ -1,28 +1,50 @@
-import { Skeleton, SkeletonData, AnimationState, AnimationStateData, Physics, Vector2 } from "@esotericsoftware/spine-core";
-import { SpineGenerator } from "./core/SpineGenerator";
-import { SpineRenderSetting } from "./types";
+import { Skeleton, SkeletonData, AnimationState, Physics, TrackEntry } from "@esotericsoftware/spine-core";
+import { SpineGenerator } from "./SpineGenerator";
 import {
+  Buffer,
   Renderer,
   Entity,
   ignoreClone,
-  Texture2D,
   Material,
   Engine,
   BoundingBox,
-  ShaderMacro,
   Primitive,
-  Logger,
+  SubPrimitive,
+  deepClone,
+  VertexElement,
+  VertexElementFormat,
+  BufferBindFlag,
+  BufferUsage,
+  VertexBufferBinding,
+  IndexBufferBinding,
+  IndexFormat,
 } from "@galacean/engine";
 import { SpineMaterial } from "./SpineMaterial";
-import { SubPrimitive } from "./core/SpinePrimitive";
+import { ObjectPool } from "./util/ObjectPool";
+import { AnimationStateDataCache } from "./Cache";
+
+interface InitialState {
+  animationName: string;
+  skinName: string;
+  loop: boolean;
+  scale: number;
+}
+
+export type SpineRenderSetting = {
+  useClipping: boolean;
+  zSpacing: number;
+}
 
 export class SpineAnimation extends Renderer {
   private static _defaultMaterial: Material;
-  private static _uvMacro = ShaderMacro.getByName("RENDERER_HAS_UV");
-  private static _enableVertexColorMacro = ShaderMacro.getByName("RENDERER_ENABLE_VERTEXCOLOR");
-  private static _tempOffset: Vector2 = new Vector2();
-  private static _tempSize: Vector2 = new Vector2();
-  private static _tempArray: Array<number> = [0, 0];
+  private static _spineGenerator = new SpineGenerator();
+
+  private static positionVertexElement = new VertexElement('POSITION', 0, VertexElementFormat.Vector3, 0);
+  private static colorVertexElement = new VertexElement('COLOR_0', 12, VertexElementFormat.Vector4, 0);
+  private static uvVertexElement = new VertexElement('TEXCOORD_0', 28, VertexElementFormat.Vector2, 0);
+
+  /** @internal */
+  static subPrimitivePool = new ObjectPool(SubPrimitive);
 
   static getDefaultMaterial(engine: Engine): Material {
     let defaultMaterial = this._defaultMaterial;
@@ -40,85 +62,126 @@ export class SpineAnimation extends Renderer {
     return defaultMaterial.clone();
   }
 
-  @ignoreClone
+  /** Render setting for spine rendering. */
+  @deepClone
   setting: SpineRenderSetting;
-  @ignoreClone
-  skeletonData: SkeletonData;
-  @ignoreClone
-  initialSkinName: string;
-  /* @internal */
-  @ignoreClone
+  /** Initial spine animation and skin state. */
+  @deepClone
+  initialState: InitialState = {
+    scale: 1,
+    loop: false,
+    animationName: null,
+    skinName: 'default',
+  };
+  /** @internal */
+  @deepClone
   _primitive: Primitive;
-  /* @internal */
-  @ignoreClone
-  _subPrimitives: SubPrimitive[];
-  @ignoreClone
-  protected _skeleton: Skeleton;
-  @ignoreClone
-  protected _state: AnimationState;
-  @ignoreClone
-  protected _spineGenerator: SpineGenerator;
-  @ignoreClone
-  private _animationName: string;
-  @ignoreClone
-  private _loop: boolean = false;
+  /** @internal */
+  @deepClone
+  _subPrimitives: SubPrimitive[] = [];
+  /** @internal */
+  @deepClone
+  // @ts-ignore
+  _indexBuffer: Buffer = {};
+  /** @internal */
+  @deepClone
+  // @ts-ignore
+  _vertexBuffer: Buffer = {};
+  /** @internal */
+  @deepClone
+  _vertices: Float32Array;
+  /** @internal */
+  @deepClone
+  _verticesWithZ: Float32Array;
+  /** @internal */
+  @deepClone
+  _indices: Uint16Array;
 
-  get animationName() {
-    return this._animationName;
-  }
+  @deepClone
+  // @ts-ignore
+  private _skeleton: Skeleton = { empty: 1 };
+  @deepClone
+  // @ts-ignore
+  private _state: AnimationState = { empty: 1 };
 
-  set animationName(value: string) {
-    this._animationName = value;
-    if (this.state) {
-      if (value) {
-        this.state.setAnimation(0, value, this.loop);
-      } else {
-        this.state.setEmptyAnimation(0, 0);
-      }
+  /**
+   * Setting `skeletonData` initializes a new Spine animation with the provided data.
+   * This property allows you to switch between different animations at runtime.
+   */
+  set skeletonData(value: SkeletonData) {
+    if (!value) {
+      this._skeleton = null;
+      this._state = null;
+      return;
     }
+    this._skeleton = new Skeleton(value);
+    const animationData = AnimationStateDataCache.instance.getAnimationStateData(value);
+    this._state = new AnimationState(animationData);
+    const vertexCount = SpineAnimation._spineGenerator.initialize(value);
+    this._prepareRenderBuffer(vertexCount);
+    this._dirtyUpdateFlag |= SpineAnimationUpdateFlags.AssetVolume;
+    this._state.addListener({
+      start: () => {
+        this.onAnimationStart();
+      },
+      complete: (entry: TrackEntry) => {
+        this.onAnimationComplete(entry);
+      },
+    })
   }
 
-  get loop() {
-    return this._loop;
-  }
-
-  set loop(value: boolean) {
-    const entry = this.state && this.state.getCurrent(0);
-    this._loop = value;
-    if (entry) {
-      entry.loop = value;
-    }
-  }
-
+  /**
+   * Provides access to `AnimationState` which controls animation playback on a skeleton. 
+   * You can use its API to manage, blend, and transition between multiple simultaneous animations effectively.
+   */
   get state() {
     return this._state;
   }
 
+  /**
+   * Provides access to `Skeleton`, which defines the structure of a Spine model.
+   * Through its API, users can manipulate bone positions, rotations, scaling 
+   * and change spine attachment to customize character appearances dynamically during runtime.
+   */
   get skeleton() {
     return this._skeleton;
   }
 
-  constructor(entity: Entity) {
-    super(entity);
-    this._spineGenerator = new SpineGenerator(this.engine, this);
+  /**
+   * @internal
+   */
+  get engine() {
+    return this._engine;
   }
 
-  initialize(setting?: SpineRenderSetting) {
-    const { skeletonData } = this;
-    if (!skeletonData) {
-      Logger.error('No spine skeleton data');
-      return;
-    }
-    if (setting) this.setting = setting;
-    this._skeleton = new Skeleton(skeletonData);
-    const animationData = new AnimationStateData(skeletonData);
-    this._state = new AnimationState(animationData);
-    this._spineGenerator.initialize(skeletonData, this.setting);
-    const { _skeleton, _state, initialSkinName } = this;
-    if (initialSkinName) {
-      _skeleton.setSkinByName(this.initialSkinName);
-      _skeleton.setSlotsToSetupPose();
-      _state.apply(_skeleton);
+  constructor(entity: Entity) {
+    super(entity);
+    const primitive = new Primitive(this._engine);
+    this._primitive = primitive;
+    primitive.addVertexElement(SpineAnimation.positionVertexElement);
+    primitive.addVertexElement(SpineAnimation.colorVertexElement);
+    primitive.addVertexElement(SpineAnimation.uvVertexElement);
+  }
+
+  /**
+   * @internal
+   */
+  // @ts-ignore
+  override _onEnable() {
+    const { skeleton, state } = this;
+    if (skeleton && state) {
+      const { animationName, skinName, loop, scale } = this.initialState;
+      console.log(scale)
+      skeleton.scaleX = scale;
+      skeleton.scaleY = scale;
+      if (skinName !== 'default') {
+        skeleton.setSkinByName(skinName);
+        skeleton.setToSetupPose();
+        state.apply(skeleton);
+      }
+      if (animationName) {
+        state.setAnimation(0, animationName, loop);
+      }
     }
   }
 
@@ -131,27 +194,9 @@ export class SpineAnimation extends Renderer {
     }
     const slot = this._skeleton.findSlot(slotName);
     if (slot) {
-      this._spineGenerator.addSeparateSlot(slotName);
+      SpineAnimation._spineGenerator.addSeparateSlot(slotName);
     } else {
       console.warn(`Slot: ${slotName} not find.`);
-    }
-  }
-
-  /**
-   * Change texture of a separated slot by name.
-   */
-  hackSeparateSlotTexture(slotName: string, texture: Texture2D) {
-    const { separateSlots } = this._spineGenerator;
-    if (separateSlots.length === 0) {
-      console.warn("You need add separate slot");
-      return;
-    }
-    if (separateSlots.includes(slotName)) {
-      this._spineGenerator.addSeparateSlotTexture(slotName, texture);
-    } else {
-      console.warn(
-        `Slot ${slotName} is not separated. You should use addSeparateSlot to separate it`
-      );
     }
   }
 
@@ -159,22 +204,28 @@ export class SpineAnimation extends Renderer {
    * @internal
    */
   override update(delta: number): void {
-    if (!this._skeleton || !this._state) return;
-    const state = this._state;
-    const skeleton = this._skeleton;
-    state.update(delta);
-    state.apply(skeleton);
-    skeleton.update(delta);
-    skeleton.updateWorldTransform(Physics.update);
+    const { _state, _skeleton } = this;
+    // @ts-ignore
+    if (_state.empty || _skeleton.empty) return;
+    _state.update(delta);
+    _state.apply(_skeleton);
+    _skeleton.update(delta);
+    _skeleton.updateWorldTransform(Physics.update);
   }
 
   /**
    * @internal
    */
   override _updateRendererShaderData(context: any): void {
-    super._updateRendererShaderData(context);
     if (this._skeleton) {
-      this._spineGenerator.buildPrimitive(this._skeleton);
+      SpineAnimation._spineGenerator.buildPrimitive(this._skeleton, this);
+    }
+    if (this._isContainDirtyFlag(SpineAnimationUpdateFlags.AnimationVolume)) {
+      this._calculateGeneratorBounds(this.bounds);
+    }
+    if (this._isContainDirtyFlag(SpineAnimationUpdateFlags.AssetVolume)) {
+      this._calculateGeneratorBounds(this.bounds);
+      this._setDirtyFlagFalse(SpineAnimationUpdateFlags.AssetVolume);
     }
   }
 
@@ -182,29 +233,8 @@ export class SpineAnimation extends Renderer {
    * @internal
    */
   // @ts-ignore
-  protected override _render(context: any): void {
-    const primitive = this._primitive;
-    const subPrimitives = this._subPrimitives;
-    if (this._dirtyUpdateFlag & SpineAnimationUpdateFlags.VertexElementMacro) {
-      const shaderData = this.shaderData;
-      const vertexElements = primitive.vertexElements;
-
-      shaderData.disableMacro(SpineAnimation._uvMacro);
-      shaderData.disableMacro(SpineAnimation._enableVertexColorMacro);
-
-      for (let i = 0, n = vertexElements.length; i < n; i++) {
-        switch (vertexElements[i].attribute) {
-          case "TEXCOORD_0":
-            shaderData.enableMacro(SpineAnimation._uvMacro);
-            break;
-          case "COLOR_0":
-            shaderData.enableMacro(SpineAnimation._enableVertexColorMacro);
-            break;
-        }
-      }
-      this._dirtyUpdateFlag &= ~SpineAnimationUpdateFlags.VertexElementMacro;
-    }
-
+  override _render(context: any): void {
+    const { _primitive, _subPrimitives } = this;
     const { _materials: materials, _engine: engine } = this;
     // @ts-ignore
     const renderElement = engine._renderElementPool.get();
@@ -212,8 +242,8 @@ export class SpineAnimation extends Renderer {
     renderElement.set(this.priority, this._distanceForSort);
     // @ts-ignore
     const subRenderElementPool = engine._subRenderElementPool;
-    if (!subPrimitives) return;
-    for (let i = 0, n = subPrimitives.length; i < n; i++) {
+    if (!_subPrimitives) return;
+    for (let i = 0, n = _subPrimitives.length; i < n; i++) {
       let material = materials[i];
       if (!material) {
         continue;
@@ -224,8 +254,7 @@ export class SpineAnimation extends Renderer {
       }
 
       const subRenderElement = subRenderElementPool.get();
-      // @ts-ignore
-      subRenderElement.set(this, material, primitive, subPrimitives[i]);
+      subRenderElement.set(this, material, _primitive, _subPrimitives[i]);
       renderElement.addSubRenderElement(subRenderElement);
     }
     // @ts-ignore
@@ -236,23 +265,34 @@ export class SpineAnimation extends Renderer {
    * @internal
    */
   // @ts-ignore
-  protected override _updateBounds(worldBounds: BoundingBox): void {
-    const bounds = worldBounds;
-    const offset = SpineAnimation._tempOffset;
-    const size = SpineAnimation._tempSize;
-    const temp = SpineAnimation._tempArray;
-    const zSpacing = this.setting?.zSpacing || 0.01;
-    const skeleton = this._skeleton;
-    skeleton.getBounds(offset, size, temp);
-    const { x, y } = offset;
-    bounds.min.set(x, y, 0);
-    bounds.max.set(x + size.x, y + size.y, skeleton.drawOrder.length * zSpacing);
+  override _updateBounds(worldBounds: BoundingBox): void {
+    if (this._isContainDirtyFlag(SpineAnimationUpdateFlags.TransformVolume)) {
+      this._calculateGeneratorBounds(worldBounds);
+      this._setDirtyFlagFalse(SpineAnimationUpdateFlags.TransformVolume);
+    }
+  }
+
+    /**
+   * @internal
+   */
+  _calculateGeneratorBounds(worldBounds: BoundingBox) {
+    const {
+      _spineGenerator: {
+        bounds: {
+          min: { x: minX, y: minY, z: minZ }, 
+          max: { x: maxX, y: maxY, z: maxZ },
+        },
+      },
+    } = SpineAnimation;
+    worldBounds.min.set(minX, minY, minZ);
+    worldBounds.max.set(maxX, maxY, maxZ);
     BoundingBox.transform(
-      bounds,
+      worldBounds,
       this.entity.transform.worldMatrix,
-      bounds,
+      worldBounds,
     );
   }
+  
 
   /**
    * @internal
@@ -261,37 +301,127 @@ export class SpineAnimation extends Renderer {
   override _cloneTo(target: SpineAnimation, srcRoot: Entity, targetRoot: Entity): void {
     // @ts-ignore
     super._cloneTo(target, srcRoot, targetRoot);
-    target.skeletonData = this.skeletonData;
-    const _cloneSetting = { ...this.setting };
-    target.setting = _cloneSetting;
-    target.initialize(target.setting);
   }
 
   /**
    * @internal
    */
-  protected override _onDestroy(): void {
-    const primitive = this._primitive;
-    const subPrimitives = this._subPrimitives;
-    if (primitive) {
-      primitive.destroyed || this._addResourceReferCount(primitive, -1);
+  override _onDestroy(): void {
+    const { _primitive, _subPrimitives } = this;
+    if (_primitive) {
+      _primitive.destroyed || this._addResourceReferCount(_primitive, -1);
       this._primitive = null;
     }
-    if (subPrimitives) {
+    if (_subPrimitives) {
       this._subPrimitives.length = 0;
     }
     this.skeletonData = null;
     this._skeleton = null;
-    this._spineGenerator = null;
     this.setting = null;
     super._onDestroy();
   }
+
+  /**
+   * @internal
+   */
+  _prepareRenderBuffer(vertexCount: number) {
+    const { _engine, _primitive } = this;
+    this._vertices = new Float32Array(vertexCount * SpineGenerator.VERTEX_SIZE);
+    this._indices = new Uint16Array(vertexCount);
+    const vertexStride = (SpineGenerator.VERTEX_STRIDE) * 4; // position + color + uv * Float32 byteLen
+    const vertexBuffer = new Buffer(
+      _engine,
+      BufferBindFlag.VertexBuffer,
+      this._vertices,
+      BufferUsage.Dynamic,
+    );
+    const indexBuffer = new Buffer(
+      _engine,
+      BufferBindFlag.IndexBuffer,
+      this._indices,
+      BufferUsage.Dynamic
+    );
+    this._indexBuffer = indexBuffer;
+    this._vertexBuffer = vertexBuffer;
+    const vertexBufferBinding = new VertexBufferBinding(vertexBuffer, vertexStride);
+    this._primitive.setVertexBufferBinding(0, vertexBufferBinding);
+    const indexBufferBinding = new IndexBufferBinding(indexBuffer, IndexFormat.UInt16);
+    _primitive.setIndexBufferBinding(indexBufferBinding);
+  }
+
+  /**
+   * @internal
+   */
+  _addSubPrimitive(subPrimitive: SubPrimitive) {
+    this._subPrimitives.push(subPrimitive);
+  }
+
+  /**
+   * @internal
+   */
+  _clearSubPrimitives() {
+    this._subPrimitives.length = 0;
+  }
+
+  /**
+   * @internal
+   */
+  _isContainDirtyFlag(type: number): boolean {
+    return (this._dirtyUpdateFlag & type) != 0;
+  }
+
+  /**
+   * @internal
+   */
+  _setDirtyFlagFalse(type: number): void {
+    this._dirtyUpdateFlag &= ~type;
+  }
+
+  /**
+   * @internal
+   */
+  @ignoreClone
+  _onAnimationStart(): void {
+    this._dirtyUpdateFlag |= SpineAnimationUpdateFlags.AnimationVolume;
+  }
+
+  /**
+   * @internal
+   */
+  // @ts-ignore
+  override _onTransformChanged(): void {
+    this._dirtyUpdateFlag |= SpineAnimationUpdateFlags.TransformVolume | RendererUpdateFlags.WorldVolume;
+  }
+
+  private onAnimationStart() {
+    this._dirtyUpdateFlag |= SpineAnimationUpdateFlags.AnimationVolume;
+  }
+
+  private onAnimationComplete(entry: TrackEntry) {
+    if (!entry.loop) {
+      this._setDirtyFlagFalse(SpineAnimationUpdateFlags.AnimationVolume)
+    }
+  }
+
+}
+
+
+/**
+ * @internal
+ */
+export enum SpineAnimationUpdateFlags {
+  /** On World Transform Changed */
+  TransformVolume = 0x1,
+  /** On Animation start play */
+  AnimationVolume = 0x2,
+  /** On skeleton data asset changed */
+  AssetVolume = 0x4,
 }
 
 /**
- * @remarks Extends `RendererUpdateFlag`.
+ * @internal
  */
-enum SpineAnimationUpdateFlags {
-  /** VertexElementMacro. */
-  VertexElementMacro = 0x2,
+export enum RendererUpdateFlags {
+  /** Include world position and world bounds. */
+  WorldVolume = 0x1
 }

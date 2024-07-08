@@ -7,6 +7,7 @@ import {
 } from "@galacean/engine";
 import { SkeletonData } from "@esotericsoftware/spine-core";
 import { getUrlExtension, loadAndCreateSpineSkeletonData } from "./LoaderUtils";
+import { SpineAnimation } from "../SpineAnimation";
 
 export type SpineAssetBundle = {
   skeletonPath: string;
@@ -23,9 +24,57 @@ type SpineLoaderParams =  {
 type SpineLoadItem = LoadItem & { params?: SpineLoaderParams };
 
 @resourceLoader("spine", ["json", "bin", "skel"])
-class SpineLoader extends Loader<SkeletonData> {
+export class SpineLoader extends Loader<SkeletonData> {
   static imageExtensions = ["png", "jpg", "webp", "jpeg", "ktx", "ktx2"];
   static skeletonExtensions = ["skel", "json", "bin"];
+
+  static parseAndAssignSpineAsset(url: string, fileExtension: string | null, bundle: SpineAssetBundle) {
+    const imageExtension = SpineLoader.imageExtensions;
+    const skeletonExtension = SpineLoader.skeletonExtensions;
+    const ext = getUrlExtension(url, fileExtension);
+    if (!ext) return;
+  
+    if (skeletonExtension.includes(ext)) {
+      bundle.skeletonPath = url;
+      bundle.skeletonExtension = ext;
+    }
+    if (ext === 'atlas') {
+      bundle.atlasPath = url;
+    }
+    if (imageExtension.includes(ext)) {
+      bundle.imagePaths.push(url);
+      bundle.imageExtensions.push(ext);
+    }
+  }
+
+  static deriveAndAssignSpineAsset(url: string, fileExtension: string | null, bundle: SpineAssetBundle) {
+    const ext = getUrlExtension(url, fileExtension);
+    if (!ext) return;
+    bundle.skeletonPath = url;
+    bundle.skeletonExtension = ext;
+    const extensionPattern: RegExp = /(\.(json|bin|skel))$/;
+    let baseUrl;
+    if (extensionPattern.test(url)) {
+      baseUrl = url.replace(extensionPattern, '');
+    }
+    if (baseUrl) {
+      const atlasUrl = baseUrl + '.atlas';
+      bundle.atlasPath = atlasUrl;
+    }
+  }
+
+  static verifyFileExtensions(fileExtensions: string | string[], expectArray: boolean): string | string[] | null {
+    if (!fileExtensions) return null;
+    if (expectArray && !Array.isArray(fileExtensions)) {
+      console.error('Expect fileExtensions to be an array.');
+      return [];
+    } else if (!expectArray && typeof fileExtensions !== 'string') {
+      console.error('Expect fileExtensions to be a string.');
+      return null;
+    }
+    return fileExtensions;
+  }
+
   load(
     item: SpineLoadItem,
     resourceManager: ResourceManager
@@ -42,16 +91,16 @@ class SpineLoader extends Loader<SkeletonData> {
       let { fileExtensions } = item.params || {};
       if (item.urls) {
         // multiple resource 
-        fileExtensions = verifyFileExtensions(fileExtensions, true);
+        fileExtensions = SpineLoader.verifyFileExtensions(fileExtensions, true);
         for (let i = 0; i < item.urls.length; i += 1) {
           const url = item.urls[i];
           const extension = fileExtensions && fileExtensions[i] || null;
-          parseAndAssignSpineAsset(url, extension, spineAssetBundle);
+          SpineLoader.parseAndAssignSpineAsset(url, extension, spineAssetBundle);
         }
       } else {
         // single resource
-        const fileExtension = verifyFileExtensions(fileExtensions, false);
-        deriveAndAssignSpineAsset(item.url, fileExtension as string, spineAssetBundle);
+        const fileExtension = SpineLoader.verifyFileExtensions(fileExtensions, false);
+        SpineLoader.deriveAndAssignSpineAsset(item.url, fileExtension as string, spineAssetBundle);
       }
       const { skeletonPath, atlasPath } = spineAssetBundle;
       if (!skeletonPath || !atlasPath) {
@@ -68,52 +117,3 @@ class SpineLoader extends Loader<SkeletonData> {
     });
   }
 }
-
-function parseAndAssignSpineAsset(url: string, fileExtension: string | null, bundle: SpineAssetBundle) {
-  const imageExtension = SpineLoader.imageExtensions;
-  const skeletonExtension = SpineLoader.skeletonExtensions;
-  const ext = getUrlExtension(url, fileExtension);
-  if (!ext) return;
-
-  if (skeletonExtension.includes(ext)) {
-    bundle.skeletonPath = url;
-    bundle.skeletonExtension = ext;
-  }
-  if (ext === 'atlas') {
-    bundle.atlasPath = url;
-  }
-  if (imageExtension.includes(ext)) {
-    bundle.imagePaths.push(url);
-    bundle.imageExtensions.push(ext);
-  }
-}
-
-function deriveAndAssignSpineAsset(url: string, fileExtension: string | null, bundle: SpineAssetBundle) {
-  const ext = getUrlExtension(url, fileExtension);
-  if (!ext) return;
-  bundle.skeletonPath = url;
-  bundle.skeletonExtension = ext;
-  const extensionPattern: RegExp = /(\.(json|bin|skel))$/;
-  let baseUrl;
-  if (extensionPattern.test(url)) {
-    baseUrl = url.replace(extensionPattern, '');
-  }
-  if (baseUrl) {
-    const atlasUrl = baseUrl + '.atlas';
-    bundle.atlasPath = atlasUrl;
-  }
-}
-
-function verifyFileExtensions(fileExtensions: string | string[], expectArray: boolean): string | string[] | null {
-  if (!fileExtensions) return null;
-  if (expectArray && !Array.isArray(fileExtensions)) {
-    console.error('Expect fileExtensions to be an array.');
-    return [];
-  } else if (!expectArray && typeof fileExtensions !== 'string') {
-    console.error('Expect fileExtensions to be a string.');
-    return null;
-  }
-  return fileExtensions;
-}
-
-export { SpineLoader };

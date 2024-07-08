@@ -1,4 +1,6 @@
 import "./loader/SpineLoader";
+import "./loader/EditorSkeletonDataLoader";
+import "./loader/EditorSpineAtlasLoader";
 export { SpineAnimation } from "./SpineAnimation";
 export * from "@esotericsoftware/spine-core";
 export { generateTextureAtlas } from "./loader/LoaderUtils";

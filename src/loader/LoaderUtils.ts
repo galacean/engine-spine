@@ -37,8 +37,11 @@ export async function loadAndCreateSpineSkeletonData(
     const texturePromises: AssetPromise<any>[] = imagePaths.map((imagePath, index) => {
       const ext = imageExtensions[index];
       let imageLoaderType = AssetType.Texture2D;
-      if (ext === 'ktx') imageLoaderType = AssetType.KTX;
-      if (ext === 'ktx2') imageLoaderType = AssetType.KTX2;
+      if (ext === 'ktx') {
+        imageLoaderType = AssetType.KTX;
+      } else if (ext === 'ktx2') {
+        imageLoaderType = AssetType.KTX2;
+      }
       return loadTexture(imagePath, engine, imageLoaderType);
     });
     loadQueue.push(AssetPromise.all(texturePromises));

@@ -84,9 +84,9 @@ export default class BoundingBoxLine extends MeshRenderer {
 
     const mesh = <ModelMesh>this.mesh;
     const positions = mesh.getPositions();
-    const { x: minX, y: minY, z: minZ } = min;
-    const { x: maxX, y: maxY, z: maxZ } = max;
     if (positions) {
+      const { x: minX, y: minY, z: minZ } = min;
+      const { x: maxX, y: maxY, z: maxZ } = max;
       positions[0].set(minX, minY, maxZ);
       positions[1].set(maxX, minY, maxZ);
       positions[2].set(maxX, minY, minZ);
