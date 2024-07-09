@@ -1,7 +1,8 @@
-export class ObjectPool<T> {
+export class ClearablePool<T> {
   private _type: new () => T;
   private _elements: T[];
   private _usedElementCount: number = 0;
+
   constructor(type: new () => T) {
     this._type = type;
     this._elements = [];

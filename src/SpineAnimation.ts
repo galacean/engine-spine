@@ -20,8 +20,13 @@ import {
   IndexFormat,
 } from "@galacean/engine";
 import { SpineMaterial } from "./SpineMaterial";
-import { ObjectPool } from "./util/ObjectPool";
-import { AnimationStateDataCache } from "./Cache";
+import { AnimationStateDataCache, MaterialCache } from "./Cache";
+
+declare module '@esotericsoftware/spine-core' {
+  interface SkeletonData {
+    refCount: number;
+  }
+}
 
 interface InitialState {
   animationName: string;
@@ -43,9 +48,6 @@ export class SpineAnimation extends Renderer {
   private static colorVertexElement = new VertexElement('COLOR_0', 12, VertexElementFormat.Vector4, 0);
   private static uvVertexElement = new VertexElement('TEXCOORD_0', 28, VertexElementFormat.Vector2, 0);
 
-  /** @internal */
-  static subPrimitivePool = new ObjectPool(SubPrimitive);
-
   static getDefaultMaterial(engine: Engine): Material {
     let defaultMaterial = this._defaultMaterial;
     if (defaultMaterial) {
@@ -64,7 +66,10 @@ export class SpineAnimation extends Renderer {
 
   /** Render setting for spine rendering. */
   @deepClone
-  setting: SpineRenderSetting;
+  setting: SpineRenderSetting = {
+    zSpacing: 0.01,
+    useClipping: true,
+  };
   /** Initial spine animation and skin state. */
   @deepClone
   initialState: InitialState = {
@@ -74,35 +79,37 @@ export class SpineAnimation extends Renderer {
     skinName: 'default',
   };
   /** @internal */
-  @deepClone
+  @ignoreClone
   _primitive: Primitive;
   /** @internal */
-  @deepClone
+  @ignoreClone
   _subPrimitives: SubPrimitive[] = [];
   /** @internal */
-  @deepClone
-  // @ts-ignore
-  _indexBuffer: Buffer = {};
+  @ignoreClone
+  _indexBuffer: Buffer;
   /** @internal */
-  @deepClone
-  // @ts-ignore
-  _vertexBuffer: Buffer = {};
+  @ignoreClone
+  _vertexBuffer: Buffer;
   /** @internal */
-  @deepClone
+  @ignoreClone
   _vertices: Float32Array;
   /** @internal */
-  @deepClone
-  _verticesWithZ: Float32Array;
-  /** @internal */
-  @deepClone
+  @ignoreClone
   _indices: Uint16Array;
+  /** @internal */
+  @ignoreClone
+  _needResizeBuffer = false;
+  /** @internal */
+  @ignoreClone
+  _vertexCount = 0;
+   /** @internal */
+  @ignoreClone
+  _skeletonData: SkeletonData;
 
-  @deepClone
-  // @ts-ignore
-  private _skeleton: Skeleton = { empty: 1 };
-  @deepClone
-  // @ts-ignore
-  private _state: AnimationState = { empty: 1 };
+  @ignoreClone
+  private _skeleton: Skeleton;
+  @ignoreClone
+  private _state: AnimationState;
 
   /**
    * Setting `skeletonData` initializes a new Spine animation with the provided data.
@@ -112,13 +119,19 @@ export class SpineAnimation extends Renderer {
     if (!value) {
       this._skeleton = null;
       this._state = null;
+      this._skeletonData = null;
       return;
+    }
+    this._skeletonData = value;
+    if (value.refCount === undefined) {
+      value.refCount = 1;
+    } else {
+      value.refCount += 1;
     }
     this._skeleton = new Skeleton(value);
     const animationData = AnimationStateDataCache.instance.getAnimationStateData(value);
     this._state = new AnimationState(animationData);
-    const vertexCount = SpineAnimation._spineGenerator.initialize(value);
-    this._prepareRenderBuffer(vertexCount);
+    this._prepareRenderBuffer(0);
     this._dirtyUpdateFlag |= SpineAnimationUpdateFlags.AssetVolume;
     this._state.addListener({
       start: () => {
@@ -171,7 +184,6 @@ export class SpineAnimation extends Renderer {
     const { skeleton, state } = this;
     if (skeleton && state) {
       const { animationName, skinName, loop, scale } = this.initialState;
-      console.log(scale)
       skeleton.scaleX = scale;
       skeleton.scaleY = scale;
       if (skinName !== 'default') {
@@ -205,8 +217,7 @@ export class SpineAnimation extends Renderer {
    */
   override update(delta: number): void {
     const { _state, _skeleton } = this;
-    // @ts-ignore
-    if (_state.empty || _skeleton.empty) return;
+    if (!_state || !_skeleton) return;
     _state.update(delta);
     _state.apply(_skeleton);
     _skeleton.update(delta);
@@ -298,16 +309,17 @@ export class SpineAnimation extends Renderer {
    * @internal
    */
   // @ts-ignore
-  override _cloneTo(target: SpineAnimation, srcRoot: Entity, targetRoot: Entity): void {
-    // @ts-ignore
-    super._cloneTo(target, srcRoot, targetRoot);
+  override _cloneTo(target: SpineAnimation): void {
+    target.skeletonData = this._skeletonData;
   }
 
   /**
    * @internal
    */
   override _onDestroy(): void {
-    const { _primitive, _subPrimitives } = this;
+    const textureMap = new Map();
+    const { _primitive, _subPrimitives, _skeletonData } = this;
+    const { refCount } = _skeletonData;
     if (_primitive) {
       _primitive.destroyed || this._addResourceReferCount(_primitive, -1);
       this._primitive = null;
@@ -315,8 +327,15 @@ export class SpineAnimation extends Renderer {
     if (_subPrimitives) {
       this._subPrimitives.length = 0;
     }
+    if (refCount > 1) {
+      _skeletonData.refCount--;
+    } else {
+      AnimationStateDataCache.instance.clear(_skeletonData);
+      MaterialCache.instance.clear(this._materials);
+    }
     this.skeletonData = null;
     this._skeleton = null;
+    this._state = null;
     this.setting = null;
     super._onDestroy();
   }
@@ -339,7 +358,7 @@ export class SpineAnimation extends Renderer {
       _engine,
       BufferBindFlag.IndexBuffer,
       this._indices,
-      BufferUsage.Dynamic
+      BufferUsage.Dynamic,
     );
     this._indexBuffer = indexBuffer;
     this._vertexBuffer = vertexBuffer;

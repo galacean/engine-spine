@@ -36,7 +36,7 @@ const blobResource: any = {
   }
 };
 
-const baseDemo = '多贴图'//'spineBoy-单json';
+const baseDemo = 'spineBoy-单json';
 const demos = {
   'spineBoy-单json': {
     url: "https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/yKbdfgijyLGzQDyQ/spineboy/spineboy.json",
@@ -170,30 +170,30 @@ async function loadSpine(root: Entity, engine: Engine, resource) {
 
   const spineEntity = new Entity(engine, 'spine-entity');
   spineEntity.transform.setPosition(0, -15, 0);
-  const mtl = SpineAnimation.getDefaultMaterial(engine);
   const spineAnimation = spineEntity.addComponent(SpineAnimation);
-  spineAnimation.setMaterial(mtl);
   spineAnimation.initialState.scale = 0.05;
   spineAnimation.skeletonData = skeletonData;
   root.addChild(spineEntity);
 
-  const clone = spineEntity.clone();
-  clone.transform.setPosition(5, 0, 0);
-  const animation2 = clone.getComponent(SpineAnimation);
-  animation2!.initialState.scale = 0.01;
-  root.addChild(clone);
+  // const clone = spineEntity.clone();
+  // clone.name = 'test';
+  // clone.transform.setPosition(25, -15, 0);
+  // const animation2 = clone.getComponent(SpineAnimation);
+  // animation2!.initialState.skinName = 'full-skins/boy';
+  // animation2!.initialState.scale = 0.04;
+  // animation2!.initialState.animationName = 'dance';
+  // animation2!.initialState.loop = true;
+  // root.addChild(clone);
 
-  console.log(spineAnimation.state, animation2.state);
+  // outline.attachToEntity(spineEntity);
+  // outline.isActive = true;
+  // setInterval(() => {
+  //   outline.updateVertices();
+  // }, 67);
 
-  outline.attachToEntity(spineEntity);
-  outline.isActive = true;
-  setInterval(() => {
-    outline.updateVertices();
-  }, 67);
-
-  spineAnimation.state.setAnimation(0, firstAnimation, false);
+  spineAnimation.state.setAnimation(0, firstAnimation, true);
   animationController = gui.add({ animation: firstAnimation  }, 'animation', animationNames).onChange((animationName) => {
-		spineAnimation.state.setAnimation(0, animationName, false);
+		spineAnimation.state.setAnimation(0, animationName, true);
 	});
 
   if (scene === 'changeSkin') {

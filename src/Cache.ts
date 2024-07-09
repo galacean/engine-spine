@@ -23,8 +23,14 @@ export class AnimationStateDataCache {
     }
   }
 
-  clear() {
-    this._cache.clear();
+  clear(skeletonData?: SkeletonData) {
+    if (skeletonData) {
+      if (this._cache.has(skeletonData)) {
+        this._cache.delete(skeletonData);
+      }
+    } else {
+      this._cache.clear();
+    }
   }
 }
 
@@ -95,9 +101,69 @@ export class MaterialCache {
     }
   }
 
-  clear() {
-    this._cache.forEach(material => material.destroy());
-    this._cache.clear();
+  private getBlendMode(material: Material): BlendMode {
+    const target = material.renderState.blendState.targetBlendState;
+  
+    if (
+      target.sourceColorBlendFactor === BlendFactor.SourceAlpha &&
+      target.destinationColorBlendFactor === BlendFactor.One &&
+      target.sourceAlphaBlendFactor === BlendFactor.One &&
+      target.destinationAlphaBlendFactor === BlendFactor.One &&
+      target.colorBlendOperation === BlendOperation.Add &&
+      target.alphaBlendOperation === BlendOperation.Add
+    ) {
+      return BlendMode.Additive;
+    }
+  
+    if (
+      target.sourceColorBlendFactor === BlendFactor.DestinationColor &&
+      target.destinationColorBlendFactor === BlendFactor.Zero &&
+      target.sourceAlphaBlendFactor === BlendFactor.One &&
+      target.destinationAlphaBlendFactor === BlendFactor.Zero &&
+      target.colorBlendOperation === BlendOperation.Add &&
+      target.alphaBlendOperation === BlendOperation.Add
+    ) {
+      return BlendMode.Multiply;
+    }
+  
+    if (
+      target.sourceColorBlendFactor === BlendFactor.One &&
+      target.destinationColorBlendFactor === BlendFactor.OneMinusSourceColor &&
+      target.sourceAlphaBlendFactor === BlendFactor.One &&
+      target.destinationAlphaBlendFactor === BlendFactor.OneMinusSourceColor &&
+      target.colorBlendOperation === BlendOperation.Add &&
+      target.alphaBlendOperation === BlendOperation.Add
+    ) {
+      return BlendMode.Screen;
+    }
+  
+    if (
+      target.sourceColorBlendFactor === BlendFactor.SourceAlpha &&
+      target.destinationColorBlendFactor === BlendFactor.OneMinusSourceAlpha &&
+      target.sourceAlphaBlendFactor === BlendFactor.One &&
+      target.destinationAlphaBlendFactor === BlendFactor.OneMinusSourceAlpha &&
+      target.colorBlendOperation === BlendOperation.Add &&
+      target.alphaBlendOperation === BlendOperation.Add
+    ) {
+      return BlendMode.Normal;
+    }
+    return BlendMode.Normal;
+  }
+
+  clear(materials: Material[]) {
+    if (materials) {
+      materials.forEach((material) => {
+        const texture = material.shaderData.getTexture('material_SpineTexture');
+        const blendMode = this.getBlendMode(material);
+        const key = `${texture.instanceId}_${blendMode}`;
+        const cache = this._cache.get(key);
+        if (cache) {
+          this._cache.delete(key);
+        }
+      });
+    } else {
+      this._cache.clear();
+    }
   }
 }
 
