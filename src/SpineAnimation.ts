@@ -131,7 +131,8 @@ export class SpineAnimation extends Renderer {
     this._skeleton = new Skeleton(value);
     const animationData = AnimationStateDataCache.instance.getAnimationStateData(value);
     this._state = new AnimationState(animationData);
-    this._prepareRenderBuffer(0);
+    const maxCount = SpineAnimation._spineGenerator.getMaxVertexCount(value);
+    this._createBuffer(maxCount);
     this._dirtyUpdateFlag |= SpineAnimationUpdateFlags.AssetVolume;
     this._state.addListener({
       start: () => {
@@ -343,7 +344,7 @@ export class SpineAnimation extends Renderer {
   /**
    * @internal
    */
-  _prepareRenderBuffer(vertexCount: number) {
+  _createBuffer(vertexCount: number) {
     const { _engine, _primitive } = this;
     this._vertices = new Float32Array(vertexCount * SpineGenerator.VERTEX_SIZE);
     this._indices = new Uint16Array(vertexCount);

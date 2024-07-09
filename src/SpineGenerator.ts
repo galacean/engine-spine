@@ -12,6 +12,8 @@ import {
   ArrayLike,
   Color,
   BlendMode,
+  SkeletonData,
+  Skin,
 } from "@esotericsoftware/spine-core";
 import { SpineAnimation } from "./SpineAnimation";
 import { AdaptiveTexture } from "./loader/LoaderUtils";
@@ -19,12 +21,16 @@ import { MaterialCache } from "./Cache";
 import { ReturnablePool } from "./util/ReturnablePool";
 import { ClearablePool } from "./util/ClearablePool";
 
+
 class SubRenderItem {
   subPrimitive: SubPrimitive;
   blendMode: BlendMode;
   texture: any;
   slotName?: string;
 }
+
+const maxBoundsValue = Infinity;
+const minBoundsValue = -Infinity;
 
 export class SpineGenerator {
   static QUAD_TRIANGLES = [0, 1, 2, 2, 3, 0];
@@ -39,8 +45,8 @@ export class SpineGenerator {
   static subRenderItemPool = new ClearablePool(SubRenderItem);
 
   bounds = {
-    min: new Vector3(Infinity, Infinity, Infinity),
-    max: new Vector3(-Infinity, -Infinity, -Infinity),
+    min: new Vector3(maxBoundsValue, maxBoundsValue, maxBoundsValue),
+    max: new Vector3(minBoundsValue, minBoundsValue, minBoundsValue),
   }
 
   private _clipper: SkeletonClipping = new SkeletonClipping();
@@ -48,29 +54,39 @@ export class SpineGenerator {
   private _separateSlots = new Map();
   private _separateSlotTextureMap: Map<string, Texture2D> = new Map();
 
+  getMaxVertexCount(skeletonData: SkeletonData) {
+    let vertexCount = 0;
+    const { skins } = skeletonData;
+    for (let i = 0; i < skins.length; i += 1) {
+      const skin = skins[i];
+      const vc = this.getSkinVertexCount(skin);
+      vertexCount = Math.max(vertexCount, vc);
+    }
+    return vertexCount;
+  }
+
   buildPrimitive(skeleton: Skeleton, renderer: SpineAnimation) {
     const { useClipping = true, zSpacing = 0.01 } = renderer.setting;
-
-    let verticesLength = 0;
-    let indicesLength = 0;
-    this.bounds.min.set(Infinity, Infinity, Infinity);
-    this.bounds.max.set(-Infinity, -Infinity, -Infinity);
-
-    const drawOrder = skeleton.drawOrder;
-    const maxSlotCount = drawOrder.length;
     const {
+      bounds,
       _clipper,
       _separateSlots,
       _subRenderItems,
       _separateSlotTextureMap,
     } = this;
+
+    bounds.min.set(maxBoundsValue, maxBoundsValue, maxBoundsValue);
+    bounds.max.set(minBoundsValue, minBoundsValue, minBoundsValue);
+
+    let verticesLength = 0;
+    let indicesLength = 0;
+    const drawOrder = skeleton.drawOrder;
+    const maxSlotCount = drawOrder.length;
     const {
       engine,
       _indices, 
       _vertices,
-      _vertexCount,
       _subPrimitives,
-      _needResizeBuffer,
     } = renderer;
     const {
       tempVerts,
@@ -78,7 +94,7 @@ export class SpineGenerator {
       subPrimitivePool,
     } = SpineGenerator;
     _subRenderItems.length = 0;
-    let vertices: ArrayLike<number> = renderer._vertices;
+    let vertices = renderer._vertices;
     let triangles: Array<number>;
     let uvs: ArrayLike<number>;
     // 记录当前
@@ -89,7 +105,6 @@ export class SpineGenerator {
     let primitiveIndex = 0;
     SpineGenerator.tempBlendMode = null;
     SpineGenerator.tempTexture = null;
-
     for (let slotIndex = 0; slotIndex < maxSlotCount; ++slotIndex) {
       const slot = drawOrder[slotIndex];
       if (!slot.bone.active) {
@@ -173,8 +188,8 @@ export class SpineGenerator {
             dark,
             false,
           );
-          let clippedVertices = _clipper.clippedVertices;
-          let clippedTriangles = _clipper.clippedTriangles;
+          const clippedVertices = _clipper.clippedVertices;
+          const clippedTriangles = _clipper.clippedTriangles;
           finalVertices = clippedVertices;
           finalVerticesLength = clippedVertices.length;
           finalIndices = clippedTriangles;
@@ -212,7 +227,6 @@ export class SpineGenerator {
         for (; j < finalVerticesLength;) {
           let x = finalVertices[j++];
           let y = finalVertices[j++];
-          let z = zSpacing * slotIndex;
           vertices[i++] = x;
           vertices[i++] = y;
           vertices[i++] = z;
@@ -309,15 +323,6 @@ export class SpineGenerator {
 
     _clipper.clipEnd();
 
-    // update buffer when vertex count change
-    if (indicesLength > 0 && indicesLength !== _vertexCount) {
-      if (indicesLength > _vertexCount) {
-        renderer._vertexCount = indicesLength;
-        renderer._needResizeBuffer = true;
-        return;
-      }
-    }
-
     const lastLen = _subPrimitives.length;
     const curLen = _subRenderItems.length;
     if (curLen < lastLen) {
@@ -328,7 +333,7 @@ export class SpineGenerator {
     }
 
     renderer._clearSubPrimitives();
-    for (let i = 0, l = _subRenderItems.length; i < l; ++i) {
+    for (let i = 0, l = curLen; i < l; ++i) {
       const item = _subRenderItems[i];
       const { slotName, blendMode, texture } = item;
       renderer._addSubPrimitive(item.subPrimitive);
@@ -339,10 +344,7 @@ export class SpineGenerator {
       const material = MaterialCache.instance.getMaterial(subTexture, engine, blendMode);
       renderer.setMaterial(i, material);
     }
-    if (_needResizeBuffer) {
-      renderer._prepareRenderBuffer(_vertexCount);
-      renderer._needResizeBuffer = false;
-    }
+   
     renderer._vertexBuffer.setData(_vertices);
     renderer._indexBuffer.setData(_indices);
   }
@@ -363,6 +365,27 @@ export class SpineGenerator {
     max.x = Math.max(max.x, x);
     max.y = Math.max(max.y, y);
     max.z = Math.max(max.z, z);
+  }
+
+  private getSkinVertexCount(skin: Skin) {
+    const { attachments } = skin;
+    let vertexCount: number = 0;
+    const QUAD_TRIANGLE_LENGTH = SpineGenerator.QUAD_TRIANGLES.length;
+    for (let i = 0, n = attachments.length; i < n; i++) {
+      const slotAttachment = attachments[i];
+      for (let key in slotAttachment) {
+        const attachment = slotAttachment[key];
+        if (!attachment) {
+          continue;
+        } else if (attachment instanceof RegionAttachment) {
+          vertexCount += QUAD_TRIANGLE_LENGTH;
+        } else if (attachment instanceof MeshAttachment) {
+          let mesh = attachment;
+          vertexCount += mesh.triangles.length;
+        } else continue;
+      }
+    }
+    return vertexCount; 
   }
 
 }
