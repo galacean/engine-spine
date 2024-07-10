@@ -90,10 +90,13 @@ export class SpineGenerator {
     } = renderer;
     const {
       tempVerts,
+      tempTexture,
+      tempBlendMode,
       subRenderItemPool, 
       subPrimitivePool,
     } = SpineGenerator;
     _subRenderItems.length = 0;
+    subRenderItemPool.clear();
     let vertices = renderer._vertices;
     let triangles: Array<number>;
     let uvs: ArrayLike<number>;
@@ -117,48 +120,61 @@ export class SpineGenerator {
       let numFloats = 0;
       const isClipping = _clipper.isClipping();
       let vertexSize = isClipping ? 2 : SpineGenerator.VERTEX_SIZE;
-      if (attachment?.constructor === RegionAttachment) {
-        let regionAttachment = <RegionAttachment>attachment;
-        attachmentColor = regionAttachment.color;
-        numFloats = vertexSize * 4;
-        regionAttachment.computeWorldVertices(
-          slot,
-          tempVerts,
-          0,
-          vertexSize,
-        );
-        triangles = SpineGenerator.QUAD_TRIANGLES;
-        uvs = regionAttachment.uvs;
-        texture = regionAttachment.region.texture;
-      } else if (attachment?.constructor === MeshAttachment) {
-        let meshAttachment = <MeshAttachment>attachment;
-        attachmentColor = meshAttachment.color;
-        numFloats = (meshAttachment.worldVerticesLength >> 1) * vertexSize;
-        if (numFloats > vertices.length) {
-          SpineGenerator.tempVerts = new Array(numFloats);
-        }
-        meshAttachment.computeWorldVertices(
-          slot,
-          0,
-          meshAttachment.worldVerticesLength,
-          tempVerts,
-          0,
-          vertexSize,
-        );
-        triangles = meshAttachment.triangles;
-        uvs = meshAttachment.uvs;
-        texture = meshAttachment.region.texture;
-      } else if (attachment?.constructor === ClippingAttachment) {
+
+      if (!attachment) {
         if (useClipping) {
-          let clip = <ClippingAttachment>attachment;
-          _clipper.clipStart(slot, clip);
-          continue;
+          _clipper.clipEndWithSlot(slot);
         }
-      } else if (useClipping) {
-        // attachment might be null or BoundingBoxAttachment
-        _clipper.clipEndWithSlot(slot);
         continue;
       }
+
+      switch(attachment.constructor) {
+        case RegionAttachment:
+          const regionAttachment = <RegionAttachment>attachment;
+          attachmentColor = regionAttachment.color;
+          numFloats = vertexSize * 4;
+          regionAttachment.computeWorldVertices(
+            slot,
+            tempVerts,
+            0,
+            vertexSize,
+          );
+          triangles = SpineGenerator.QUAD_TRIANGLES;
+          uvs = regionAttachment.uvs;
+          texture = regionAttachment.region.texture;
+        break;
+        case MeshAttachment:
+          const meshAttachment = <MeshAttachment>attachment;
+          attachmentColor = meshAttachment.color;
+          numFloats = (meshAttachment.worldVerticesLength >> 1) * vertexSize;
+          if (numFloats > vertices.length) {
+            SpineGenerator.tempVerts = new Array(numFloats);
+          }
+          meshAttachment.computeWorldVertices(
+            slot,
+            0,
+            meshAttachment.worldVerticesLength,
+            tempVerts,
+            0,
+            vertexSize,
+          );
+          triangles = meshAttachment.triangles;
+          uvs = meshAttachment.uvs;
+          texture = meshAttachment.region.texture;
+        break;
+        case ClippingAttachment:
+          if (useClipping) {
+            let clip = <ClippingAttachment>attachment;
+            _clipper.clipStart(slot, clip);
+          }
+          continue;
+        default:
+          if (useClipping) {
+            _clipper.clipEndWithSlot(slot);
+          }
+          continue;
+      }
+
       if (texture != null) {
         let finalVertices: ArrayLike<number>;
         let finalVerticesLength: number;
@@ -175,7 +191,7 @@ export class SpineGenerator {
           skeletonColor.r * slotColor.r * attachmentColor.r,
           skeletonColor.g * slotColor.g * attachmentColor.g,
           skeletonColor.b * slotColor.b * attachmentColor.b,
-          alpha
+          alpha,
         );
 
         if (isClipping) {
@@ -249,10 +265,10 @@ export class SpineGenerator {
         const slotData = slot.data;
         const slotName = slotData.name;
         blend = slotData.blendMode;
-        const blendModeChanged = SpineGenerator.tempBlendMode !== null &&
-        SpineGenerator.tempBlendMode !== slotData.blendMode;
-        const textureChanged = SpineGenerator.tempTexture !== null && 
-        SpineGenerator.tempTexture !== texture;
+        const blendModeChanged = tempBlendMode !== null &&
+        tempBlendMode !== slotData.blendMode;
+        const textureChanged = tempTexture !== null && 
+        tempTexture !== texture;
         const slotNeedSeparate = _separateSlots.get(slotName);
 
         if (slotNeedSeparate || blendModeChanged || textureChanged) {
@@ -344,7 +360,6 @@ export class SpineGenerator {
       const material = MaterialCache.instance.getMaterial(subTexture, engine, blendMode);
       renderer.setMaterial(i, material);
     }
-   
     renderer._vertexBuffer.setData(_vertices);
     renderer._indexBuffer.setData(_indices);
   }

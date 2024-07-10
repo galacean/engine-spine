@@ -136,6 +136,7 @@ WebGLEngine.create({
   outline = outlineEntity.addComponent(BoundingBoxLine);
 
   loadSpine(root, engine, demos[baseDemo]);
+  loadSpine(root, engine, demos["ktx2"]);
 
   gui.add({ name: baseDemo }, 'name', Object.keys(demos)).onChange((demoName) => {
     const spineEntity = root.findByName('spine-entity');
@@ -169,7 +170,7 @@ async function loadSpine(root: Entity, engine: Engine, resource) {
   const firstAnimation = animationNames[0];
 
   const spineEntity = new Entity(engine, 'spine-entity');
-  spineEntity.transform.setPosition(0, -15, 0);
+  spineEntity.transform.setPosition(-25 + Math.random() * 50, -15, 0);
   const spineAnimation = spineEntity.addComponent(SpineAnimation);
   spineAnimation.initialState.scale = 0.05;
   spineAnimation.skeletonData = skeletonData;
