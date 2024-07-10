@@ -34,11 +34,12 @@ export function createSkeletonData(
 
 export async function loadTexturesByPath(
   imagePaths: string[],
+  imageExtensions: string[],
   engine: Engine,
 ): Promise<Texture2D[]> {
   let textures: Texture2D[];
   const texturePromises: AssetPromise<any>[] = imagePaths.map((imagePath, index) => {
-    const ext = SpineLoader.imageExtensions[index];
+    const ext = imageExtensions[index];
     let imageLoaderType = AssetType.Texture2D;
     if (ext === 'ktx') {
       imageLoaderType = AssetType.KTX;

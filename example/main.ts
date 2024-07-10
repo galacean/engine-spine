@@ -130,8 +130,8 @@ WebGLEngine.create({
   camera.nearClipPlane = 0.001;
   camera.farClipPlane = 20000;
 
-  // cameraEntity.addComponent(OrbitControl);
-  // cameraEntity.addComponent(Stats);
+  cameraEntity.addComponent(OrbitControl);
+  cameraEntity.addComponent(Stats);
 
   const outlineEntity = root.createChild('outline');
   outline = outlineEntity.addComponent(BoundingBoxLine);

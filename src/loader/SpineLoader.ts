@@ -158,7 +158,7 @@ export class SpineLoader extends Loader<SkeletonDataResource> {
         const extension = fileExtensions && fileExtensions[i] || null;
         SpineLoader.parseAndAssignSpineAsset(url, extension, spineAssetBundle);
       }
-      const { skeletonPath, atlasPath, imagePaths, skeletonExtension }  = spineAssetBundle;
+      const { skeletonPath, atlasPath, imagePaths, skeletonExtension, imageExtensions }  = spineAssetBundle;
       if (!skeletonPath || !atlasPath || imagePaths.length === 0) {
         throw new Error('Failed to load spine assets. Please check the file path and ensure the file extension is included.');
       }
@@ -167,7 +167,7 @@ export class SpineLoader extends Loader<SkeletonDataResource> {
       const loadQueue: Promise<any>[] = [
         skeletonPromise,
         this.request(atlasPath, { type: 'text'}),
-        loadTexturesByPath(imagePaths, engine),
+        loadTexturesByPath(imagePaths, imageExtensions, engine),
       ];
       const [skeletonTextData, atlasText, textures] = await Promise.all(loadQueue);
       const textureAtlas = createTextureAtlas(atlasText, textures);
