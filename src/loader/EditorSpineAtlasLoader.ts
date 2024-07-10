@@ -6,7 +6,7 @@ import {
   LoadItem,
 } from "@galacean/engine";
 import { TextureAtlas } from "@esotericsoftware/spine-core";
-import { generateTextureAtlas } from "./LoaderUtils";
+import { createTextureAtlas } from "./LoaderUtils";
 
 console.log('regist EditorSpineAtlas loader');
 
@@ -19,14 +19,10 @@ class EditorSpineAtlasLoader extends Loader<TextureAtlas> {
     return new AssetPromise(async (resolve) => {
       const text = await this.request<string>(item.url, { type: "text" });
       const { data: atlasText, textures: textureRefs } = JSON.parse(text);
-      const textureMap = {};
       // @ts-ignore
       const promises = textureRefs.map(refItem => resourceManager.getResourceByRef({ refId: refItem.refId }));
       const textures = await Promise.all(promises);
-      textures.forEach((texture) => {
-        textureMap[texture.name] = texture;
-      });
-      const textureAtlas = generateTextureAtlas(atlasText, textureMap);
+      const textureAtlas = createTextureAtlas(atlasText, textures);
       resolve(textureAtlas);
     });
   }

@@ -360,9 +360,10 @@ export class SpineGenerator {
         subTexture = _separateSlotTextureMap.get(slotName);
       }
       const key = `${subTexture.instanceId}_${blendMode}`;
-      let material = MaterialCache.instance.getMaterial(key);
+      let material = SpineAnimation.materialCache.get(key);
       if (!material) {
         material = this.createMaterialForTexture(subTexture, engine, blendMode);
+        SpineAnimation.materialCache.set(key, material);
       }
       renderer.setMaterial(i, material);
     }

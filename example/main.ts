@@ -200,9 +200,6 @@ async function loadSpine(root: Entity, engine: Engine, resource) {
   if (scene === 'changeSkin') {
     handleChangeSkinScene(spineAnimation);
   }
-
-  spineEntity.destroy();
-  engine.resourceManager._gc();
 }
 
 function handleChangeSkinScene(spineAnimation: SpineAnimation) {

@@ -1,4 +1,4 @@
-import { Skeleton, SkeletonData, AnimationState, Physics, TrackEntry } from "@esotericsoftware/spine-core";
+import { Skeleton, SkeletonData, AnimationState, Physics, TrackEntry, AnimationStateData } from "@esotericsoftware/spine-core";
 import { SpineGenerator } from "./SpineGenerator";
 import {
   Buffer,
@@ -49,6 +49,9 @@ export class SpineAnimation extends Renderer {
   private static positionVertexElement = new VertexElement('POSITION', 0, VertexElementFormat.Vector3, 0);
   private static colorVertexElement = new VertexElement('COLOR_0', 12, VertexElementFormat.Vector4, 0);
   private static uvVertexElement = new VertexElement('TEXCOORD_0', 28, VertexElementFormat.Vector2, 0);
+
+  static materialCache = new Map<string, Material>();
+  static animationDataCache = new Map<SkeletonData, AnimationStateData>();
 
   static getDefaultMaterial(engine: Engine): Material {
     let defaultMaterial = this._defaultMaterial;
@@ -129,7 +132,11 @@ export class SpineAnimation extends Renderer {
     value._addReferCount(1);
     const { skeletonData } = value;
     this._skeleton = new Skeleton(skeletonData);
-    const animationData = AnimationStateDataCache.instance.getAnimationStateData(skeletonData);
+    let animationData = SpineAnimation.animationDataCache.get(skeletonData);
+    if (!animationData) {
+      animationData = new AnimationStateData(skeletonData);
+      SpineAnimation.animationDataCache.set(skeletonData, animationData);
+    }
     this._state = new AnimationState(animationData);
     const maxCount = SpineAnimation._spineGenerator.getMaxVertexCount(skeletonData);
     this._createBuffer(maxCount);
@@ -320,8 +327,12 @@ export class SpineAnimation extends Renderer {
   override _onDestroy(): void {
     const { _primitive, _subPrimitives, _resource } = this;
     _subPrimitives.length = 0;
-    _primitive.destroyed || this._addResourceReferCount(_primitive, -1);
-    _resource.destroyed || this._addResourceReferCount(_resource, -1);
+    if (_primitive) {
+      _primitive.destroyed || this._addResourceReferCount(_primitive, -1);
+    }
+    if (_resource) {
+      _resource.destroyed || this._addResourceReferCount(_resource, -1);
+    }
     this._clearMaterialCache();
     this._primitive = null;
     this._resource = null;
@@ -336,7 +347,7 @@ export class SpineAnimation extends Renderer {
    */
   _createBuffer(vertexCount: number) {
     const { _engine, _primitive } = this;
-    this._vertices = new Float32Array(vertexCount * SpineGenerator.VERTEX_SIZE);
+    this._vertices = new Float32Array(vertexCount * SpineGenerator.VERTEX_STRIDE);
     this._indices = new Uint16Array(vertexCount);
     const vertexStride = (SpineGenerator.VERTEX_STRIDE) * 4; // position + color + uv * Float32 byteLen
     const vertexBuffer = new Buffer(
@@ -414,13 +425,12 @@ export class SpineAnimation extends Renderer {
   }
 
   private _clearMaterialCache() {
-    const materialKeys = [];
     this._materials.forEach((item) => {
       const texture = item.shaderData.getTexture('material_SpineTexture');
       const blendMode = getBlendMode(item);
-      materialKeys.push(`${texture.instanceId}_${blendMode}`);
+      const key = `${texture.instanceId}_${blendMode}`;
+      SpineAnimation.materialCache.delete(key);
     });
-    MaterialCache.instance.clear(materialKeys);
   }
 
 }

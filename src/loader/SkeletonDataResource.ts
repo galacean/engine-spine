@@ -1,6 +1,7 @@
 import { SkeletonData } from "@esotericsoftware/spine-core";
 import { Engine, ReferResource, Texture2D } from "@galacean/engine";
 import { AnimationStateDataCache } from "../util/Cache";
+import { SpineAnimation } from "../SpineAnimation";
 
 export class SkeletonDataResource extends ReferResource {
   readonly textures: Texture2D[] = [];
@@ -21,7 +22,7 @@ export class SkeletonDataResource extends ReferResource {
     const { textures, _skeletonData } = this;
     textures && this._disassociationSuperResource(textures);
     this._clearAttachmentTextures(_skeletonData);
-    AnimationStateDataCache.instance.clear([_skeletonData]);
+    SpineAnimation.animationDataCache.delete(_skeletonData);
     this._skeletonData = null;
   }
 

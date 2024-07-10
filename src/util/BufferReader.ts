@@ -24,21 +24,22 @@ export class BufferReader {
     const strByteLength = this.nextUint16();
     const uint8Array = new Uint8Array(this.data.buffer, this._position + this._dataView.byteOffset, strByteLength);
     this._position += strByteLength;
-    return decodeText(uint8Array);
+    return this.decodeText(uint8Array);
   }
 
   nextImageData(): Uint8Array {
     return new Uint8Array(this.data.buffer, this.data.byteOffset + this._position);
   }
-}
 
-function decodeText(array: Uint8Array): string {
-  if (typeof TextDecoder !== "undefined") {
-    return new TextDecoder().decode(array);
+  private decodeText(array: Uint8Array): string {
+    if (typeof TextDecoder !== "undefined") {
+      return new TextDecoder().decode(array);
+    }
+    let s = "";
+    for (let i = 0, il = array.length; i < il; i++) {
+      s += String.fromCharCode(array[i]);
+    }
+    return decodeURIComponent(encodeURIComponent(s));
   }
-  let s = "";
-  for (let i = 0, il = array.length; i < il; i++) {
-    s += String.fromCharCode(array[i]);
-  }
-  return decodeURIComponent(encodeURIComponent(s));
+
 }
