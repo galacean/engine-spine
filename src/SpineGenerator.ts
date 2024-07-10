@@ -2,6 +2,10 @@ import {
   Texture2D,
   SubPrimitive,
   Vector3,
+  BlendFactor,
+  BlendOperation,
+  Material,
+  Engine,
 } from "@galacean/engine";
 import {
   Skeleton,
@@ -17,10 +21,10 @@ import {
 } from "@esotericsoftware/spine-core";
 import { SpineAnimation } from "./SpineAnimation";
 import { AdaptiveTexture } from "./loader/LoaderUtils";
-import { MaterialCache } from "./Cache";
+import { MaterialCache } from "./util/Cache";
 import { ReturnablePool } from "./util/ReturnablePool";
 import { ClearablePool } from "./util/ClearablePool";
-
+import { setBlendMode } from "./util/BlendMode";
 
 class SubRenderItem {
   subPrimitive: SubPrimitive;
@@ -355,7 +359,11 @@ export class SpineGenerator {
       if (_separateSlotTextureMap.has(slotName)) {
         subTexture = _separateSlotTextureMap.get(slotName);
       }
-      const material = MaterialCache.instance.getMaterial(subTexture, engine, blendMode);
+      const key = `${subTexture.instanceId}_${blendMode}`;
+      let material = MaterialCache.instance.getMaterial(key);
+      if (!material) {
+        material = this.createMaterialForTexture(subTexture, engine, blendMode);
+      }
       renderer.setMaterial(i, material);
     }
     renderer._vertexBuffer.setData(_vertices);
@@ -368,6 +376,13 @@ export class SpineGenerator {
 
   addSeparateSlotTexture(slotName: string, texture: Texture2D) {
     this._separateSlotTextureMap.set(slotName, texture);
+  }
+
+  private createMaterialForTexture(texture: Texture2D, engine: Engine, blendMode: BlendMode): Material {
+    const material = SpineAnimation.getDefaultMaterial(engine);
+    material.shaderData.setTexture("material_SpineTexture", texture);
+    setBlendMode(material, blendMode);
+    return material;
   }
 
   private expandByPoint(x: number, y: number, z: number) {

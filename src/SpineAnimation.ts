@@ -20,7 +20,9 @@ import {
   IndexFormat,
 } from "@galacean/engine";
 import { SpineMaterial } from "./SpineMaterial";
-import { AnimationStateDataCache, MaterialCache } from "./Cache";
+import { AnimationStateDataCache, MaterialCache } from "./util/Cache";
+import { SkeletonDataResource } from "./loader/SkeletonDataResource";
+import { getBlendMode } from "./util/BlendMode";
 
 declare module '@esotericsoftware/spine-core' {
   interface SkeletonData {
@@ -104,7 +106,7 @@ export class SpineAnimation extends Renderer {
   _vertexCount = 0;
    /** @internal */
   @ignoreClone
-  _skeletonData: SkeletonData;
+  _resource: SkeletonDataResource;
 
   @ignoreClone
   private _skeleton: Skeleton;
@@ -115,23 +117,21 @@ export class SpineAnimation extends Renderer {
    * Setting `skeletonData` initializes a new Spine animation with the provided data.
    * This property allows you to switch between different animations at runtime.
    */
-  set skeletonData(value: SkeletonData) {
+  set resource(value: SkeletonDataResource) {
     if (!value) {
-      this._skeleton = null;
       this._state = null;
-      this._skeletonData = null;
+      this._skeleton = null;
+      this._resource = null;
       return;
     }
-    this._skeletonData = value;
-    if (value.refCount === undefined) {
-      value.refCount = 1;
-    } else {
-      value.refCount += 1;
-    }
-    this._skeleton = new Skeleton(value);
-    const animationData = AnimationStateDataCache.instance.getAnimationStateData(value);
+    this._resource = value;
+    // @ts-ignore
+    value._addReferCount(1);
+    const { skeletonData } = value;
+    this._skeleton = new Skeleton(skeletonData);
+    const animationData = AnimationStateDataCache.instance.getAnimationStateData(skeletonData);
     this._state = new AnimationState(animationData);
-    const maxCount = SpineAnimation._spineGenerator.getMaxVertexCount(value);
+    const maxCount = SpineAnimation._spineGenerator.getMaxVertexCount(skeletonData);
     this._createBuffer(maxCount);
     this._dirtyUpdateFlag |= SpineAnimationUpdateFlags.AssetVolume;
     this._state.addListener({
@@ -311,30 +311,20 @@ export class SpineAnimation extends Renderer {
    */
   // @ts-ignore
   override _cloneTo(target: SpineAnimation): void {
-    target.skeletonData = this._skeletonData;
+    target.resource = this._resource;
   }
 
   /**
    * @internal
    */
   override _onDestroy(): void {
-    const textureMap = new Map();
-    const { _primitive, _subPrimitives, _skeletonData } = this;
-    const { refCount } = _skeletonData;
-    if (_primitive) {
-      _primitive.destroyed || this._addResourceReferCount(_primitive, -1);
-      this._primitive = null;
-    }
-    if (_subPrimitives) {
-      this._subPrimitives.length = 0;
-    }
-    if (refCount > 1) {
-      _skeletonData.refCount--;
-    } else {
-      AnimationStateDataCache.instance.clear(_skeletonData);
-      MaterialCache.instance.clear(this._materials);
-    }
-    this.skeletonData = null;
+    const { _primitive, _subPrimitives, _resource } = this;
+    _subPrimitives.length = 0;
+    _primitive.destroyed || this._addResourceReferCount(_primitive, -1);
+    _resource.destroyed || this._addResourceReferCount(_resource, -1);
+    this._clearMaterialCache();
+    this._primitive = null;
+    this._resource = null;
     this._skeleton = null;
     this._state = null;
     this.setting = null;
@@ -421,6 +411,16 @@ export class SpineAnimation extends Renderer {
     if (!entry.loop) {
       this._setDirtyFlagFalse(SpineAnimationUpdateFlags.AnimationVolume)
     }
+  }
+
+  private _clearMaterialCache() {
+    const materialKeys = [];
+    this._materials.forEach((item) => {
+      const texture = item.shaderData.getTexture('material_SpineTexture');
+      const blendMode = getBlendMode(item);
+      materialKeys.push(`${texture.instanceId}_${blendMode}`);
+    });
+    MaterialCache.instance.clear(materialKeys);
   }
 
 }

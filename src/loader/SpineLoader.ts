@@ -7,7 +7,7 @@ import {
 } from "@galacean/engine";
 import { SkeletonData } from "@esotericsoftware/spine-core";
 import { getUrlExtension, loadAndCreateSpineSkeletonData } from "./LoaderUtils";
-import { SpineAnimation } from "../SpineAnimation";
+import { SkeletonDataResource } from "./SkeletonDataResource";
 
 export type SpineAssetBundle = {
   skeletonPath: string;
@@ -24,7 +24,7 @@ type SpineLoaderParams =  {
 type SpineLoadItem = LoadItem & { params?: SpineLoaderParams };
 
 @resourceLoader("spine", ["json", "bin", "skel"])
-export class SpineLoader extends Loader<SkeletonData> {
+export class SpineLoader extends Loader<SkeletonDataResource> {
   static imageExtensions = ["png", "jpg", "webp", "jpeg", "ktx", "ktx2"];
   static skeletonExtensions = ["skel", "json", "bin"];
 
@@ -78,7 +78,7 @@ export class SpineLoader extends Loader<SkeletonData> {
   load(
     item: SpineLoadItem,
     resourceManager: ResourceManager
-  ): AssetPromise<SkeletonData> {
+  ): AssetPromise<SkeletonDataResource> {
     return new AssetPromise((resolve, reject) => {
 
       let spineAssetBundle: SpineAssetBundle = {
@@ -109,7 +109,7 @@ export class SpineLoader extends Loader<SkeletonData> {
       }
       loadAndCreateSpineSkeletonData(spineAssetBundle, resourceManager.engine)
       .then((skeletonData) => {
-        resolve(skeletonData);
+        resolve(new SkeletonDataResource(resourceManager.engine, skeletonData));
       })
       .catch((err) => {
         reject(err);

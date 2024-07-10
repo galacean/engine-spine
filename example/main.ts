@@ -13,6 +13,7 @@ import { OrbitControl, Stats } from "@galacean/engine-toolkit";
 import * as dat from 'dat.gui';
 import { SpineAnimation, SkeletonData } from "../src/index";
 import BoundingBoxLine from './outline';
+import { SkeletonDataResource } from "../src/loader/SkeletonDataResource";
 
 Logger.enable();
 console.log(SpineAnimation);
@@ -147,32 +148,32 @@ WebGLEngine.create({
 });
 
 async function loadSpine(root: Entity, engine: Engine, resource) {
-  let skeletonData: SkeletonData | null = null;
+  let skeletonDataResource: SkeletonDataResource | null = null;
   const { scene } = resource;
   try {
-    skeletonData = (await engine.resourceManager.load({
+    skeletonDataResource = (await engine.resourceManager.load({
       ...resource,
       type: 'spine'
-    })) as SkeletonData;
+    })) as SkeletonDataResource;
   } catch (err) {
     console.error('spine asset load error: ', err);
   }
-  if (!skeletonData) return;
+  if (!skeletonDataResource) return;
   if (scene === 'upload') {
     console.log(blobResource);
     loadSpine(root, engine, blobResource);
     return;
   }
-  console.log('spine asset loaded =>', skeletonData);
+  console.log('spine asset loaded =>', skeletonDataResource.skeletonData);
   removeController();
-  const animationNames = skeletonData.animations.map(item => item.name);
+  const animationNames = skeletonDataResource.skeletonData.animations.map(item => item.name);
   const firstAnimation = animationNames[0];
 
   const spineEntity = new Entity(engine, 'spine-entity');
   spineEntity.transform.setPosition(-25 + Math.random() * 50, -15, 0);
   const spineAnimation = spineEntity.addComponent(SpineAnimation);
   spineAnimation.initialState.scale = 0.05;
-  spineAnimation.skeletonData = skeletonData;
+  spineAnimation.resource = skeletonDataResource;
   root.addChild(spineEntity);
 
   // const clone = spineEntity.clone();
@@ -199,6 +200,9 @@ async function loadSpine(root: Entity, engine: Engine, resource) {
   if (scene === 'changeSkin') {
     handleChangeSkinScene(spineAnimation);
   }
+
+  spineEntity.destroy();
+  engine.resourceManager._gc();
 }
 
 function handleChangeSkinScene(spineAnimation: SpineAnimation) {

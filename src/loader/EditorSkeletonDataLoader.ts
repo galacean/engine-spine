@@ -1,6 +1,5 @@
 import {
   AssetPromise,
-  ColorSpace,
   Loader,
   LoadItem,
   resourceLoader,
@@ -13,15 +12,14 @@ import {
   AtlasAttachmentLoader,
 } from "@esotericsoftware/spine-core";
 import { BufferReader } from "../util/BufferReader";
-
-console.log('regist EditorSkeletonData loader');
+import { SkeletonDataResource } from "./SkeletonDataResource";
 
 @resourceLoader("EditorSkeletonData", ["json", "skel"])
-class EditorSkeletonDataLoader extends Loader<SkeletonData> {
+class EditorSkeletonDataLoader extends Loader<SkeletonDataResource> {
   load(
     item: LoadItem,
-    resourceManager: ResourceManager
-  ): AssetPromise<SkeletonData> {
+    resourceManager: ResourceManager,
+  ): AssetPromise<SkeletonDataResource> {
     return new AssetPromise(async (resolve) => {
       let skeletonRawData: ArrayBuffer | string;
       let atlasRefId: string;
@@ -47,7 +45,7 @@ class EditorSkeletonDataLoader extends Loader<SkeletonData> {
       } else {
         skeletonData = new SkeletonBinary(atlasLoader).readSkeletonData(new Uint8Array(skeletonRawData));
       }
-      resolve(skeletonData);
+      resolve(new SkeletonDataResource(resourceManager.engine, skeletonData));
     });
   }
 }
