@@ -20,7 +20,6 @@ import {
   IndexFormat,
 } from "@galacean/engine";
 import { SpineMaterial } from "./SpineMaterial";
-import { AnimationStateDataCache, MaterialCache } from "./util/Cache";
 import { SkeletonDataResource } from "./loader/SkeletonDataResource";
 import { getBlendMode } from "./util/BlendMode";
 

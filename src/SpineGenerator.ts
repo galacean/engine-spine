@@ -21,7 +21,6 @@ import {
 } from "@esotericsoftware/spine-core";
 import { SpineAnimation } from "./SpineAnimation";
 import { AdaptiveTexture } from "./loader/LoaderUtils";
-import { MaterialCache } from "./util/Cache";
 import { ReturnablePool } from "./util/ReturnablePool";
 import { ClearablePool } from "./util/ClearablePool";
 import { setBlendMode } from "./util/BlendMode";

@@ -1,6 +1,5 @@
 import { SkeletonData } from "@esotericsoftware/spine-core";
 import { Engine, ReferResource, Texture2D } from "@galacean/engine";
-import { AnimationStateDataCache } from "../util/Cache";
 import { SpineAnimation } from "../SpineAnimation";
 
 export class SkeletonDataResource extends ReferResource {
