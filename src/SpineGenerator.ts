@@ -88,7 +88,7 @@ export class SpineGenerator {
       _vertices,
       _subPrimitives,
     } = renderer;
-    const {
+    let {
       tempVerts,
       tempTexture,
       tempBlendMode,
@@ -204,12 +204,10 @@ export class SpineGenerator {
             dark,
             false,
           );
-          const clippedVertices = _clipper.clippedVertices;
-          const clippedTriangles = _clipper.clippedTriangles;
-          finalVertices = clippedVertices;
-          finalVerticesLength = clippedVertices.length;
-          finalIndices = clippedTriangles;
-          finalIndicesLength = clippedTriangles.length;
+          finalVertices = _clipper.clippedVertices;
+          finalVerticesLength = finalVertices.length;
+          finalIndices = _clipper.clippedTriangles;
+          finalIndicesLength = finalIndices.length;
         } else {
           let verts = tempVerts;
           const { r, g, b, a } = color;
@@ -281,8 +279,8 @@ export class SpineGenerator {
             subPrimitive.count = count;
             const renderItem = subRenderItemPool.get();
             renderItem.subPrimitive = subPrimitive;
-            renderItem.texture = SpineGenerator.tempTexture;
-            renderItem.blendMode = SpineGenerator.tempBlendMode;
+            renderItem.texture = tempTexture;
+            renderItem.blendMode = tempBlendMode;
             _subRenderItems.push(renderItem);
             start += count;
             count = 0;
@@ -315,8 +313,8 @@ export class SpineGenerator {
         } else {
           count += finalIndicesLength;
         }
-        SpineGenerator.tempBlendMode = blend;
-        SpineGenerator.tempTexture = texture;
+        tempTexture = texture;
+        tempBlendMode = blend;
       }
 
       _clipper.clipEndWithSlot(slot);

@@ -136,7 +136,6 @@ WebGLEngine.create({
   outline = outlineEntity.addComponent(BoundingBoxLine);
 
   loadSpine(root, engine, demos[baseDemo]);
-  loadSpine(root, engine, demos["ktx2"]);
 
   gui.add({ name: baseDemo }, 'name', Object.keys(demos)).onChange((demoName) => {
     const spineEntity = root.findByName('spine-entity');
