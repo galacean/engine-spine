@@ -133,10 +133,8 @@ WebGLEngine.create({
   cameraEntity.addComponent(OrbitControl);
   cameraEntity.addComponent(Stats);
 
-  const outlineEntity = root.createChild('outline');
-  outline = outlineEntity.addComponent(BoundingBoxLine);
-
   loadSpine(root, engine, demos[baseDemo]);
+  loadSpine(root, engine, demos["多贴图"]);
 
   gui.add({ name: baseDemo }, 'name', Object.keys(demos)).onChange((demoName) => {
     const spineEntity = root.findByName('spine-entity');
@@ -167,7 +165,7 @@ async function loadSpine(root: Entity, engine: Engine, resource) {
   console.log('spine asset loaded =>', skeletonDataResource.skeletonData);
   removeController();
   const animationNames = skeletonDataResource.skeletonData.animations.map(item => item.name);
-  const firstAnimation = animationNames[0];
+  const firstAnimation = animationNames[1];
 
   const spineEntity = new Entity(engine, 'spine-entity');
   spineEntity.transform.setPosition(-25 + Math.random() * 50, -15, 0);
@@ -186,6 +184,8 @@ async function loadSpine(root: Entity, engine: Engine, resource) {
   // animation2!.initialState.loop = true;
   // root.addChild(clone);
 
+  // const outlineEntity = root.createChild('outline');
+  // outline = outlineEntity.addComponent(BoundingBoxLine);
   // outline.attachToEntity(spineEntity);
   // outline.isActive = true;
   // setInterval(() => {

@@ -224,11 +224,12 @@ export class SpineAnimation extends Renderer {
    */
   override update(delta: number): void {
     const { _state, _skeleton } = this;
-    if (!_state || !_skeleton) return;
-    _state.update(delta);
-    _state.apply(_skeleton);
-    _skeleton.update(delta);
-    _skeleton.updateWorldTransform(Physics.update);
+    if (_state && _skeleton) {
+      _state.update(delta);
+      _state.apply(_skeleton);
+      _skeleton.update(delta);
+      _skeleton.updateWorldTransform(Physics.update);
+    }
   }
 
   /**
@@ -294,18 +295,9 @@ export class SpineAnimation extends Renderer {
    * @internal
    */
   _calculateGeneratorBounds(worldBounds: BoundingBox) {
-    const {
-      _spineGenerator: {
-        bounds: {
-          min: { x: minX, y: minY, z: minZ }, 
-          max: { x: maxX, y: maxY, z: maxZ },
-        },
-      },
-    } = SpineAnimation;
-    worldBounds.min.set(minX, minY, minZ);
-    worldBounds.max.set(maxX, maxY, maxZ);
+    const { bounds } = SpineGenerator;
     BoundingBox.transform(
-      worldBounds,
+      bounds,
       this.entity.transform.worldMatrix,
       worldBounds,
     );

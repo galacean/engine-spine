@@ -6,6 +6,7 @@ import {
   BlendOperation,
   Material,
   Engine,
+  BoundingBox,
 } from "@galacean/engine";
 import {
   Skeleton,
@@ -46,11 +47,10 @@ export class SpineGenerator {
   static tempTexture: AdaptiveTexture | null = null;
   static subPrimitivePool = new ReturnablePool(SubPrimitive);
   static subRenderItemPool = new ClearablePool(SubRenderItem);
-
-  bounds = {
-    min: new Vector3(maxBoundsValue, maxBoundsValue, maxBoundsValue),
-    max: new Vector3(minBoundsValue, minBoundsValue, minBoundsValue),
-  }
+  static bounds = new BoundingBox(
+    new Vector3(maxBoundsValue, maxBoundsValue, maxBoundsValue),
+    new Vector3(minBoundsValue, minBoundsValue, minBoundsValue),
+  );
 
   private _clipper: SkeletonClipping = new SkeletonClipping();
   private _subRenderItems: SubRenderItem[] = [];
@@ -71,12 +71,12 @@ export class SpineGenerator {
   buildPrimitive(skeleton: Skeleton, renderer: SpineAnimation) {
     const { useClipping = true, zSpacing = 0.01 } = renderer.setting;
     const {
-      bounds,
       _clipper,
       _separateSlots,
       _subRenderItems,
       _separateSlotTextureMap,
     } = this;
+    const { bounds } = SpineGenerator;
 
     bounds.min.set(maxBoundsValue, maxBoundsValue, maxBoundsValue);
     bounds.max.set(minBoundsValue, minBoundsValue, minBoundsValue);
@@ -386,7 +386,7 @@ export class SpineGenerator {
   }
 
   private expandByPoint(x: number, y: number, z: number) {
-    const { bounds: { min, max } } = this;
+    const { bounds: { min, max } } = SpineGenerator;
     min.x = Math.min(min.x, x);
     min.y = Math.min(min.y, y);
     min.z = Math.min(min.z, z);

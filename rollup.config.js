@@ -181,7 +181,7 @@ function getMini() {
 }
 
 function getAll() {
-  return [...getUMD(), ...getModule()];
+  return [...getModule(), ...getMini(), ...getUMD()];
 }
 
 export default Promise.all(promises);
