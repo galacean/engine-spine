@@ -6,7 +6,7 @@ import {
   resourceLoader,
   ResourceManager,
 } from "@galacean/engine";
-import { createSkeletonData, createTextureAtlas, getUrlExtension, loadTextureAtlas, loadTexturesByPath } from "./LoaderUtils";
+import { createSkeletonData, createTextureAtlas, loadTextureAtlas, loadTexturesByPath } from "./LoaderUtils";
 import { SkeletonDataResource } from "./SkeletonDataResource";
 import { BufferReader } from "../util/BufferReader";
 
@@ -31,26 +31,25 @@ export class SpineLoader extends Loader<SkeletonDataResource> {
   static skeletonExtensions = ["skel", "json", "bin"];
 
   static parseAndAssignSpineAsset(url: string, fileExtension: string | null, bundle: SpineAssetBundle) {
-    const imageExtension = SpineLoader.imageExtensions;
-    const skeletonExtension = SpineLoader.skeletonExtensions;
-    const ext = getUrlExtension(url, fileExtension);
+    const { imageExtensions, skeletonExtensions } = SpineLoader;
+    const ext = SpineLoader.getUrlExtension(url, fileExtension);
     if (!ext) return;
   
-    if (skeletonExtension.includes(ext)) {
+    if (skeletonExtensions.includes(ext)) {
       bundle.skeletonPath = url;
       bundle.skeletonExtension = ext;
     }
     if (ext === 'atlas') {
       bundle.atlasPath = url;
     }
-    if (imageExtension.includes(ext)) {
+    if (imageExtensions.includes(ext)) {
       bundle.imagePaths.push(url);
       bundle.imageExtensions.push(ext);
     }
   }
 
   static deriveAndAssignSpineAsset(url: string, fileExtension: string | null, bundle: SpineAssetBundle) {
-    const ext = getUrlExtension(url, fileExtension);
+    const ext = SpineLoader.getUrlExtension(url, fileExtension);
     if (!ext) return;
     bundle.skeletonPath = url;
     bundle.skeletonExtension = ext;
@@ -75,6 +74,18 @@ export class SpineLoader extends Loader<SkeletonDataResource> {
       return null;
     }
     return fileExtensions;
+  }
+
+  static getUrlExtension(url: string, fileExtension: string): string | null {
+    if (fileExtension) {
+      return fileExtension;
+    }
+    const regex = /\/([^\/?#]+)\.([a-zA-Z0-9]+)(\?|#|$)|\?[^#]*\.([a-zA-Z0-9]+)(\?|#|$)/;
+    const match = url.match(regex);
+    if (match) {
+      return match[2] || match[4];
+    }
+    return null;
   }
 
   load(

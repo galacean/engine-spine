@@ -154,15 +154,3 @@ export class AdaptiveTexture extends Texture {
     }
   }
 }
-
-export function getUrlExtension(url: string, fileExtension: string): string | null {
-  if (fileExtension) {
-    return fileExtension;
-  }
-  const regex = /\/([^\/?#]+)\.([a-zA-Z0-9]+)(\?|#|$)|\?[^#]*\.([a-zA-Z0-9]+)(\?|#|$)/;
-  const match = url.match(regex);
-  if (match) {
-    return match[2] || match[4];
-  }
-  return null;
-}
