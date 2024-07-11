@@ -128,7 +128,7 @@ export class SpineAnimation extends Renderer {
     }
     this._resource = value;
     // @ts-ignore
-    value._addReferCount(1);
+    this._addResourceReferCount(value, 1);
     const { skeletonData } = value;
     this._skeleton = new Skeleton(skeletonData);
     let animationData = SpineAnimation.animationDataCache.get(skeletonData);
