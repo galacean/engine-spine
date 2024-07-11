@@ -319,10 +319,10 @@ export class SpineAnimation extends Renderer {
     const { _primitive, _subPrimitives, _resource } = this;
     _subPrimitives.length = 0;
     if (_primitive) {
-      _primitive.destroyed || this._addResourceReferCount(_primitive, -1);
+      _primitive.destroy();
     }
     if (_resource) {
-      _resource.destroyed || this._addResourceReferCount(_resource, -1);
+      this._addResourceReferCount(_resource, -1);
     }
     this._clearMaterialCache();
     this._primitive = null;
