@@ -60,7 +60,8 @@ export class SpineGenerator {
   getMaxVertexCount(skeletonData: SkeletonData) {
     let vertexCount = 0;
     const { skins } = skeletonData;
-    for (let i = 0; i < skins.length; i += 1) {
+    const skinLen = skins.length;
+    for (let i = 0; i < skinLen; i += 1) {
       const skin = skins[i];
       const vc = this.getSkinVertexCount(skin);
       vertexCount = Math.max(vertexCount, vc);
