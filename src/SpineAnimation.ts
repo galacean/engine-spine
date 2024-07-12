@@ -139,7 +139,7 @@ export class SpineAnimation extends Renderer {
     this._state = new AnimationState(animationData);
     const maxCount = SpineAnimation._spineGenerator.getMaxVertexCount(skeletonData);
     this._createBuffer(maxCount);
-    this._dirtyUpdateFlag |= SpineAnimationUpdateFlags.AssetVolume;
+    this._dirtyUpdateFlag |= SpineAnimationUpdateFlags.InitialVolume;
     this._state.addListener({
       start: () => {
         this.onAnimationStart();
@@ -229,22 +229,14 @@ export class SpineAnimation extends Renderer {
       _state.apply(_skeleton);
       _skeleton.update(delta);
       _skeleton.updateWorldTransform(Physics.update);
-    }
-  }
-
-  /**
-   * @internal
-   */
-  override _updateRendererShaderData(context: any): void {
-    if (this._skeleton) {
       SpineAnimation._spineGenerator.buildPrimitive(this._skeleton, this);
-    }
-    if (this._isContainDirtyFlag(SpineAnimationUpdateFlags.AnimationVolume)) {
-      this._calculateGeneratorBounds(this.bounds);
-    }
-    if (this._isContainDirtyFlag(SpineAnimationUpdateFlags.AssetVolume)) {
-      this._calculateGeneratorBounds(this.bounds);
-      this._setDirtyFlagFalse(SpineAnimationUpdateFlags.AssetVolume);
+      if (this._isContainDirtyFlag(SpineAnimationUpdateFlags.InitialVolume)) {
+        this._onWorldVolumeChanged();
+        this._setDirtyFlagFalse(SpineAnimationUpdateFlags.InitialVolume);
+      }
+      if (this._isContainDirtyFlag(SpineAnimationUpdateFlags.AnimationVolume)) {
+        this._calculateGeneratorBounds(this.bounds);
+      }
     }
   }
 
@@ -285,13 +277,10 @@ export class SpineAnimation extends Renderer {
    */
   // @ts-ignore
   override _updateBounds(worldBounds: BoundingBox): void {
-    if (this._isContainDirtyFlag(SpineAnimationUpdateFlags.TransformVolume)) {
-      this._calculateGeneratorBounds(worldBounds);
-      this._setDirtyFlagFalse(SpineAnimationUpdateFlags.TransformVolume);
-    }
+    this._calculateGeneratorBounds(worldBounds);
   }
 
-    /**
+  /**
    * @internal
    */
   _calculateGeneratorBounds(worldBounds: BoundingBox) {
@@ -302,7 +291,6 @@ export class SpineAnimation extends Renderer {
       worldBounds,
     );
   }
-  
 
   /**
    * @internal
@@ -392,17 +380,8 @@ export class SpineAnimation extends Renderer {
   /**
    * @internal
    */
-  @ignoreClone
-  _onAnimationStart(): void {
-    this._dirtyUpdateFlag |= SpineAnimationUpdateFlags.AnimationVolume;
-  }
-
-  /**
-   * @internal
-   */
-  // @ts-ignore
-  override _onTransformChanged(): void {
-    this._dirtyUpdateFlag |= SpineAnimationUpdateFlags.TransformVolume | RendererUpdateFlags.WorldVolume;
+  _onWorldVolumeChanged(): void {
+    this._dirtyUpdateFlag |= RendererUpdateFlags.WorldVolume;
   }
 
   private onAnimationStart() {
@@ -436,7 +415,7 @@ export enum SpineAnimationUpdateFlags {
   /** On Animation start play */
   AnimationVolume = 0x2,
   /** On skeleton data asset changed */
-  AssetVolume = 0x4,
+  InitialVolume = 0x4,
 }
 
 /**
