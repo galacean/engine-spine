@@ -37,7 +37,7 @@ const blobResource: any = {
   }
 };
 
-const baseDemo = 'spineBoy-单json';
+const baseDemo = '素材替换';
 const demos = {
   'spineBoy-单json': {
     url: "https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/yKbdfgijyLGzQDyQ/spineboy/spineboy.json",
@@ -99,6 +99,10 @@ const demos = {
       "https://mdn.alipayobjects.com/portal_h1wdez/afts/img/A*uySHT5k_PU0AAAAAAAAAAAAAAQAAAQ/original?a=.png",
     ],
   },
+  '素材替换': {
+    url: "https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/yKbdfgijyLGzQDyQ/spineboy/spineboy.json",
+    scene: 'changeResource',
+  },
   '本地上传文件': {
     url: "https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/kx5353rrNIDn4CsX/spineboy-pro/spineboy-pro.json",
     scene: 'upload',
@@ -134,7 +138,6 @@ WebGLEngine.create({
   cameraEntity.addComponent(Stats);
 
   loadSpine(root, engine, demos[baseDemo]);
-  loadSpine(root, engine, demos["多贴图"]);
 
   gui.add({ name: baseDemo }, 'name', Object.keys(demos)).onChange((demoName) => {
     const spineEntity = root.findByName('spine-entity');
@@ -165,7 +168,7 @@ async function loadSpine(root: Entity, engine: Engine, resource) {
   console.log('spine asset loaded =>', skeletonDataResource.skeletonData);
   removeController();
   const animationNames = skeletonDataResource.skeletonData.animations.map(item => item.name);
-  const firstAnimation = animationNames[1];
+  const firstAnimation = animationNames[0];
 
   const spineEntity = new Entity(engine, 'spine-entity');
   spineEntity.transform.setPosition(-25 + Math.random() * 50, -15, 0);
@@ -200,6 +203,11 @@ async function loadSpine(root: Entity, engine: Engine, resource) {
   if (scene === 'changeSkin') {
     handleChangeSkinScene(spineAnimation);
   }
+
+  if (scene === 'changeResource') {
+    handleChangeResource(engine, spineAnimation);
+  }
+
 }
 
 function handleChangeSkinScene(spineAnimation: SpineAnimation) {
@@ -222,6 +230,23 @@ function handleChangeSkinScene(spineAnimation: SpineAnimation) {
     skeleton.setSlotsToSetupPose(); // 2. Use setup pose to set base attachments.
     state.apply(skeleton);
   });
+}
+
+async function handleChangeResource(engine: Engine, spineAnimation: SpineAnimation) {
+  const newResource = (await engine.resourceManager.load({
+    urls: [
+      "https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/jdjQ6mGxWknZ7TtQ/raptor/raptor.json",
+      "https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/jdjQ6mGxWknZ7TtQ/raptor/raptor.atlas",
+      "https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/jdjQ6mGxWknZ7TtQ/raptor/raptor.png",
+    ],
+    type: 'spine'
+  })) as SkeletonDataResource;
+  setTimeout(() => {
+    spineAnimation.enabled = false;
+    spineAnimation.resource = newResource;
+    spineAnimation.initialState.animationName = 'roar';
+    spineAnimation.enabled = true;
+  }, 1000);
 }
 
 function removeController() {

@@ -32,14 +32,7 @@ export class BufferReader {
   }
 
   private decodeText(array: Uint8Array): string {
-    if (typeof TextDecoder !== "undefined") {
-      return new TextDecoder().decode(array);
-    }
-    let s = "";
-    for (let i = 0, il = array.length; i < il; i++) {
-      s += String.fromCharCode(array[i]);
-    }
-    return decodeURIComponent(encodeURIComponent(s));
+    return new TextDecoder().decode(array);
   }
 
 }

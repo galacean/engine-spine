@@ -19,6 +19,7 @@ import {
   BlendMode,
   SkeletonData,
   Skin,
+  NumberArrayLike,
 } from "@esotericsoftware/spine-core";
 import { SpineAnimation } from "./SpineAnimation";
 import { AdaptiveTexture } from "./loader/LoaderUtils";
@@ -103,7 +104,7 @@ export class SpineGenerator {
     subRenderItemPool.clear();
     let vertices = renderer._vertices;
     let triangles: Array<number>;
-    let uvs: ArrayLike<number>;
+    let uvs: NumberArrayLike;
     // 记录当前
     let start = 0;
     let count = 0;

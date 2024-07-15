@@ -17,7 +17,6 @@ import {
   TextureFilter,
   TextureWrap,
 } from "@esotericsoftware/spine-core";
-import { SpineLoader } from "./SpineLoader";
 
 export function createSkeletonData(
   textureAtlas: TextureAtlas, 
@@ -93,7 +92,7 @@ export function createTextureAtlas(atlasText: string, textures: Texture2D[]) {
   return textureAtlas;
 }
 
-function loadTexture(
+export function loadTexture(
   url: string, 
   engine: Engine,
   imageLoaderType: string = AssetType.Texture2D
@@ -101,7 +100,7 @@ function loadTexture(
   return engine.resourceManager.load<Texture2D>({ url, type: imageLoaderType });
 }
 
-function createAdaptiveTexture(texture: Texture2D) {
+export function createAdaptiveTexture(texture: Texture2D) {
   return new AdaptiveTexture(new Image(), texture);
 }
 
