@@ -23,18 +23,6 @@ import { SpineMaterial } from "./SpineMaterial";
 import { SkeletonDataResource } from "./loader/SkeletonDataResource";
 import { getBlendMode } from "./util/BlendMode";
 
-interface DefaultState {
-  animationName: string;
-  skinName: string;
-  loop: boolean;
-  scale: number;
-}
-
-export type SpineRenderSetting = {
-  useClipping: boolean;
-  zSpacing: number;
-}
-
 export class SpineAnimationRenderer extends Renderer {
   private static _defaultMaterial: Material;
   private static _spineGenerator = new SpineGenerator();
@@ -44,12 +32,12 @@ export class SpineAnimationRenderer extends Renderer {
   private static _uvVertexElement = new VertexElement('TEXCOORD_0', 28, VertexElementFormat.Vector2, 0);
 
   /** @internal */
-  static materialCache = new Map<string, Material>();
+  static _materialCache = new Map<string, Material>();
   /** @internal */
-  static animationDataCache = new Map<SkeletonData, AnimationStateData>();
+  static _animationDataCache = new Map<SkeletonData, AnimationStateData>();
 
   /** @internal */
-  static getDefaultMaterial(engine: Engine): Material {
+  static _getDefaultMaterial(engine: Engine): Material {
     let defaultMaterial = this._defaultMaterial;
     if (defaultMaterial) {
       if (defaultMaterial.engine === engine) {
@@ -71,7 +59,11 @@ export class SpineAnimationRenderer extends Renderer {
     zSpacing: 0.01,
     useClipping: true,
   };
-  /** Initial spine animation and skin state. */
+  /**
+   * Default state for spine animation.
+   * Contains the default animation name to be played, whether this animation should loop,
+   * the default skin name, and the default scale of the skeleton.
+   */
   @deepClone
   defaultState: DefaultState = {
     scale: 1,
@@ -103,7 +95,7 @@ export class SpineAnimationRenderer extends Renderer {
   /** @internal */
   @ignoreClone
   _vertexCount = 0;
-   /** @internal */
+  /** @internal */
   @ignoreClone
   _resource: SkeletonDataResource;
 
@@ -128,10 +120,10 @@ export class SpineAnimationRenderer extends Renderer {
     this._addResourceReferCount(value, 1);
     const { skeletonData } = value;
     this._skeleton = new Skeleton(skeletonData);
-    let animationData = SpineAnimationRenderer.animationDataCache.get(skeletonData);
+    let animationData = SpineAnimationRenderer._animationDataCache.get(skeletonData);
     if (!animationData) {
       animationData = new AnimationStateData(skeletonData);
-      SpineAnimationRenderer.animationDataCache.set(skeletonData, animationData);
+      SpineAnimationRenderer._animationDataCache.set(skeletonData, animationData);
     }
     this._state = new AnimationState(animationData);
     const maxCount = SpineAnimationRenderer._spineGenerator.getMaxVertexCount(skeletonData);
@@ -377,7 +369,7 @@ export class SpineAnimationRenderer extends Renderer {
       const texture = item.shaderData.getTexture('material_SpineTexture');
       const blendMode = getBlendMode(item);
       const key = `${texture.instanceId}_${blendMode}`;
-      SpineAnimationRenderer.materialCache.delete(key);
+      SpineAnimationRenderer._materialCache.delete(key);
     });
   }
 
@@ -385,6 +377,7 @@ export class SpineAnimationRenderer extends Renderer {
     const { skeleton, state } = this;
     if (skeleton && state) {
       const { animationName, skinName, loop, scale } = this.defaultState;
+      console.log(scale);
       skeleton.scaleX = scale;
       skeleton.scaleY = scale;
       if (skinName !== 'default') {
@@ -419,4 +412,62 @@ export enum SpineAnimationUpdateFlags {
 export enum RendererUpdateFlags {
   /** Include world position and world bounds. */
   WorldVolume = 0x1
+}
+
+/**
+ * Render setting for spine rendering.
+ */
+export class SpineRenderSetting {
+  /**
+   * Creates an instance of SpineRenderSetting.
+   * @param {number} [zSpacing=0.01] - The spacing between z layers.
+   * @param {boolean} [useClipping=true] - Whether to use clipping.
+   */
+  constructor(
+    /**
+     * The spacing between z layers.
+     */
+    public zSpacing: number = 0.01,
+    
+    /**
+     * Whether to use clipping.
+     */
+    public useClipping: boolean = true
+  ) {}
+}
+
+/**
+ * Default state for spine animation.
+ * Contains the default animation name to be played, whether this animation should loop,
+ * the default skin name, and the default scale of the skeleton.
+ */
+export class DefaultState {
+  /**
+   * Creates an instance of DefaultState.
+   * @param {number} [scale=1] - The default scale of the animation.
+   * @param {boolean} [loop=false] - Whether the default animation should loop.
+   * @param {string | null} [animationName=null] - The name of the default animation.
+   * @param {string} [skinName="default"] - The name of the default skin.
+   */
+  constructor(
+    /**
+     * The default scale of the animation.
+     */
+    public scale: number = 1,
+
+    /**
+     * Whether the default animation should loop.
+     */
+    public loop: boolean = false,
+
+    /**
+     * The name of the default animation.
+     */
+    public animationName: string | null = null,
+
+    /**
+     * The name of the default skin.
+     */
+    public skinName: string = "default"
+  ) {}
 }

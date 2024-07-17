@@ -29,7 +29,7 @@ WebGLEngine.create({ canvas: "canvas" }).then((engine) => {
 
   engine.resourceManager
     .load<SkeletonDataResource>({
-      url: 'https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/24ejL92gvbWxsXRi/mix-and-match/mix-and-match.json',
+      url: 'https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/yKbdfgijyLGzQDyQ/spineboy/spineboy.json',
       type: 'spine',
     })
     .then((resource) => {
@@ -38,7 +38,6 @@ WebGLEngine.create({ canvas: "canvas" }).then((engine) => {
       spine.resource = resource;
       spineEntity.transform.setPosition(0, -15, 0);
       spine.defaultState.scale = 0.05;
-      spine.defaultState.skinName = 'full-skins/girl';
       rootEntity.addChild(spineEntity);
       updateForE2E(engine);
       initScreenshot(engine, camera);

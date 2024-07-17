@@ -361,10 +361,10 @@ export class SpineGenerator {
         subTexture = _separateSlotTextureMap.get(slotName);
       }
       const key = `${subTexture.instanceId}_${blendMode}`;
-      let material = SpineAnimationRenderer.materialCache.get(key);
+      let material = SpineAnimationRenderer._materialCache.get(key);
       if (!material) {
         material = this._createMaterialForTexture(subTexture, engine, blendMode);
-        SpineAnimationRenderer.materialCache.set(key, material);
+        SpineAnimationRenderer._materialCache.set(key, material);
       }
       renderer.setMaterial(i, material);
     }
@@ -381,7 +381,7 @@ export class SpineGenerator {
   }
 
   private _createMaterialForTexture(texture: Texture2D, engine: Engine, blendMode: BlendMode): Material {
-    const material = SpineAnimationRenderer.getDefaultMaterial(engine);
+    const material = SpineAnimationRenderer._getDefaultMaterial(engine);
     material.shaderData.setTexture("material_SpineTexture", texture);
     setBlendMode(material, blendMode);
     return material;

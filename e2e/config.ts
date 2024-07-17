@@ -1,8 +1,13 @@
 export const E2E_CONFIG = {
   Spine: {
-    animation: {
+    'spine-boy': {
       category: "Spine",
-      caseFileName: "spine-animation",
+      caseFileName: "spine-boy",
+      threshold: 0.1,
+    },
+    'raptor': {
+      category: "Spine",
+      caseFileName: "raptor",
       threshold: 0.1,
     },
     'mix-and-match': {

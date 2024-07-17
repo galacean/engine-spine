@@ -37,7 +37,7 @@ const blobResource: any = {
   }
 };
 
-const baseDemo = '素材替换';
+const baseDemo = 'spineBoy-单json';
 const demos = {
   'spineBoy-单json': {
     url: "https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/yKbdfgijyLGzQDyQ/spineboy/spineboy.json",
@@ -134,8 +134,8 @@ WebGLEngine.create({
   camera.nearClipPlane = 0.001;
   camera.farClipPlane = 20000;
 
-  cameraEntity.addComponent(OrbitControl);
-  cameraEntity.addComponent(Stats);
+  // cameraEntity.addComponent(OrbitControl);
+  // cameraEntity.addComponent(Stats);
 
   loadSpine(root, engine, demos[baseDemo]);
 

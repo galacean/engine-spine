@@ -21,7 +21,7 @@ export class SkeletonDataResource extends ReferResource {
     const { textures, _skeletonData } = this;
     textures && this._disassociationSuperResource(textures);
     this._clearAttachmentTextures(_skeletonData);
-    SpineAnimationRenderer.animationDataCache.delete(_skeletonData);
+    SpineAnimationRenderer._animationDataCache.delete(_skeletonData);
     this._skeletonData = null;
   }
 
