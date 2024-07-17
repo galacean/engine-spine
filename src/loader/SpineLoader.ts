@@ -158,7 +158,7 @@ export class SpineLoader extends Loader<SkeletonDataResource> {
         throw new Error('Failed to load spine assets. Please check the file path and ensure the file extension is included.');
       }
       const textureAtlas = await loadTextureAtlas(atlasPath, engine);
-      const { data, type } = this.determineSkeletonDataType(buffer);
+      const { data, type } = this._determineSkeletonDataType(buffer);
       const skeletonData = createSkeletonData(textureAtlas, data, type);
       return new SkeletonDataResource(engine, skeletonData); 
     } else { // multi url
@@ -186,7 +186,7 @@ export class SpineLoader extends Loader<SkeletonDataResource> {
     }
   }
 
-  private determineSkeletonDataType(buffer: ArrayBuffer) {
+  private _determineSkeletonDataType(buffer: ArrayBuffer) {
     let skeletonTextData: ArrayBuffer | string;
     let type: 'json' | 'skel';
     try {
