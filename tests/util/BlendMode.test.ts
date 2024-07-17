@@ -2,6 +2,7 @@ import { expect } from 'chai';
 import { BlinnPhongMaterial, WebGLEngine, BlendFactor, BlendOperation } from "@galacean/engine";
 import { BlendMode } from "@esotericsoftware/spine-core";
 import { setBlendMode, getBlendMode } from '../../src/util/BlendMode';
+import { createEngine } from '../testUtils';
 
 const { SourceAlpha, One, DestinationColor, Zero, OneMinusSourceColor, OneMinusSourceAlpha } = BlendFactor;
 const { Add } = BlendOperation;
@@ -11,7 +12,7 @@ describe('BlendMode Utility Functions', function() {
   let engine;
 
   beforeEach(async () => {
-    engine = await WebGLEngine.create({ canvas: document.createElement("canvas") });
+    engine = await createEngine();
     material = new BlinnPhongMaterial(engine);
   });
 

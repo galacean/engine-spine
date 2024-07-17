@@ -21,7 +21,7 @@ import {
   Skin,
   NumberArrayLike,
 } from "@esotericsoftware/spine-core";
-import { SpineAnimation } from "./SpineAnimation";
+import { SpineAnimationRenderer } from "./SpineAnimationRenderer";
 import { AdaptiveTexture } from "./loader/LoaderUtils";
 import { ReturnablePool } from "./util/ReturnablePool";
 import { ClearablePool } from "./util/ClearablePool";
@@ -64,13 +64,13 @@ export class SpineGenerator {
     const skinLen = skins.length;
     for (let i = 0; i < skinLen; i += 1) {
       const skin = skins[i];
-      const vc = this.getSkinVertexCount(skin);
+      const vc = this._getSkinVertexCount(skin);
       vertexCount = Math.max(vertexCount, vc);
     }
     return vertexCount;
   }
 
-  buildPrimitive(skeleton: Skeleton, renderer: SpineAnimation) {
+  buildPrimitive(skeleton: Skeleton, renderer: SpineAnimationRenderer) {
     const { useClipping = true, zSpacing = 0.01 } = renderer.setting;
     const {
       _clipper,
@@ -255,7 +255,7 @@ export class SpineGenerator {
           vertices[i++] = finalVertices[j++];
           vertices[i++] = finalVertices[j++];
           vertices[i++] = finalVertices[j++];
-          this.expandByPoint(x, y, z);
+          this._expandByPoint(x, y, z);
         }
         verticesLength = i;
 
@@ -361,10 +361,10 @@ export class SpineGenerator {
         subTexture = _separateSlotTextureMap.get(slotName);
       }
       const key = `${subTexture.instanceId}_${blendMode}`;
-      let material = SpineAnimation.materialCache.get(key);
+      let material = SpineAnimationRenderer.materialCache.get(key);
       if (!material) {
-        material = this.createMaterialForTexture(subTexture, engine, blendMode);
-        SpineAnimation.materialCache.set(key, material);
+        material = this._createMaterialForTexture(subTexture, engine, blendMode);
+        SpineAnimationRenderer.materialCache.set(key, material);
       }
       renderer.setMaterial(i, material);
     }
@@ -380,24 +380,26 @@ export class SpineGenerator {
     this._separateSlotTextureMap.set(slotName, texture);
   }
 
-  private createMaterialForTexture(texture: Texture2D, engine: Engine, blendMode: BlendMode): Material {
-    const material = SpineAnimation.getDefaultMaterial(engine);
+  private _createMaterialForTexture(texture: Texture2D, engine: Engine, blendMode: BlendMode): Material {
+    const material = SpineAnimationRenderer.getDefaultMaterial(engine);
     material.shaderData.setTexture("material_SpineTexture", texture);
     setBlendMode(material, blendMode);
     return material;
   }
 
-  private expandByPoint(x: number, y: number, z: number) {
+  private _expandByPoint(x: number, y: number, z: number) {
     const { bounds: { min, max } } = SpineGenerator;
-    min.x = Math.min(min.x, x);
-    min.y = Math.min(min.y, y);
-    min.z = Math.min(min.z, z);
-    max.x = Math.max(max.x, x);
-    max.y = Math.max(max.y, y);
-    max.z = Math.max(max.z, z);
+    const newMinX = Math.min(min.x, x);
+    const newMinY = Math.min(min.y, y);
+    const newMinZ = Math.min(min.z, z);
+    const newMaxX = Math.max(max.x, x);
+    const newMaxY = Math.max(max.y, y);
+    const newMaxZ = Math.max(max.z, z);
+    min.set(newMinX, newMinY, newMinZ);
+    max.set(newMaxX, newMaxY, newMaxZ);
   }
 
-  private getSkinVertexCount(skin: Skin) {
+  private _getSkinVertexCount(skin: Skin) {
     const { attachments } = skin;
     let vertexCount: number = 0;
     const QUAD_TRIANGLE_LENGTH = SpineGenerator.QUAD_TRIANGLES.length;

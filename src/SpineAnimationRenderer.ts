@@ -23,13 +23,7 @@ import { SpineMaterial } from "./SpineMaterial";
 import { SkeletonDataResource } from "./loader/SkeletonDataResource";
 import { getBlendMode } from "./util/BlendMode";
 
-declare module '@esotericsoftware/spine-core' {
-  interface SkeletonData {
-    refCount: number;
-  }
-}
-
-interface InitialState {
+interface DefaultState {
   animationName: string;
   skinName: string;
   loop: boolean;
@@ -41,17 +35,20 @@ export type SpineRenderSetting = {
   zSpacing: number;
 }
 
-export class SpineAnimation extends Renderer {
+export class SpineAnimationRenderer extends Renderer {
   private static _defaultMaterial: Material;
   private static _spineGenerator = new SpineGenerator();
 
-  private static positionVertexElement = new VertexElement('POSITION', 0, VertexElementFormat.Vector3, 0);
-  private static colorVertexElement = new VertexElement('COLOR_0', 12, VertexElementFormat.Vector4, 0);
-  private static uvVertexElement = new VertexElement('TEXCOORD_0', 28, VertexElementFormat.Vector2, 0);
+  private static _positionVertexElement = new VertexElement('POSITION', 0, VertexElementFormat.Vector3, 0);
+  private static _colorVertexElement = new VertexElement('COLOR_0', 12, VertexElementFormat.Vector4, 0);
+  private static _uvVertexElement = new VertexElement('TEXCOORD_0', 28, VertexElementFormat.Vector2, 0);
 
+  /** @internal */
   static materialCache = new Map<string, Material>();
+  /** @internal */
   static animationDataCache = new Map<SkeletonData, AnimationStateData>();
 
+  /** @internal */
   static getDefaultMaterial(engine: Engine): Material {
     let defaultMaterial = this._defaultMaterial;
     if (defaultMaterial) {
@@ -76,7 +73,7 @@ export class SpineAnimation extends Renderer {
   };
   /** Initial spine animation and skin state. */
   @deepClone
-  initialState: InitialState = {
+  defaultState: DefaultState = {
     scale: 1,
     loop: false,
     animationName: null,
@@ -131,21 +128,22 @@ export class SpineAnimation extends Renderer {
     this._addResourceReferCount(value, 1);
     const { skeletonData } = value;
     this._skeleton = new Skeleton(skeletonData);
-    let animationData = SpineAnimation.animationDataCache.get(skeletonData);
+    let animationData = SpineAnimationRenderer.animationDataCache.get(skeletonData);
     if (!animationData) {
       animationData = new AnimationStateData(skeletonData);
-      SpineAnimation.animationDataCache.set(skeletonData, animationData);
+      SpineAnimationRenderer.animationDataCache.set(skeletonData, animationData);
     }
     this._state = new AnimationState(animationData);
-    const maxCount = SpineAnimation._spineGenerator.getMaxVertexCount(skeletonData);
+    const maxCount = SpineAnimationRenderer._spineGenerator.getMaxVertexCount(skeletonData);
     this._createBuffer(maxCount);
+    this._initializeDefaultState();
     this._dirtyUpdateFlag |= SpineAnimationUpdateFlags.InitialVolume;
     this._state.addListener({
       start: () => {
-        this.onAnimationStart();
+        this._onAnimationStart();
       },
       complete: (entry: TrackEntry) => {
-        this.onAnimationComplete(entry);
+        this._onAnimationComplete(entry);
       },
     })
   }
@@ -154,7 +152,7 @@ export class SpineAnimation extends Renderer {
    * Provides access to `AnimationState` which controls animation playback on a skeleton. 
    * You can use its API to manage, blend, and transition between multiple simultaneous animations effectively.
    */
-  get state() {
+  get state(): AnimationState {
     return this._state;
   }
 
@@ -163,45 +161,17 @@ export class SpineAnimation extends Renderer {
    * Through its API, users can manipulate bone positions, rotations, scaling 
    * and change spine attachment to customize character appearances dynamically during runtime.
    */
-  get skeleton() {
+  get skeleton(): Skeleton {
     return this._skeleton;
-  }
-
-  /**
-   * @internal
-   */
-  get engine() {
-    return this._engine;
   }
 
   constructor(entity: Entity) {
     super(entity);
     const primitive = new Primitive(this._engine);
     this._primitive = primitive;
-    primitive.addVertexElement(SpineAnimation.positionVertexElement);
-    primitive.addVertexElement(SpineAnimation.colorVertexElement);
-    primitive.addVertexElement(SpineAnimation.uvVertexElement);
-  }
-
-  /**
-   * @internal
-   */
-  // @ts-ignore
-  override _onEnable() {
-    const { skeleton, state } = this;
-    if (skeleton && state) {
-      const { animationName, skinName, loop, scale } = this.initialState;
-      skeleton.scaleX = scale;
-      skeleton.scaleY = scale;
-      if (skinName !== 'default') {
-        skeleton.setSkinByName(skinName);
-        skeleton.setToSetupPose();
-        state.apply(skeleton);
-      }
-      if (animationName) {
-        state.setAnimation(0, animationName, loop);
-      }
-    }
+    primitive.addVertexElement(SpineAnimationRenderer._positionVertexElement);
+    primitive.addVertexElement(SpineAnimationRenderer._colorVertexElement);
+    primitive.addVertexElement(SpineAnimationRenderer._uvVertexElement);
   }
 
   /**
@@ -213,10 +183,18 @@ export class SpineAnimation extends Renderer {
     }
     const slot = this._skeleton.findSlot(slotName);
     if (slot) {
-      SpineAnimation._spineGenerator.addSeparateSlot(slotName);
+      SpineAnimationRenderer._spineGenerator.addSeparateSlot(slotName);
     } else {
       console.warn(`Slot: ${slotName} not find.`);
     }
+  }
+
+  /**
+   * @internal
+   */
+  // @ts-ignore
+  override _onEnable() {
+    this._initializeDefaultState();
   }
 
   /**
@@ -229,7 +207,7 @@ export class SpineAnimation extends Renderer {
       _state.apply(_skeleton);
       _skeleton.update(delta);
       _skeleton.updateWorldTransform(Physics.update);
-      SpineAnimation._spineGenerator.buildPrimitive(this._skeleton, this);
+      SpineAnimationRenderer._spineGenerator.buildPrimitive(this._skeleton, this);
       if (this._isContainDirtyFlag(SpineAnimationUpdateFlags.InitialVolume)) {
         this._onWorldVolumeChanged();
         this._setDirtyFlagFalse(SpineAnimationUpdateFlags.InitialVolume);
@@ -296,7 +274,7 @@ export class SpineAnimation extends Renderer {
    * @internal
    */
   // @ts-ignore
-  override _cloneTo(target: SpineAnimation): void {
+  override _cloneTo(target: SpineAnimationRenderer): void {
     target.resource = this._resource;
   }
 
@@ -384,11 +362,11 @@ export class SpineAnimation extends Renderer {
     this._dirtyUpdateFlag |= RendererUpdateFlags.WorldVolume;
   }
 
-  private onAnimationStart() {
+  private _onAnimationStart() {
     this._dirtyUpdateFlag |= SpineAnimationUpdateFlags.AnimationVolume;
   }
 
-  private onAnimationComplete(entry: TrackEntry) {
+  private _onAnimationComplete(entry: TrackEntry) {
     if (!entry.loop) {
       this._setDirtyFlagFalse(SpineAnimationUpdateFlags.AnimationVolume)
     }
@@ -399,8 +377,25 @@ export class SpineAnimation extends Renderer {
       const texture = item.shaderData.getTexture('material_SpineTexture');
       const blendMode = getBlendMode(item);
       const key = `${texture.instanceId}_${blendMode}`;
-      SpineAnimation.materialCache.delete(key);
+      SpineAnimationRenderer.materialCache.delete(key);
     });
+  }
+
+  private _initializeDefaultState() {
+    const { skeleton, state } = this;
+    if (skeleton && state) {
+      const { animationName, skinName, loop, scale } = this.defaultState;
+      skeleton.scaleX = scale;
+      skeleton.scaleY = scale;
+      if (skinName !== 'default') {
+        skeleton.setSkinByName(skinName);
+        skeleton.setToSetupPose();
+        state.apply(skeleton);
+      }
+      if (animationName) {
+        state.setAnimation(0, animationName, loop);
+      }
+    }
   }
 
 }

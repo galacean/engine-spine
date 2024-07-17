@@ -9,17 +9,17 @@ import {
 //   Skeleton,
 //   SkeletonData
 // } from '@esotericsoftware/spine-core';
-import { SpineAnimation } from '../src/SpineAnimation';
+import { SpineAnimationRenderer } from '../src/SpineAnimationRenderer';
 import { SpineGenerator } from '../src/SpineGenerator';
 
-describe('SpineAnimation', function() {
+describe('SpineAnimationRenderer', function() {
   // let engine, entity, spineAnimation, skeletonData;
 
   // beforeEach(() => {
   //   engine = new Engine();
   //   entity = new Entity();
   //   skeletonData = new SkeletonData();
-  //   spineAnimation = new SpineAnimation(entity);
+  //   spineAnimation = new SpineAnimationRenderer(entity);
   //   spineAnimation.engine = engine; // 假设engine是公开的，或者通过构造函数传入
   // });
 
@@ -81,7 +81,7 @@ describe('SpineAnimation', function() {
   //   it('should retrieve and cache material correctly', function() {
   //     const material = spineAnimation.getDefaultMaterial(engine);
   //     expect(material).to.be.instanceOf(Material);
-  //     expect(SpineAnimation.materialCache.has(material.shaderData.getTexture('material_SpineTexture').instanceId)).to.be.true;
+  //     expect(SpineAnimationRenderer.materialCache.has(material.shaderData.getTexture('material_SpineTexture').instanceId)).to.be.true;
   //   });
   // });
 

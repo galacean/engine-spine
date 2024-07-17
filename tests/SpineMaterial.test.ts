@@ -3,11 +3,12 @@ import { WebGLEngine, CullMode, RenderQueueType } from "@galacean/engine";
 import { SpineMaterial } from "../src/SpineMaterial";
 import { getBlendMode } from "../src/util/BlendMode";
 import { BlendMode } from "@esotericsoftware/spine-core";
+import { createEngine } from "./testUtils";
 
 describe("SpineMaterial", function () {
   let engine: WebGLEngine;
   beforeAll(async function () {
-    engine = await WebGLEngine.create({ canvas: document.createElement("canvas") });
+    engine = await createEngine();
   });
 
   it("Should create a SpineMaterial with the correct default properties", function () {

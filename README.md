@@ -18,7 +18,7 @@ Spine runtime for [Galacean engine](https://github.com/galacean/engine).
 
 
 ```typescript
-import { SpineAnimation } from '@galacean/engine-spine';
+import { SpineAnimationRenderer } from '@galacean/engine-spine';
 
 // init oasis
 addSpine();
@@ -31,7 +31,7 @@ async function addSpine() {
     },
   );
   rootEntity.addChild(spineEntity);
-  const spineAnimation = spineEntity.getComponent(SpineAnimation);
+  const spineAnimation = spineEntity.getComponent(SpineAnimationRenderer);
   spineAnimation.state.setAnimation(0, 'walk', true);
 }
 ```

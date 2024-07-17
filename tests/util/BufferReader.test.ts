@@ -28,8 +28,6 @@ describe('BufferReader', function() {
 
   describe('nextStr', function() {
     it('should handle multi-byte characters', function() {
-      const canvas = document.createElement("canvas");
-      console.log(canvas);
       const data = new Uint8Array([0x05, 0x00, 0x48, 0x65, 0x6C, 0x6C, 0x6F]); // Length 5, "Hello"
       const localBufferReader = new BufferReader(data);
       const str = localBufferReader.nextStr();

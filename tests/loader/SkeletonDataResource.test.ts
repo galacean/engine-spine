@@ -3,7 +3,7 @@ import sinon from 'sinon';
 import { Engine, Texture2D, ReferResource } from "@galacean/engine";
 // import { SkeletonData, Skin, Attachment } from "@esotericsoftware/spine-core";
 import { SkeletonDataResource } from '../../src/loader/SkeletonDataResource'; // 确保导入路径正确
-import { SpineAnimation } from '../../src/SpineAnimation';
+import { SpineAnimationRenderer } from '../../src/SpineAnimationRenderer';
 
 describe('SkeletonDataResource', () => {
   // let engine, skeletonData, texture, skin, attachment;
@@ -37,7 +37,7 @@ describe('SkeletonDataResource', () => {
 
   //     expect(resource._disassociationSuperResource.calledOnceWith(resource.textures)).to.be.true;
   //     expect(resource._clearAttachmentTextures.calledOnceWith(skeletonData)).to.be.true;
-  //     expect(SpineAnimation.animationDataCache.has(skeletonData)).to.be.false;
+  //     expect(SpineAnimationRenderer.animationDataCache.has(skeletonData)).to.be.false;
   //   });
   // });
 

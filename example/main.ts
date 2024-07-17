@@ -11,12 +11,12 @@ import {
 } from "@galacean/engine";
 import { OrbitControl, Stats } from "@galacean/engine-toolkit";
 import * as dat from 'dat.gui';
-import { SpineAnimation, SkeletonData } from "../src/index";
+import { SpineAnimationRenderer, SkeletonData } from "../src/index";
 import BoundingBoxLine from './outline';
 import { SkeletonDataResource } from "../src/loader/SkeletonDataResource";
 
 Logger.enable();
-console.log(SpineAnimation);
+console.log(SpineAnimationRenderer);
 
 document.getElementById("canvas")!.oncontextmenu = function (e) {
   e.preventDefault();
@@ -172,19 +172,19 @@ async function loadSpine(root: Entity, engine: Engine, resource) {
 
   const spineEntity = new Entity(engine, 'spine-entity');
   spineEntity.transform.setPosition(-25 + Math.random() * 50, -15, 0);
-  const spineAnimation = spineEntity.addComponent(SpineAnimation);
-  spineAnimation.initialState.scale = 0.05;
+  const spineAnimation = spineEntity.addComponent(SpineAnimationRenderer);
+  spineAnimation.defaultState.scale = 0.05;
   spineAnimation.resource = skeletonDataResource;
   root.addChild(spineEntity);
 
   // const clone = spineEntity.clone();
   // clone.name = 'test';
   // clone.transform.setPosition(25, -15, 0);
-  // const animation2 = clone.getComponent(SpineAnimation);
-  // animation2!.initialState.skinName = 'full-skins/boy';
-  // animation2!.initialState.scale = 0.04;
-  // animation2!.initialState.animationName = 'dance';
-  // animation2!.initialState.loop = true;
+  // const animation2 = clone.getComponent(SpineAnimationRenderer);
+  // animation2!.defaultState.skinName = 'full-skins/boy';
+  // animation2!.defaultState.scale = 0.04;
+  // animation2!.defaultState.animationName = 'dance';
+  // animation2!.defaultState.loop = true;
   // root.addChild(clone);
 
   // const outlineEntity = root.createChild('outline');
@@ -210,7 +210,7 @@ async function loadSpine(root: Entity, engine: Engine, resource) {
 
 }
 
-function handleChangeSkinScene(spineAnimation: SpineAnimation) {
+function handleChangeSkinScene(spineAnimation: SpineAnimationRenderer) {
   const { skeleton, state } = spineAnimation;
   skeleton.setSkinByName("full-skins/girl"); // 1. Set the active skin
   skeleton.setSlotsToSetupPose(); // 2. Use setup pose to set base attachments.
@@ -232,7 +232,7 @@ function handleChangeSkinScene(spineAnimation: SpineAnimation) {
   });
 }
 
-async function handleChangeResource(engine: Engine, spineAnimation: SpineAnimation) {
+async function handleChangeResource(engine: Engine, spineAnimation: SpineAnimationRenderer) {
   const newResource = (await engine.resourceManager.load({
     urls: [
       "https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/jdjQ6mGxWknZ7TtQ/raptor/raptor.json",
@@ -242,10 +242,8 @@ async function handleChangeResource(engine: Engine, spineAnimation: SpineAnimati
     type: 'spine'
   })) as SkeletonDataResource;
   setTimeout(() => {
-    spineAnimation.enabled = false;
+    spineAnimation.defaultState.animationName = 'roar';
     spineAnimation.resource = newResource;
-    spineAnimation.initialState.animationName = 'roar';
-    spineAnimation.enabled = true;
   }, 1000);
 }
 
@@ -257,22 +255,6 @@ function removeController() {
   if (skinController) {
     skinController.remove();
     skinController = null;
-  }
-  if (slotHackController1) {
-    slotHackController1.remove();
-    slotHackController1 = null;
-  }
-  if (slotHackController2) {
-    slotHackController2.remove();
-    slotHackController2 = null;
-  }
-  if (slotHackController3) {
-    slotHackController3.remove();
-    slotHackController3 = null;
-  }
-  if (attachmentController) {
-    attachmentController.remove();
-    attachmentController = null;
   }
 }
 
