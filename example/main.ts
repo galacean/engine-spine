@@ -211,10 +211,9 @@ async function loadSpine(root: Entity, engine: Engine, resource) {
 }
 
 function handleChangeSkinScene(spineAnimation: SpineAnimationRenderer) {
-  const { skeleton, state } = spineAnimation;
+  const { skeleton } = spineAnimation;
   skeleton.setSkinByName("full-skins/girl"); // 1. Set the active skin
   skeleton.setSlotsToSetupPose(); // 2. Use setup pose to set base attachments.
-  state.apply(skeleton);
   const info = {
     skin: "full-skins/girl",
   };

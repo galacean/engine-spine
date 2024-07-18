@@ -377,13 +377,11 @@ export class SpineAnimationRenderer extends Renderer {
     const { skeleton, state } = this;
     if (skeleton && state) {
       const { animationName, skinName, loop, scale } = this.defaultState;
-      console.log(scale);
       skeleton.scaleX = scale;
       skeleton.scaleY = scale;
       if (skinName !== 'default') {
         skeleton.setSkinByName(skinName);
         skeleton.setToSetupPose();
-        state.apply(skeleton);
       }
       if (animationName) {
         state.setAnimation(0, animationName, loop);
