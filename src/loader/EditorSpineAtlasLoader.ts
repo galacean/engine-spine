@@ -8,7 +8,6 @@ import {
 import { TextureAtlas } from "@esotericsoftware/spine-core";
 import { createTextureAtlas } from "./LoaderUtils";
 
-console.log('regist EditorSpineAtlas loader');
 
 @resourceLoader("EditorSpineAtlas", ["atlas"])
 class EditorSpineAtlasLoader extends Loader<TextureAtlas> {
