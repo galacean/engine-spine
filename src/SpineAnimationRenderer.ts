@@ -23,6 +23,9 @@ import { SpineMaterial } from "./SpineMaterial";
 import { SkeletonDataResource } from "./loader/SkeletonDataResource";
 import { getBlendMode } from "./util/BlendMode";
 
+/**
+ * Spine animation renderer, capable of rendering spine animations and providing functions for animation and skeleton manipulation.
+ */
 export class SpineAnimationRenderer extends Renderer {
   private static _defaultMaterial: Material;
   private static _spineGenerator = new SpineGenerator();
