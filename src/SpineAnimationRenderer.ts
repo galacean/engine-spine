@@ -67,7 +67,7 @@ export class SpineAnimationRenderer extends Renderer {
   @deepClone
   defaultState: DefaultState = {
     scale: 1,
-    loop: false,
+    loop: true,
     animationName: null,
     skinName: 'default',
   };

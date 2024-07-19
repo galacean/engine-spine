@@ -24,15 +24,17 @@ import { SpineAnimationRenderer } from '@galacean/engine-spine';
 addSpine();
 
 async function addSpine() {
-	const spineEntity = await engine.resourceManager.load(
+	const resource = await engine.resourceManager.load(
     {
-      url: 'https://sbfkcel.github.io/pixi-spine-debug/assets/spine/spineboy-pro.json',
+      url: 'https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/yKbdfgijyLGzQDyQ/spineboy/spineboy.json',
       type: 'spine',
     },
   );
+  const spineEntity = new Entity(engine);
+  const spine = entity.addComponent(SpineAnimationRenderer);
+  spine.resource = resource;
+  spine.defaultState.animationName = 'walk';
   rootEntity.addChild(spineEntity);
-  const spineAnimation = spineEntity.getComponent(SpineAnimationRenderer);
-  spineAnimation.state.setAnimation(0, 'walk', true);
 }
 ```
 
@@ -76,4 +78,4 @@ Make sure to read the [Contributing Guide](.github/HOW_TO_CONTRIBUTE.md) before 
 ## License
 
 
-The Oasis Engine is released under the [MIT](https://opensource.org/licenses/MIT) license. See LICENSE file.
+The Galacean Engine is released under the [MIT](https://opensource.org/licenses/MIT) license. See LICENSE file.
