@@ -419,12 +419,12 @@ export class SpineRenderSetting {
    */
   constructor(
     /**
-     * The spacing between z layers @defaultValue
+     * The spacing between z layers @defaultValue `0.01`
      */
     public zSpacing: number = 0.01,
     
     /**
-     * Whether to use clipping @defaultValue
+     * Whether to use clipping @defaultValue `true`
      */
     public useClipping: boolean = true,
   ) {}
@@ -437,26 +437,26 @@ export class SpineRenderSetting {
  */
 export class DefaultState {
   /**
-   * Creates an instance of DefaultState @defaultValue
+   * Creates an instance of DefaultState
    */
   constructor(
     /**
-     * The default scale of the animation @defaultValue
+     * The default scale of the animation @defaultValue 1
      */
     public scale: number = 1,
 
     /**
-     * Whether the default animation should loop @defaultValue
+     * Whether the default animation should loop @defaultValue true. The default animation should loop
      */
     public loop: boolean = true,
 
     /**
-     * The name of the default animation @defaultValue
+     * The name of the default animation @defaultValue null. Do not play any animation by default
      */
     public animationName: string | null = null,
 
     /**
-     * The name of the default skin @defaultValue
+     * The name of the default skin @defaultValue default
      */
     public skinName: string = "default"
   ) {}
