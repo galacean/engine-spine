@@ -120,7 +120,6 @@ export class SpineLoader extends Loader<SkeletonDataResource> {
     let skeletonRawData: ArrayBuffer | string;
     let atlasRefId: string;
     const type = header.startsWith('spine:skel') ? 'skel' : 'json';
-    // @ts-ignore
     const { engine } = resourceManager;
     if (type === 'skel') {
       atlasRefId = reader.nextStr();
