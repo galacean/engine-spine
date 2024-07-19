@@ -227,7 +227,6 @@ function handleChangeSkinScene(spineAnimation: SpineAnimationRenderer) {
   .onChange((skinName) => {
     skeleton.setSkinByName(skinName); // 1. Set the active skin
     skeleton.setSlotsToSetupPose(); // 2. Use setup pose to set base attachments.
-    state.apply(skeleton);
   });
 }
 
