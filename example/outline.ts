@@ -1,3 +1,4 @@
+
 import {
   Entity,
   Vector3,
@@ -83,16 +84,18 @@ export default class BoundingBoxLine extends MeshRenderer {
 
     const mesh = <ModelMesh>this.mesh;
     const positions = mesh.getPositions();
-    const { x: minX, y: minY, z: minZ } = min;
-    const { x: maxX, y: maxY, z: maxZ } = max;
-    positions[0].set(minX, minY, maxZ);
-    positions[1].set(maxX, minY, maxZ);
-    positions[2].set(maxX, minY, minZ);
-    positions[3].set(minX, minY, minZ);
-    positions[4].set(minX, maxY, maxZ);
-    positions[5].set(maxX, maxY, maxZ);
-    positions[6].set(maxX, maxY, minZ);
-    positions[7].set(minX, maxY, minZ);
+    if (positions) {
+      const { x: minX, y: minY, z: minZ } = min;
+      const { x: maxX, y: maxY, z: maxZ } = max;
+      positions[0].set(minX, minY, maxZ);
+      positions[1].set(maxX, minY, maxZ);
+      positions[2].set(maxX, minY, minZ);
+      positions[3].set(minX, minY, minZ);
+      positions[4].set(minX, maxY, maxZ);
+      positions[5].set(maxX, maxY, maxZ);
+      positions[6].set(maxX, maxY, minZ);
+      positions[7].set(minX, maxY, minZ);
+    }
     mesh.setPositions(positions);
     mesh.uploadData(false);
     this.entity.isActive = true;
