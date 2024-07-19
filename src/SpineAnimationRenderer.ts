@@ -100,16 +100,12 @@ export class SpineAnimationRenderer extends Renderer {
   private _state: AnimationState;
 
   /**
-   * Get spine resource of current spine animation.
+   * Spine resource of current spine animation.This property allows you to switch between different animations at runtime.
    */
   get resource(): SkeletonDataResource {
     return this._resource;
   }
 
-  /**
-   * Setting spine `resource`. Initializes a new Spine animation with the provided resource.
-   * This property allows you to switch between different animations at runtime.
-   */
   set resource(value: SkeletonDataResource) {
     if (!value) {
       this._state = null;
