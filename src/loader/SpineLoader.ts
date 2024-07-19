@@ -4,10 +4,12 @@ import {
   LoadItem,
   resourceLoader,
   ResourceManager,
+  Texture2D,
 } from "@galacean/engine";
 import { createSkeletonData, createTextureAtlas, loadTextureAtlas, loadTexturesByPath } from "./LoaderUtils";
 import { SkeletonDataResource } from "./SkeletonDataResource";
 import { BufferReader } from "../util/BufferReader";
+import { TextureAtlas } from "@esotericsoftware/spine-core";
 
 export type SpineAssetBundle = {
   skeletonPath: string;
@@ -169,18 +171,26 @@ export class SpineLoader extends Loader<SkeletonDataResource> {
         SpineLoader.parseAndAssignSpineAsset(url, extension, spineAssetBundle);
       }
       const { skeletonPath, atlasPath, imagePaths, skeletonExtension, imageExtensions }  = spineAssetBundle;
-      if (!skeletonPath || !atlasPath || imagePaths.length === 0) {
+      if (!skeletonPath || !atlasPath) {
         throw new Error('Failed to load spine assets. Please check the file path and ensure the file extension is included.');
       }
       const skeletonPromise = skeletonExtension === 'json' ? this.request(skeletonPath, { type: 'text'}) : this.request(skeletonPath, { type: 'arraybuffer' });
       const type = skeletonExtension === 'json' ? 'json' : 'skel';
-      const loadQueue: Promise<any>[] = [
-        skeletonPromise,
-        this.request(atlasPath, { type: 'text'}),
-        loadTexturesByPath(imagePaths, imageExtensions, engine),
-      ];
-      const [skeletonTextData, atlasText, textures] = await Promise.all(loadQueue);
-      const textureAtlas = createTextureAtlas(atlasText, textures);
+      let loadQueue: Promise<any>[] = [ skeletonPromise ];
+      let textureAtlas: TextureAtlas;
+      let skeletonTextData: string | ArrayBuffer;
+      if (imagePaths.length > 0) {
+        loadQueue = loadQueue.concat([
+          this.request(atlasPath, { type: 'text'}),
+          loadTexturesByPath(imagePaths, imageExtensions, engine),
+        ]);
+        let atlasText: string, textures: Texture2D[];
+        [skeletonTextData, atlasText, textures] = await Promise.all(loadQueue);
+        textureAtlas = createTextureAtlas(atlasText, textures);
+      } else {
+        loadQueue.push(loadTextureAtlas(atlasPath, engine));
+        [skeletonTextData, textureAtlas] = await Promise.all(loadQueue);
+      }
       const skeletonData = createSkeletonData(textureAtlas, skeletonTextData, type);
       return new SkeletonDataResource(engine, skeletonData); 
     }
