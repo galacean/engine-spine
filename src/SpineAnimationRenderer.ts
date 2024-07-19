@@ -58,22 +58,14 @@ export class SpineAnimationRenderer extends Renderer {
 
   /** Render setting for spine rendering. */
   @deepClone
-  setting: SpineRenderSetting = {
-    zSpacing: 0.01,
-    useClipping: true,
-  };
+  setting: SpineRenderSetting = new SpineRenderSetting();
   /**
    * Default state for spine animation.
    * Contains the default animation name to be played, whether this animation should loop,
    * the default skin name, and the default scale of the skeleton.
    */
   @deepClone
-  defaultState: DefaultState = {
-    scale: 1,
-    loop: true,
-    animationName: null,
-    skinName: 'default',
-  };
+  defaultState: DefaultState = new DefaultState();
   /** @internal */
   @ignoreClone
   _primitive: Primitive;
@@ -160,6 +152,9 @@ export class SpineAnimationRenderer extends Renderer {
     return this._skeleton;
   }
 
+  /**
+   * @internal
+   */
   constructor(entity: Entity) {
     super(entity);
     const primitive = new Primitive(this._engine);
@@ -172,7 +167,7 @@ export class SpineAnimationRenderer extends Renderer {
   /**
    * Separate slot by slot name. This will add a new sub primitive, and new materials.
    */
-  addSeparateSlot(slotName: string) {
+  addSeparateSlot(slotName: string): void {
     if (!this._skeleton) {
       console.error("Skeleton not found!");
     }
@@ -188,7 +183,7 @@ export class SpineAnimationRenderer extends Renderer {
    * @internal
    */
   // @ts-ignore
-  override _onEnable() {
+  override _onEnable(): void {
     this._initializeDefaultState();
   }
 
@@ -421,19 +416,17 @@ export enum RendererUpdateFlags {
 export class SpineRenderSetting {
   /**
    * Creates an instance of SpineRenderSetting.
-   * @param {number} [zSpacing=0.01] - The spacing between z layers.
-   * @param {boolean} [useClipping=true] - Whether to use clipping.
    */
   constructor(
     /**
-     * The spacing between z layers.
+     * The spacing between z layers @defaultValue
      */
     public zSpacing: number = 0.01,
     
     /**
-     * Whether to use clipping.
+     * Whether to use clipping @defaultValue
      */
-    public useClipping: boolean = true
+    public useClipping: boolean = true,
   ) {}
 }
 
@@ -444,30 +437,26 @@ export class SpineRenderSetting {
  */
 export class DefaultState {
   /**
-   * Creates an instance of DefaultState.
-   * @param {number} [scale=1] - The default scale of the animation.
-   * @param {boolean} [loop=false] - Whether the default animation should loop.
-   * @param {string | null} [animationName=null] - The name of the default animation.
-   * @param {string} [skinName="default"] - The name of the default skin.
+   * Creates an instance of DefaultState @defaultValue
    */
   constructor(
     /**
-     * The default scale of the animation.
+     * The default scale of the animation @defaultValue
      */
     public scale: number = 1,
 
     /**
-     * Whether the default animation should loop.
+     * Whether the default animation should loop @defaultValue
      */
-    public loop: boolean = false,
+    public loop: boolean = true,
 
     /**
-     * The name of the default animation.
+     * The name of the default animation @defaultValue
      */
     public animationName: string | null = null,
 
     /**
-     * The name of the default skin.
+     * The name of the default skin @defaultValue
      */
     public skinName: string = "default"
   ) {}
