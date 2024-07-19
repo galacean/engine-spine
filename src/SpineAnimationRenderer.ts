@@ -254,7 +254,7 @@ export class SpineAnimationRenderer extends Renderer {
   /**
    * @internal
    */
-  _calculateGeneratorBounds(worldBounds: BoundingBox) {
+  _calculateGeneratorBounds(worldBounds: BoundingBox): void {
     const { bounds } = SpineGenerator;
     BoundingBox.transform(
       bounds,
@@ -295,7 +295,7 @@ export class SpineAnimationRenderer extends Renderer {
   /**
    * @internal
    */
-  _createBuffer(vertexCount: number) {
+  _createBuffer(vertexCount: number): void {
     const { _engine, _primitive } = this;
     this._vertices = new Float32Array(vertexCount * SpineGenerator.VERTEX_STRIDE);
     this._indices = new Uint16Array(vertexCount);
@@ -323,14 +323,14 @@ export class SpineAnimationRenderer extends Renderer {
   /**
    * @internal
    */
-  _addSubPrimitive(subPrimitive: SubPrimitive) {
+  _addSubPrimitive(subPrimitive: SubPrimitive): void {
     this._subPrimitives.push(subPrimitive);
   }
 
   /**
    * @internal
    */
-  _clearSubPrimitives() {
+  _clearSubPrimitives(): void {
     this._subPrimitives.length = 0;
   }
 
@@ -355,17 +355,17 @@ export class SpineAnimationRenderer extends Renderer {
     this._dirtyUpdateFlag |= RendererUpdateFlags.WorldVolume;
   }
 
-  private _onAnimationStart() {
+  private _onAnimationStart(): void {
     this._dirtyUpdateFlag |= SpineAnimationUpdateFlags.AnimationVolume;
   }
 
-  private _onAnimationComplete(entry: TrackEntry) {
+  private _onAnimationComplete(entry: TrackEntry): void {
     if (!entry.loop) {
       this._setDirtyFlagFalse(SpineAnimationUpdateFlags.AnimationVolume)
     }
   }
 
-  private _clearMaterialCache() {
+  private _clearMaterialCache(): void {
     this._materials.forEach((item) => {
       const texture = item.shaderData.getTexture('material_SpineTexture');
       const blendMode = getBlendMode(item);
@@ -374,7 +374,7 @@ export class SpineAnimationRenderer extends Renderer {
     });
   }
 
-  private _initializeDefaultState() {
+  private _initializeDefaultState(): void {
     const { skeleton, state } = this;
     if (skeleton && state) {
       const { animationName, skinName, loop, scale } = this.defaultState;
