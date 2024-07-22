@@ -99,6 +99,13 @@ const demos = {
       "https://mdn.alipayobjects.com/portal_h1wdez/afts/img/A*uySHT5k_PU0AAAAAAAAAAAAAAQAAAQ/original?a=.png",
     ],
   },
+  '物理-少女': {
+    urls: [
+      "https://mdn.alipayobjects.com/portal_h1wdez/afts/file/A*Po6oQJyLdb0AAAAAAAAAAAAAAQAAAQ?a=.json",
+      "https://mdn.alipayobjects.com/portal_h1wdez/afts/file/A*CnqHS5nRzTIAAAAAAAAAAAAAAQAAAQ?b=.atlas",
+      "https://mdn.alipayobjects.com/portal_h1wdez/afts/img/A*WDXeRIpd-lAAAAAAAAAAAAAAAQAAAQ/original?b=.png"
+    ],
+  },
   '素材替换': {
     url: "https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/yKbdfgijyLGzQDyQ/spineboy/spineboy.json",
     scene: 'changeResource',
@@ -130,7 +137,7 @@ WebGLEngine.create({
 
   const cameraEntity = root.createChild("camera_node");
   const camera = cameraEntity.addComponent(Camera);
-  cameraEntity.transform.position = new Vector3(0, 0, 100);
+  cameraEntity.transform.position = new Vector3(0, 0, 2000);
   camera.nearClipPlane = 0.001;
   camera.farClipPlane = 20000;
 
@@ -171,9 +178,9 @@ async function loadSpine(root: Entity, engine: Engine, resource) {
   const firstAnimation = animationNames[0];
 
   const spineEntity = new Entity(engine, 'spine-entity');
-  spineEntity.transform.setPosition(-25 + Math.random() * 50, -15, 0);
+  spineEntity.transform.setPosition(-25 + Math.random() * 50, -250, 0);
   const spineAnimation = spineEntity.addComponent(SpineAnimationRenderer);
-  spineAnimation.defaultState.scale = 0.05;
+  spineAnimation.defaultState.scale = 0.5;
   spineAnimation.resource = skeletonDataResource;
   root.addChild(spineEntity);
 
