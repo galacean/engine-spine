@@ -163,7 +163,7 @@ async function loadSpine(root: Entity, engine: Engine, resource) {
   try {
     skeletonDataResource = (await engine.resourceManager.load({
       ...resource,
-      type: 'spine'
+      type: 'Spine'
     })) as SkeletonDataResource;
   } catch (err) {
     console.error('spine asset load error: ', err);
@@ -249,7 +249,7 @@ async function handleChangeResource(engine: Engine, spineAnimation: SpineAnimati
       "https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/jdjQ6mGxWknZ7TtQ/raptor/raptor.atlas",
       "https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/jdjQ6mGxWknZ7TtQ/raptor/raptor.png",
     ],
-    type: 'spine'
+    type: 'Spine'
   })) as SkeletonDataResource;
   setTimeout(() => {
     spineAnimation.defaultState.animationName = 'roar';
