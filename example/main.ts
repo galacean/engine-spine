@@ -8,6 +8,7 @@ import {
   Logger,
   KTX2TargetFormat,
   Engine,
+  Color,
 } from "@galacean/engine";
 import { OrbitControl, Stats } from "@galacean/engine-toolkit";
 import * as dat from 'dat.gui';
@@ -40,7 +41,7 @@ const blobResource: any = {
 const baseDemo = 'spineBoy-单json';
 const demos = {
   'spineBoy-单json': {
-    url: "https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/yKbdfgijyLGzQDyQ/spineboy/spineboy.json",
+    url: "https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/qGISZ7QTJFkEL0Qx/spineboy/spineboy.json",
   },
   'raptor-三文件json': {
     urls: [
@@ -105,6 +106,7 @@ const demos = {
       "https://mdn.alipayobjects.com/portal_h1wdez/afts/file/A*CnqHS5nRzTIAAAAAAAAAAAAAAQAAAQ?b=.atlas",
       "https://mdn.alipayobjects.com/portal_h1wdez/afts/img/A*WDXeRIpd-lAAAAAAAAAAAAAAAQAAAQ/original?b=.png"
     ],
+    scene: 'physic',
   },
   '素材替换': {
     url: "https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/yKbdfgijyLGzQDyQ/spineboy/spineboy.json",
@@ -180,7 +182,10 @@ async function loadSpine(root: Entity, engine: Engine, resource) {
   const spineEntity = new Entity(engine, 'spine-entity');
   spineEntity.transform.setPosition(-25 + Math.random() * 50, -250, 0);
   const spineAnimation = spineEntity.addComponent(SpineAnimationRenderer);
-  spineAnimation.defaultState.scale = 0.5;
+  spineAnimation.defaultState.scale = 1;
+  if (scene === 'physic') {
+    spineAnimation.defaultState.scale = 0.5;
+  }
   spineAnimation.resource = skeletonDataResource;
   root.addChild(spineEntity);
 
