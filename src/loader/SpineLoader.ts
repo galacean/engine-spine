@@ -26,7 +26,7 @@ type SpineLoaderParams =  {
 
 type SpineLoadItem = LoadItem & { params?: SpineLoaderParams };
 
-@resourceLoader("Spine", ["json", "bin", "skel"])
+@resourceLoader("spine", ["json", "bin", "skel"])
 export class SpineLoader extends Loader<SkeletonDataResource> {
   static imageExtensions = ["png", "jpg", "webp", "jpeg", "ktx", "ktx2"];
   static skeletonExtensions = ["skel", "json", "bin"];
