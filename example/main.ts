@@ -8,7 +8,6 @@ import {
   Logger,
   KTX2TargetFormat,
   Engine,
-  Color,
 } from "@galacean/engine";
 import { OrbitControl, Stats } from "@galacean/engine-toolkit";
 import * as dat from 'dat.gui';
@@ -41,7 +40,7 @@ const blobResource: any = {
 const baseDemo = 'spineBoy-单json';
 const demos = {
   'spineBoy-单json': {
-    url: "https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/qGISZ7QTJFkEL0Qx/spineboy/spineboy.json",
+    url: "https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/yKbdfgijyLGzQDyQ/spineboy/spineboy.json",
   },
   'raptor-三文件json': {
     urls: [
