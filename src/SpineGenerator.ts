@@ -2,8 +2,6 @@ import {
   Texture2D,
   SubPrimitive,
   Vector3,
-  BlendFactor,
-  BlendOperation,
   Material,
   Engine,
   BoundingBox,
@@ -20,6 +18,7 @@ import {
   SkeletonData,
   Skin,
   NumberArrayLike,
+  Attachment,
 } from "@esotericsoftware/spine-core";
 import { SpineAnimationRenderer } from "./SpineAnimationRenderer";
 import { AdaptiveTexture } from "./loader/LoaderUtils";
@@ -59,15 +58,14 @@ export class SpineGenerator {
   private _separateSlotTextureMap: Map<string, Texture2D> = new Map();
 
   getMaxVertexCount(skeletonData: SkeletonData) {
-    let vertexCount = 0;
+    const uniqueAttachments = new Set<Attachment>();
     const { skins } = skeletonData;
     const skinLen = skins.length;
-    for (let i = 0; i < skinLen; i += 1) {
+    for (let i = 0; i < skinLen; i++) {
       const skin = skins[i];
-      const vc = this._getSkinVertexCount(skin);
-      vertexCount = Math.max(vertexCount, vc);
+      this._collectUniqueAttachments(skin, uniqueAttachments);
     }
-    return vertexCount;
+    return this._calculateTotalVertexCount(uniqueAttachments);
   }
 
   buildPrimitive(skeleton: Skeleton, renderer: SpineAnimationRenderer) {
@@ -399,25 +397,30 @@ export class SpineGenerator {
     max.set(newMaxX, newMaxY, newMaxZ);
   }
 
-  private _getSkinVertexCount(skin: Skin) {
+  private _collectUniqueAttachments(skin: Skin, uniqueAttachments: Set<Attachment>) {
     const { attachments } = skin;
-    let vertexCount: number = 0;
-    const QUAD_TRIANGLE_LENGTH = SpineGenerator.QUAD_TRIANGLES.length;
     for (let i = 0, n = attachments.length; i < n; i++) {
       const slotAttachment = attachments[i];
       for (let key in slotAttachment) {
         const attachment = slotAttachment[key];
-        if (!attachment) {
-          continue;
-        } else if (attachment instanceof RegionAttachment) {
-          vertexCount += QUAD_TRIANGLE_LENGTH;
-        } else if (attachment instanceof MeshAttachment) {
-          let mesh = attachment;
-          vertexCount += mesh.triangles.length;
-        } else continue;
+        if (attachment && !uniqueAttachments.has(attachment)) {
+          uniqueAttachments.add(attachment);
+        }
       }
     }
-    return vertexCount; 
+  }
+
+  private _calculateTotalVertexCount(uniqueAttachments: Set<Attachment>) {
+    let totalVertexCount = 0;
+    const QUAD_TRIANGLE_LENGTH = SpineGenerator.QUAD_TRIANGLES.length;
+    uniqueAttachments.forEach(attachment => {
+      if (attachment instanceof RegionAttachment) {
+        totalVertexCount += QUAD_TRIANGLE_LENGTH;
+      } else if (attachment instanceof MeshAttachment) {
+        totalVertexCount += attachment.triangles.length;
+      }
+    });
+    return totalVertexCount;
   }
 
 }

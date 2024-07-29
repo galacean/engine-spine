@@ -17,9 +17,9 @@ export function setBlendMode(material: Material, blendMode: BlendMode) {
       break;
     case BlendMode.Multiply:
       target.sourceColorBlendFactor = DestinationColor;
-      target.destinationColorBlendFactor = Zero;
+      target.destinationColorBlendFactor = OneMinusSourceAlpha;
       target.sourceAlphaBlendFactor = One;
-      target.destinationAlphaBlendFactor = Zero;
+      target.destinationAlphaBlendFactor = OneMinusSourceAlpha;
       target.colorBlendOperation = target.alphaBlendOperation = Add;
       break;
     case BlendMode.Screen:
