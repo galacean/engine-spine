@@ -430,6 +430,11 @@ export class SpineRenderSetting {
      * Whether to use clipping @defaultValue `true`
      */
     public useClipping: boolean = true,
+
+    /**
+     * Whether to premultiplied alpha for texture @defaultValue `false`
+     */
+    public premultipliedAlpha: boolean = false,
   ) {}
 }
 
