@@ -1,7 +1,13 @@
 import "./loader/SpineLoader";
-export { SpineAnimation } from "./SpineAnimation";
-export * from "./spine-core";
-export { generateTextureAtlas } from "./loader/LoaderUtils";
-
+import "./loader/EditorSpineAtlasLoader";
+import { Loader } from "@galacean/engine";
+import { SpineAnimationRenderer } from "./SpineAnimationRenderer";
+export { SpineAnimationRenderer } from "./SpineAnimationRenderer";
+export { SkeletonDataResource } from "./loader/SkeletonDataResource";
+export { createTextureAtlas } from "./loader/LoaderUtils";
+export * from "../src/spine-core";
 export const version = `__buildVersion`;
+
+Loader.registerClass("SpineAnimationRenderer", SpineAnimationRenderer);
+
 console.log(`Galacean spine version: ${version}`);

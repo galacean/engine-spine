@@ -11,11 +11,10 @@ import {
 } from "@galacean/engine";
 import { OrbitControl, Stats } from "@galacean/engine-toolkit";
 import * as dat from 'dat.gui';
-import { SpineAnimation, SkeletonData } from "../src/index";
+import { SpineAnimationRenderer, SkeletonData, SkeletonDataResource } from "../src/index";
 import BoundingBoxLine from './outline';
 
 Logger.enable();
-console.log(SpineAnimation);
 
 document.getElementById("canvas")!.oncontextmenu = function (e) {
   e.preventDefault();
@@ -36,7 +35,7 @@ const blobResource: any = {
   }
 };
 
-const baseDemo = 'spineBoy-单json';
+const baseDemo = '混合模式'//'spineBoy-单json';
 const demos = {
   'spineBoy-单json': {
     url: "https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/kx5353rrNIDn4CsX/spineboy-pro/spineboy-pro.json",
@@ -155,7 +154,7 @@ WebGLEngine.create({
 
   const cameraEntity = root.createChild("camera_node");
   const camera = cameraEntity.addComponent(Camera);
-  cameraEntity.transform.position = new Vector3(0, 0, 80);
+  cameraEntity.transform.position = new Vector3(0, 0, 2000);
   camera.nearClipPlane = 0.001;
   camera.farClipPlane = 20000;
   
@@ -177,35 +176,35 @@ WebGLEngine.create({
 });
 
 async function loadSpine(root: Entity, engine: Engine, resource) {
-  let skeletonData: SkeletonData | null = null;
+  let skeletonDataResource: SkeletonDataResource | null = null;
   const { scene } = resource;
+  console.log(resource);
   try {
-    skeletonData = (await engine.resourceManager.load({
+    skeletonDataResource = (await engine.resourceManager.load({
       ...resource,
       type: 'spine'
-    })) as SkeletonData;
+    })) as SkeletonDataResource;
   } catch (err) {
     console.error('spine asset load error: ', err);
   }
-  if (!skeletonData) return;
+  if (!skeletonDataResource) return;
   if (scene === 'upload') {
     console.log(blobResource);
     loadSpine(root, engine, blobResource);
     return;
   }
-  console.log('spine asset loaded =>', skeletonData);
+  console.log('spine asset loaded =>', skeletonDataResource.skeletonData);
   removeController();
-  const animationNames = skeletonData.animations.map(item => item.name);
+  const animationNames = skeletonDataResource.skeletonData.animations.map(item => item.name);
   const firstAnimation = animationNames[0];
 
-  const spineEntity = root.createChild('spine-entity');
-  spineEntity.transform.setPosition(0, -15, 0);
-  const mtl = SpineAnimation.getDefaultMaterial(engine);
-  const spineAnimation = spineEntity.addComponent(SpineAnimation);
-  spineAnimation.setMaterial(mtl);
-  spineAnimation.initialize(skeletonData);
-  spineAnimation.skeleton.scaleX = 0.05;
-  spineAnimation.skeleton.scaleY = 0.05;
+  const spineEntity = new Entity(engine, 'spine-entity');
+  spineEntity.transform.setPosition(-25 + Math.random() * 50, -250, 0);
+  const spineAnimation = spineEntity.addComponent(SpineAnimationRenderer);
+  spineAnimation.defaultState.scale = 1;
+  spineAnimation.resource = skeletonDataResource;
+  root.addChild(spineEntity);
+
 
   // outline.attachToEntity(spineEntity);
   // outline.isActive = true;
@@ -216,6 +215,7 @@ async function loadSpine(root: Entity, engine: Engine, resource) {
   spineAnimation.state.setAnimation(0, firstAnimation, true);
   animationController = gui.add({ animation: firstAnimation  }, 'animation', animationNames).onChange((animationName) => {
 		spineAnimation.state.setAnimation(0, animationName, true);
+    console.log(spineAnimation.state);
 	});
 
   if (scene === 'changeSkin') {
@@ -223,11 +223,11 @@ async function loadSpine(root: Entity, engine: Engine, resource) {
   } else if (scene === 'hackSlotTexture') {
     handleHackSlotTexture(spineAnimation, engine);
   } else if (scene === 'changeAttachment') {
-    handleChangeAttachment(spineAnimation, skeletonData);
+    handleChangeAttachment(spineAnimation, skeletonDataResource.skeletonData);
   }
 }
 
-function handleChangeAttachment(spineAnimation: SpineAnimation, skeletonData: SkeletonData) {
+function handleChangeAttachment(spineAnimation: SpineAnimationRenderer, skeletonData: SkeletonData) {
   const { skeleton, state } = spineAnimation;
   skeleton.setSkinByName("fullskin/0101"); // 1. Set the active skin
   skeleton.setSlotsToSetupPose(); // 2. Use setup pose to set base attachments.

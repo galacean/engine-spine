@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vite App</title>
+  <style>
+    html, body {
+      margin: 0;padding: 0;
+    }
+    #canvas {
+      outline: none;
+    }
+    /* CSS: Center the button and link container */
+    .bottom {
+      position: absolute;
+      left: 0;
+      bottom: 0;
+    }
+    input[type="file"] {
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+    <canvas id="canvas" style="width: 100vw; height: 100vh"></canvas>
+    <script type="module" src="/example/galacean.ts"></script>
+</body>
+</html>
