@@ -20,7 +20,7 @@ Spine runtime for [Galacean engine](https://github.com/galacean/engine).
 ```typescript
 import { SpineAnimation } from '@galacean/engine-spine';
 
-// init oasis
+// init galacean
 addSpine();
 
 async function addSpine() {
