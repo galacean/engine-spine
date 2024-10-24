@@ -5,6 +5,7 @@ import {
   Material,
   Engine,
   BoundingBox,
+  SetDataOptions,
 } from "@galacean/engine";
 import {
   Skeleton,
@@ -369,13 +370,15 @@ export class SpineGenerator {
     }
 
     if (indicesLength > _vertexCount) {
-      renderer._createBuffer(indicesLength);
+      renderer._prepareBufferData(indicesLength);
       this.buildPrimitive(skeleton, renderer);
       return;
     }
-
-    renderer._vertexBuffer.setData(_vertices);
-    renderer._indexBuffer.setData(_indices);
+    
+    renderer.doubleBuffer.resize(_vertexCount, engine);
+    const { vertexBuffer, indexBuffer } = renderer.doubleBuffer.getNext();
+    vertexBuffer.setData(_vertices, 0, 0, null, SetDataOptions.Discard);
+    indexBuffer.setData(_indices, 0, 0, null, SetDataOptions.Discard);
   }
 
   addSeparateSlot(slotName: string) {

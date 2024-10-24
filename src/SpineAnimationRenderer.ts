@@ -22,6 +22,7 @@ import {
 import { SpineMaterial } from "./SpineMaterial";
 import { SkeletonDataResource } from "./loader/SkeletonDataResource";
 import { getBlendMode } from "./util/BlendMode";
+import { DoubleBuffer } from "./DoubleBuffer";
 
 /**
  * Spine animation renderer, capable of rendering spine animations and providing functions for animation and skeleton manipulation.
@@ -94,6 +95,8 @@ export class SpineAnimationRenderer extends Renderer {
   @ignoreClone
   _resource: SkeletonDataResource;
 
+  doubleBuffer = new DoubleBuffer();
+
   @ignoreClone
   private _skeleton: Skeleton;
   @ignoreClone
@@ -124,8 +127,7 @@ export class SpineAnimationRenderer extends Renderer {
       SpineAnimationRenderer._animationDataCache.set(skeletonData, animationData);
     }
     this._state = new AnimationState(animationData);
-    const maxCount = SpineAnimationRenderer._spineGenerator.getMaxVertexCount(skeletonData);
-    this._createBuffer(0);
+    this._prepareBufferData(0);
     this._initializeDefaultState();
     this._dirtyUpdateFlag |= SpineAnimationUpdateFlags.InitialVolume;
     // @ts-ignore
@@ -216,6 +218,10 @@ export class SpineAnimationRenderer extends Renderer {
    */
   // @ts-ignore
   override _render(context: any): void {
+
+    const { vertexBuffer, indexBuffer } = this.doubleBuffer.getCurrent();
+    this._bindBuffer(vertexBuffer, indexBuffer);
+
     const { _primitive, _subPrimitives } = this;
     const { _materials: materials, _engine: engine } = this;
     // @ts-ignore
@@ -295,30 +301,18 @@ export class SpineAnimationRenderer extends Renderer {
   /**
    * @internal
    */
-  _createBuffer(vertexCount: number): void {
-    const { _engine, _primitive } = this;
+  _prepareBufferData(vertexCount: number): void {
     this._vertexCount = vertexCount;
     this._vertices = new Float32Array(vertexCount * SpineGenerator.VERTEX_STRIDE);
     this._indices = new Uint16Array(vertexCount);
+  }
+
+  _bindBuffer(vertexBuffer: Buffer, indexBuffer: Buffer) {
     const vertexStride = (SpineGenerator.VERTEX_STRIDE) * 4; // position + color + uv * Float32 byteLen
-    const vertexBuffer = new Buffer(
-      _engine,
-      BufferBindFlag.VertexBuffer,
-      this._vertices,
-      BufferUsage.Dynamic,
-    );
-    const indexBuffer = new Buffer(
-      _engine,
-      BufferBindFlag.IndexBuffer,
-      this._indices,
-      BufferUsage.Dynamic,
-    );
-    this._indexBuffer = indexBuffer;
-    this._vertexBuffer = vertexBuffer;
     const vertexBufferBinding = new VertexBufferBinding(vertexBuffer, vertexStride);
     this._primitive.setVertexBufferBinding(0, vertexBufferBinding);
     const indexBufferBinding = new IndexBufferBinding(indexBuffer, IndexFormat.UInt16);
-    _primitive.setIndexBufferBinding(indexBufferBinding);
+    this._primitive.setIndexBufferBinding(indexBufferBinding);
   }
 
   /**

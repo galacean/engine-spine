@@ -3,7 +3,6 @@ import {
   Camera,
   Entity,
   Vector3,
-  Logger,
   KTX2TargetFormat,
   Engine,
 } from "@galacean/engine";
@@ -11,10 +10,6 @@ import { Stats } from "@galacean/engine-toolkit";
 import { SpineAnimationRenderer } from "../src/index";
 import { SkeletonDataResource } from "../src/loader/SkeletonDataResource";
 
-
-// let count = 100;
-let count = 500;
-// let count = 3000;
 
 let root;
 
@@ -39,58 +34,32 @@ WebGLEngine.create({
 
   const cameraEntity = root.createChild("camera_node");
   const camera = cameraEntity.addComponent(Camera);
-  cameraEntity.transform.position = new Vector3(0, 0, 2000);
-  camera.fieldOfView = 45;
-  camera.aspectRatio = window.innerWidth / window.innerHeight;
-  camera.nearClipPlane = 1;
-  camera.farClipPlane = 3000;
+  cameraEntity.addComponent(Stats);
+  cameraEntity.transform.position = new Vector3(0, 0, 10);
+  camera.isOrthographic = true;
+  camera.orthographicSize = 3.5;
+  camera.enableFrustumCulling = false;
 
   loadSpine(root, engine);
 });
 
 async function loadSpine(root: Entity, engine: Engine) {
-  const skeletonDataResource = (await engine.resourceManager.load({
-      urls: ["/spineboy-pro.json", "/spineboy-pma.atlas"],
-      type: 'spine'
-    })) as SkeletonDataResource;
-  if (!skeletonDataResource) return;
-  const spineEntity = new Entity(engine, 'spine-entity');
-  spineEntity.transform.setPosition(0, 0, 0);
-  const spineAnimation = spineEntity.addComponent(SpineAnimationRenderer);
-  spineAnimation.defaultState.scale = 1;
-  spineAnimation.defaultState.animationName = 'walk';
-  spineAnimation.resource = skeletonDataResource;
-
-  if (count === 100) {
-    createArrayOfObjects(spineEntity, 10, 10);
-  } else if (count === 500) {
-    createArrayOfObjects(spineEntity, 20, 25);
-  } else if (count === 3000) {
-    createArrayOfObjects(spineEntity, 50, 60);
+  const spineResouce = (await engine.resourceManager.load({
+    urls: ["/spineboy.json", "/spineboy.atlas"],
+    type: 'spine'
+  })) as SkeletonDataResource;
+  
+  const spineEntity = new Entity(engine, "spine");
+  spineEntity.transform.setScale(0.3, 0.3, 0.3);
+  const spineRenderer = spineEntity.addComponent(SpineAnimationRenderer);
+  spineRenderer.resource = spineResouce;
+  spineRenderer.defaultState.animationName = 'run';
+  spineRenderer.defaultState.scale = 0.02;
+  for (let i = 0; i < 500; i++) {
+    const clone = spineEntity.clone();
+    clone.transform.setPosition(-1.75 + i * 0.005, -2, 0);
+    root.addChild(clone);
   }
 
-}
-
-function createArrayOfObjects(entity: Entity, countX: number, countY: number, countZ: number = 1) {
-  const spacing = 150; // 每个物体之间的间距
-    const halfX = Math.floor(countX / 2);
-    const halfY = Math.floor(countY / 2);
-
-    let count = 0; // 计数器
-
-    for (let x = -halfX; x < halfX; x++) {
-        for (let y = -halfY; y < halfY; y++) {
-            if (count >= 3000) return; // 确保总数不超过3000
-
-            const clone = entity.clone(); // 创建物体实例
-            clone.transform.position.set(
-                x * spacing,
-                y * spacing,
-                0,
-            );
-            root.addChild(clone); // 将物体添加到场景中
-            count++;
-        }
-    }
 }
 
