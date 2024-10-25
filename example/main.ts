@@ -11,9 +11,9 @@ import {
 } from "@galacean/engine";
 import { OrbitControl, Stats } from "@galacean/engine-toolkit";
 import * as dat from 'dat.gui';
-import { SpineAnimationRenderer, SkeletonData } from "../src/index";
+import { SpineAnimationRenderer, SkeletonData, Skeleton, AnimationStateData, AnimationState } from "../src/index";
 import BoundingBoxLine from './outline';
-import { SkeletonDataResource } from "../src/loader/SkeletonDataResource";
+import { SpineResource } from "../src/loader/SpineResource";
 
 Logger.enable();
 console.log(SpineAnimationRenderer);
@@ -157,36 +157,73 @@ WebGLEngine.create({
 });
 
 async function loadSpine(root: Entity, engine: Engine, resource) {
-  let skeletonDataResource: SkeletonDataResource | null = null;
+  let spineResource: SpineResource | null = null;
   const { scene } = resource;
   try {
-    skeletonDataResource = (await engine.resourceManager.load({
+    spineResource = (await engine.resourceManager.load({
       ...resource,
       type: 'spine'
-    })) as SkeletonDataResource;
+    })) as SpineResource;
   } catch (err) {
     console.error('spine asset load error: ', err);
   }
-  if (!skeletonDataResource) return;
+  if (!spineResource) return;
   if (scene === 'upload') {
     console.log(blobResource);
     loadSpine(root, engine, blobResource);
     return;
   }
-  console.log('spine asset loaded =>', skeletonDataResource.skeletonData);
-  removeController();
-  const animationNames = skeletonDataResource.skeletonData.animations.map(item => item.name);
-  const firstAnimation = animationNames[0];
+
+
+  // 用户可以这样
+  const { skeletonData, animationData } = spineResource;
+  const skeleton = new Skeleton(skeletonData);
+  const state = new AnimationState(animationData);
+  // 或者 const animationData = new AnimationStateData(skeletonData); 此时可以自定义 skeletonData
 
   const spineEntity = new Entity(engine, 'spine-entity');
-  spineEntity.transform.setPosition(-25 + Math.random() * 50, -250, 0);
   const spineAnimation = spineEntity.addComponent(SpineAnimationRenderer);
-  spineAnimation.defaultState.scale = 1;
-  if (scene === 'physic') {
-    spineAnimation.defaultState.scale = 0.5;
-  }
-  spineAnimation.resource = skeletonDataResource;
+  spineAnimation.skeleton = skeleton;
+  spineAnimation.state = state;
+  spineAnimation.defaultState.animationName = 'walk';
   root.addChild(spineEntity);
+
+  // 或者
+  const animation = SpineAnimationRenderer.createWithEntity(spineResource);
+  root.addChild(animation.entity);
+
+  const clone = spineEntity.clone();
+  clone.transform.setPosition(150, 100, 0);
+  root.addChild(clone);
+
+  const clone2 = spineEntity.clone();
+  clone2.transform.setPosition(150, -100, 0);
+  root.addChild(clone2);
+
+  const clone3 = spineEntity.clone();
+  clone3.transform.setPosition(-150, -100, 0);
+  root.addChild(clone2);
+
+
+  // console.log('spine asset loaded =>', skeletonDataResource.skeletonData);
+  // removeController();
+  // const animationNames = skeletonDataResource.skeletonData.animations.map(item => item.name);
+  // const firstAnimation = animationNames[0];
+
+  // const spineEntity = new Entity(engine, 'spine-entity');
+  // spineEntity.transform.setPosition(-25 + Math.random() * 50, -250, 0);
+  // const spineAnimation = spineEntity.addComponent(SpineAnimationRenderer);
+  // spineAnimation.defaultState.scale = 1;
+
+  // const spineEntity = SpineAnimationRenderer.createInstance(skeletonDataResource);
+  // const renderer = spineEntity.addComponent(SpineAnimationRenderer);
+  // renderer.defaultState.animation = 'run';
+
+  // if (scene === 'physic') {
+  //   spineAnimation.defaultState.scale = 0.5;
+  // }
+  // spineAnimation.resource = skeletonDataResource;
+  // root.addChild(spineEntity);
 
   // const clone = spineEntity.clone();
   // clone.name = 'test';
@@ -249,7 +286,7 @@ async function handleChangeResource(engine: Engine, spineAnimation: SpineAnimati
       "https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/jdjQ6mGxWknZ7TtQ/raptor/raptor.png",
     ],
     type: 'spine'
-  })) as SkeletonDataResource;
+  })) as SpineResource;
   setTimeout(() => {
     spineAnimation.defaultState.animationName = 'roar';
     spineAnimation.resource = newResource;

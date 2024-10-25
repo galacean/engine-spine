@@ -20,7 +20,7 @@ import {
   IndexFormat,
 } from "@galacean/engine";
 import { SpineMaterial } from "./SpineMaterial";
-import { SkeletonDataResource } from "./loader/SkeletonDataResource";
+import { SpineResource } from "./loader/SpineResource";
 import { getBlendMode } from "./util/BlendMode";
 
 /**
@@ -39,6 +39,24 @@ export class SpineAnimationRenderer extends Renderer {
   /** @internal */
   static _animationDataCache = new Map<SkeletonData, AnimationStateData>();
 
+  static createWithEntity(resource: SpineResource): SpineAnimationRenderer {
+    const { skeletonData, animationData } = resource;
+    const engine = resource.engine;
+    const skeleton = new Skeleton(skeletonData);
+    const state = new AnimationState(animationData);
+
+    const spineEntity = new Entity(engine, 'new-spine-entity');
+    const spineAnimationRenderer = spineEntity.addComponent(SpineAnimationRenderer);
+
+    spineAnimationRenderer.skeleton = skeleton;
+    spineAnimationRenderer.state = state;
+
+    spineAnimationRenderer._addResourceReferCount(resource, 1);
+    spineAnimationRenderer.initialize();
+    return spineAnimationRenderer;
+  }
+
+
   /** @internal */
   static _getDefaultMaterial(engine: Engine): Material {
     let defaultMaterial = this._defaultMaterial;
@@ -56,9 +74,7 @@ export class SpineAnimationRenderer extends Renderer {
     return defaultMaterial.clone();
   }
 
-  /** Render setting for spine rendering. */
-  @deepClone
-  setting: SpineRenderSetting = new SpineRenderSetting();
+  zSpacing = 0.01; // The spacing between z layers
   /**
    * Default state for spine animation.
    * Contains the default animation name to be played, whether this animation should loop,
@@ -80,10 +96,10 @@ export class SpineAnimationRenderer extends Renderer {
   _vertexBuffer: Buffer;
   /** @internal */
   @ignoreClone
-  _vertices: Float32Array;
+  _vertices = new Float32Array();
   /** @internal */
   @ignoreClone
-  _indices: Uint16Array;
+  _indices = new Uint16Array();
   /** @internal */
   @ignoreClone
   _needResizeBuffer = false;
@@ -92,21 +108,25 @@ export class SpineAnimationRenderer extends Renderer {
   _vertexCount = 0;
   /** @internal */
   @ignoreClone
-  _resource: SkeletonDataResource;
+  _resource: SpineResource;
 
   @ignoreClone
   private _skeleton: Skeleton;
   @ignoreClone
   private _state: AnimationState;
+  @ignoreClone
+  private _needsInitialize = false;
+  @ignoreClone
+  private _isClone = false;
 
   /**
    * Spine resource of current spine animation.This property allows you to switch between different animations at runtime.
    */
-  get resource(): SkeletonDataResource {
+  get resource(): SpineResource {
     return this._resource;
   }
 
-  set resource(value: SkeletonDataResource) {
+  set resource(value: SpineResource) {
     if (!value) {
       this._state = null;
       this._skeleton = null;
@@ -114,19 +134,19 @@ export class SpineAnimationRenderer extends Renderer {
       return;
     }
     this._resource = value;
-    // @ts-ignore
     this._addResourceReferCount(value, 1);
     const { skeletonData } = value;
-    this._skeleton = new Skeleton(skeletonData);
+    this.skeleton = new Skeleton(skeletonData);
     let animationData = SpineAnimationRenderer._animationDataCache.get(skeletonData);
     if (!animationData) {
       animationData = new AnimationStateData(skeletonData);
       SpineAnimationRenderer._animationDataCache.set(skeletonData, animationData);
     }
-    this._state = new AnimationState(animationData);
-    const maxCount = SpineAnimationRenderer._spineGenerator.getMaxVertexCount(skeletonData);
-    this._createBuffer(maxCount);
-    this._initializeDefaultState();
+    this.state = new AnimationState(animationData);
+    this.initialize();
+  }
+
+  initialize() {
     this._dirtyUpdateFlag |= SpineAnimationUpdateFlags.InitialVolume;
     this._state.addListener({
       start: () => {
@@ -135,8 +155,10 @@ export class SpineAnimationRenderer extends Renderer {
       complete: (entry: TrackEntry) => {
         this._onAnimationComplete(entry);
       },
-    })
+    });
+    this.update(0);
   }
+
 
   /**
    * Provides access to `AnimationState` which controls animation playback on a skeleton. 
@@ -147,12 +169,37 @@ export class SpineAnimationRenderer extends Renderer {
   }
 
   /**
+   * Sets the `AnimationState` instance, which manages and controls animation playback for the skeleton.
+   * Assigning a new `AnimationState` enables configuring and blending between multiple animations 
+   * on the assigned skeleton. Setting this value triggers an initialization flag, ensuring 
+   * updates are applied in the next render cycle.
+   * 
+   * @param state - The new `AnimationState` instance to control animation playback and transitions.
+   */
+  set state(state: AnimationState) {
+    this._state = state;
+    this._needsInitialize = true;
+  }
+
+  /**
    * Provides access to `Skeleton`, which defines the structure of a Spine model.
    * Through its API, users can manipulate bone positions, rotations, scaling 
    * and change spine attachment to customize character appearances dynamically during runtime.
    */
   get skeleton(): Skeleton {
     return this._skeleton;
+  }
+
+  /**
+   * Sets the `Skeleton` instance for this renderer, which defines the structure and bones of the Spine model.
+   * By assigning a new `Skeleton`, the model structure is updated, and an initialization flag is set to 
+   * ensure that any necessary adjustments are applied during the next render cycle.
+   * 
+   * @param skeleton - The new `Skeleton` instance representing the character's skeletal structure.
+   */
+  set skeleton(skeleton: Skeleton) {
+    this._skeleton = skeleton;
+    this._needsInitialize = true;
   }
 
   /**
@@ -168,27 +215,13 @@ export class SpineAnimationRenderer extends Renderer {
   }
 
   /**
-   * Separate slot by slot name. This will add a new sub primitive, and new materials.
-   */
-  addSeparateSlot(slotName: string): void {
-    if (!this._skeleton) {
-      console.error("Skeleton not found!");
-    }
-    const slot = this._skeleton.findSlot(slotName);
-    if (slot) {
-      SpineAnimationRenderer._spineGenerator.addSeparateSlot(slotName);
-    } else {
-      console.warn(`Slot: ${slotName} not find.`);
-    }
-  }
-
-  /**
    * @internal
    */
   // @ts-ignore
   override _onEnable(): void {
-    this._initializeDefaultState();
+    this._applyDefaultState();
   }
+
 
   /**
    * @internal
@@ -196,8 +229,10 @@ export class SpineAnimationRenderer extends Renderer {
   override update(delta: number): void {
     const { _state, _skeleton } = this;
     if (_state && _skeleton) {
-      _state.update(delta);
-      _state.apply(_skeleton);
+      if (!this._isClone) {
+        _state.update(delta);
+        _state.apply(_skeleton);
+      }
       _skeleton.update(delta);
       _skeleton.updateWorldTransform(Physics.update);
       SpineAnimationRenderer._spineGenerator.buildPrimitive(this._skeleton, this);
@@ -216,6 +251,10 @@ export class SpineAnimationRenderer extends Renderer {
    */
   // @ts-ignore
   override _render(context: any): void {
+    if (this._needsInitialize) {
+      this.initialize();
+      this._needsInitialize = false;
+    }
     const { _primitive, _subPrimitives } = this;
     const { _materials: materials, _engine: engine } = this;
     // @ts-ignore
@@ -268,7 +307,9 @@ export class SpineAnimationRenderer extends Renderer {
    */
   // @ts-ignore
   override _cloneTo(target: SpineAnimationRenderer): void {
-    target.resource = this._resource;
+    target.skeleton = this._skeleton;
+    target.state = this._state;
+    target._isClone = true;
   }
 
   /**
@@ -288,18 +329,18 @@ export class SpineAnimationRenderer extends Renderer {
     this._resource = null;
     this._skeleton = null;
     this._state = null;
-    this.setting = null;
     super._onDestroy();
   }
 
   /**
    * @internal
    */
-  _createBuffer(vertexCount: number): void {
+  _createAndBindBuffer(vertexCount: number): void {
     const { _engine, _primitive } = this;
+    this._vertexCount = vertexCount;
     this._vertices = new Float32Array(vertexCount * SpineGenerator.VERTEX_STRIDE);
     this._indices = new Uint16Array(vertexCount);
-    const vertexStride = (SpineGenerator.VERTEX_STRIDE) * 4; // position + color + uv * Float32 byteLen
+    const vertexStride = (SpineGenerator.VERTEX_STRIDE) * 4;
     const vertexBuffer = new Buffer(
       _engine,
       BufferBindFlag.VertexBuffer,
@@ -374,7 +415,7 @@ export class SpineAnimationRenderer extends Renderer {
     });
   }
 
-  private _initializeDefaultState(): void {
+  private _applyDefaultState(): void {
     const { skeleton, state } = this;
     if (skeleton && state) {
       const { animationName, skinName, loop, scale } = this.defaultState;
@@ -413,25 +454,6 @@ export enum RendererUpdateFlags {
   WorldVolume = 0x1
 }
 
-/**
- * Render setting for spine rendering.
- */
-export class SpineRenderSetting {
-  /**
-   * Creates an instance of SpineRenderSetting.
-   */
-  constructor(
-    /**
-     * The spacing between z layers @defaultValue `0.01`
-     */
-    public zSpacing: number = 0.01,
-    
-    /**
-     * Whether to use clipping @defaultValue `true`
-     */
-    public useClipping: boolean = true,
-  ) {}
-}
 
 /**
  * Default state for spine animation.

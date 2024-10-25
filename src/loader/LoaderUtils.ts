@@ -19,7 +19,7 @@ import {
 } from "@esotericsoftware/spine-core";
 
 export function createSkeletonData(
-  textureAtlas: TextureAtlas, 
+  textureAtlas: TextureAtlas,
   skeletonTextData: string | ArrayBuffer, 
   skeletonFileType: 'json' | 'skel',
 ): SkeletonData {
@@ -33,26 +33,31 @@ export function createSkeletonData(
 
 export async function loadTexturesByPath(
   imagePaths: string[],
-  imageExtensions: string[],
   engine: Engine,
 ): Promise<Texture2D[]> {
-  let textures: Texture2D[];
-  const texturePromises: AssetPromise<any>[] = imagePaths.map((imagePath, index) => {
-    const ext = imageExtensions[index];
+  const texturePromises: AssetPromise<any>[] = imagePaths.map((imagePath) => {
+    const ext = getUrlExtension(imagePath, null);
+    
+    if (!ext) {
+      throw new Error(`Failed to load texture: Missing file extension for path ${imagePath}`);
+    }
+
     let imageLoaderType = AssetType.Texture2D;
-    if (ext === 'ktx') {
+    if (ext === "ktx") {
       imageLoaderType = AssetType.KTX;
-    } else if (ext === 'ktx2') {
+    } else if (ext === "ktx2") {
       imageLoaderType = AssetType.KTX2;
     }
+
     return loadTexture(imagePath, engine, imageLoaderType);
   });
+
   try {
-    textures = await Promise.all(texturePromises);
+    const textures = await Promise.all(texturePromises);
+    return textures;
   } catch (error) {
-    throw error;
+    throw new Error(`Failed to load textures: ${error.message}`);
   }
-  return textures;
 }
 
 export async function loadTextureAtlas(
@@ -108,6 +113,18 @@ export function getBaseUrl(url: string): string {
   const parsedUrl = new URL(url);
   const basePath = parsedUrl.origin + parsedUrl.pathname;
   return basePath.endsWith('/') ? basePath : basePath.substring(0, basePath.lastIndexOf('/') + 1);
+}
+
+export function getUrlExtension(url: string, fileExtension: string): string | null {
+  if (fileExtension) {
+    return fileExtension;
+  }
+  const regex = /\/([^\/?#]+)\.([a-zA-Z0-9]+)(\?|#|$)|\?[^#]*\.([a-zA-Z0-9]+)(\?|#|$)/;
+  const match = url.match(regex);
+  if (match) {
+    return match[2] || match[4];
+  }
+  return null;
 }
 
 export class AdaptiveTexture extends Texture {

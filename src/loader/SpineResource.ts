@@ -1,28 +1,33 @@
-import { SkeletonData } from "@esotericsoftware/spine-core";
+import { AnimationStateData, SkeletonData } from "@esotericsoftware/spine-core";
 import { Engine, ReferResource, Texture2D } from "@galacean/engine";
-import { SpineAnimationRenderer } from "../SpineAnimationRenderer";
 
-export class SkeletonDataResource extends ReferResource {
-  readonly textures: Texture2D[] = [];
+export class SpineResource extends ReferResource {
+  private _texturesInSpineAtlas: Texture2D[] = [];
   private _skeletonData: SkeletonData;
+  private _animationData: AnimationStateData;
 
-  get skeletonData() {
+  get skeletonData(): SkeletonData {
     return this._skeletonData;
+  }
+
+  get animationData(): AnimationStateData {
+    return this._animationData;
   }
 
   constructor(engine: Engine, skeletonData: SkeletonData) {
     super(engine);
     this._skeletonData = skeletonData;
+    this._animationData = new AnimationStateData(skeletonData);
     this._associationTextureInSkeletonData(skeletonData);
   }
 
   protected override _onDestroy(): void {
     super._onDestroy();
-    const { textures, _skeletonData } = this;
-    textures && this._disassociationSuperResource(textures);
+    const { _texturesInSpineAtlas, _skeletonData } = this;
+    _texturesInSpineAtlas && this._disassociationSuperResource(_texturesInSpineAtlas);
     this._clearAttachmentTextures(_skeletonData);
-    SpineAnimationRenderer._animationDataCache.delete(_skeletonData);
     this._skeletonData = null;
+    this._animationData = null;
   }
 
   private _disassociationSuperResource(resources: ReferResource[]): void {
@@ -40,8 +45,8 @@ export class SkeletonDataResource extends ReferResource {
         const attachment = Object.values(attachmentMap)[0];
         // @ts-ignore
         const texture = attachment?.region?.texture.texture;
-        if (texture && !this.textures.find(item => item.instanceId === texture.instanceId)) {
-          this.textures.push(texture);
+        if (texture && !this._texturesInSpineAtlas.find(item => item.instanceId === texture.instanceId)) {
+          this._texturesInSpineAtlas.push(texture);
           texture._associationSuperResource(this);
         }
       });
