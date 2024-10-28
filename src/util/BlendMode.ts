@@ -7,7 +7,6 @@ const { Add } = BlendOperation;
 
 export function setBlendMode(material: Material, blendMode: BlendMode, premultipliedAlpha: boolean) {
   const target = material.renderState.blendState.targetBlendState;
-  console.log(premultipliedAlpha);
   switch (blendMode) {
     case BlendMode.Additive:
       target.sourceColorBlendFactor = premultipliedAlpha ? One : SourceAlpha;
