@@ -79,6 +79,7 @@ export class SpineGenerator {
       _vertices,
       _vertexCount,
       _subPrimitives,
+      useClipping,
       zSpacing,
     } = renderer;
     let {
@@ -115,7 +116,9 @@ export class SpineGenerator {
       let vertexSize = isClipping ? 2 : SpineGenerator.VERTEX_SIZE;
 
       if (!attachment) {
-        _clipper.clipEndWithSlot(slot);
+        if (useClipping) {
+          _clipper.clipEndWithSlot(slot);
+        }
         continue;
       }
 
@@ -154,11 +157,15 @@ export class SpineGenerator {
           texture = meshAttachment.region.texture;
         break;
         case ClippingAttachment:
-          let clip = <ClippingAttachment>attachment;
-          _clipper.clipStart(slot, clip);
+          if (useClipping) {
+            let clip = <ClippingAttachment>attachment;
+            _clipper.clipStart(slot, clip);
+          }
           continue;
         default:
-          _clipper.clipEndWithSlot(slot);
+          if (useClipping) {
+            _clipper.clipEndWithSlot(slot);
+          }
           continue;
       }
 

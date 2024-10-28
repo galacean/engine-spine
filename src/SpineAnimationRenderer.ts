@@ -18,6 +18,7 @@ import {
   VertexBufferBinding,
   IndexBufferBinding,
   IndexFormat,
+  assignmentClone,
 } from "@galacean/engine";
 import { SpineMaterial } from "./SpineMaterial";
 import { SpineResource } from "./loader/SpineResource";
@@ -105,9 +106,15 @@ export class SpineAnimationRenderer extends Renderer {
   }
 
   /**
-   * The spacing between z layers
+   * The spacing between z layers.
   */
+  @assignmentClone
   zSpacing = 0.01;
+  /**
+   * Whether to use spine clipping feature. If false, ClippingAttachments will be ignored.
+  */
+  @assignmentClone
+  useClipping = true;
   /**
    * Default state for spine animation.
    * Contains the default animation name to be played, whether this animation should loop,
@@ -177,20 +184,6 @@ export class SpineAnimationRenderer extends Renderer {
     const { skeletonData, animationData } = value;
     this.skeleton = new Skeleton(skeletonData);
     this.state = new AnimationState(animationData);
-  }
-
-  private _initialize() {
-    this._applyDefaultState();
-    this._dirtyUpdateFlag |= SpineAnimationUpdateFlags.InitialVolume;
-    this._state.addListener({
-      start: () => {
-        this._onAnimationStart();
-      },
-      complete: (entry: TrackEntry) => {
-        this._onAnimationComplete(entry);
-      },
-    });
-    this.update(0);
   }
 
 
@@ -433,6 +426,20 @@ export class SpineAnimationRenderer extends Renderer {
    */
   _onWorldVolumeChanged(): void {
     this._dirtyUpdateFlag |= RendererUpdateFlags.WorldVolume;
+  }
+
+  private _initialize() {
+    this._applyDefaultState();
+    this._dirtyUpdateFlag |= SpineAnimationUpdateFlags.InitialVolume;
+    this._state.addListener({
+      start: () => {
+        this._onAnimationStart();
+      },
+      complete: (entry: TrackEntry) => {
+        this._onAnimationComplete(entry);
+      },
+    });
+    this.update(0);
   }
 
   private _onAnimationStart(): void {

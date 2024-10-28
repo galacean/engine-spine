@@ -10,7 +10,7 @@ import {
   Vector3,
   WebGLEngine
 } from "@galacean/engine";
-import { SpineResource, SpineAnimationRenderer } from "../../src";
+import { SkeletonDataResource, SpineAnimationRenderer } from "../../src";
 import { initScreenshot, updateForE2E } from "./.mockForE2E";
 
 Logger.enable();
@@ -28,7 +28,7 @@ WebGLEngine.create({ canvas: "canvas" }).then((engine) => {
   camera.farClipPlane = 20000;
 
   engine.resourceManager
-    .load<SpineResource>({
+    .load<SkeletonDataResource>({
       url: 'https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/jdjQ6mGxWknZ7TtQ/raptor/raptor.json',
       type: 'spine',
     })

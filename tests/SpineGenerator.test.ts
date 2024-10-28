@@ -5,7 +5,7 @@ import {
 import { Entity, Texture2D, WebGLEngine, Material } from '@galacean/engine';
 import { SpineAnimationRenderer } from '../src/SpineAnimationRenderer';
 import { SpineGenerator } from '../src/SpineGenerator';
-import { SpineResource } from '../src/loader/SpineResource';
+import { SkeletonDataResource } from '../src/loader/SkeletonDataResource';
 import { getBlendMode } from '../src/util/BlendMode';
 import { createEngine, mockSkeletonDataResource } from './testUtils';
 
@@ -14,7 +14,7 @@ describe('SpineGenerator', function() {
   let engine: WebGLEngine;
   let spineEntity: Entity;
   let spineAnimation: SpineAnimationRenderer;
-  let skeletonDataResource: SpineResource;
+  let skeletonDataResource: SkeletonDataResource;
 
   beforeAll(async () => {
     engine = await createEngine();
