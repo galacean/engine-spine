@@ -11,9 +11,9 @@ import {
 } from "@galacean/engine";
 import { OrbitControl, Stats } from "@galacean/engine-toolkit";
 import * as dat from 'dat.gui';
-import { SpineAnimationRenderer, SkeletonData } from "../src/index";
+import { SpineAnimationRenderer } from "../src/index";
 import BoundingBoxLine from './outline';
-import { SkeletonDataResource } from "../src/loader/SkeletonDataResource";
+import { SpineResource } from "../src/loader/SpineResource";
 
 Logger.enable();
 console.log(SpineAnimationRenderer);
@@ -157,13 +157,13 @@ WebGLEngine.create({
 });
 
 async function loadSpine(root: Entity, engine: Engine, resource) {
-  let spineResource: SkeletonDataResource | null = null;
+  let spineResource: SpineResource | null = null;
   const { scene } = resource;
   try {
     spineResource = (await engine.resourceManager.load({
       ...resource,
       type: 'spine'
-    })) as SkeletonDataResource;
+    })) as SpineResource;
   } catch (err) {
     console.error('spine asset load error: ', err);
   }
@@ -249,7 +249,7 @@ async function handleChangeResource(engine: Engine, spineAnimation: SpineAnimati
       "https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/jdjQ6mGxWknZ7TtQ/raptor/raptor.png",
     ],
     type: 'spine'
-  })) as SkeletonDataResource;
+  })) as SpineResource;
   setTimeout(() => {
     spineAnimation.defaultState.animationName = 'roar';
     spineAnimation.resource = newResource;
