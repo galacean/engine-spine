@@ -4,7 +4,7 @@ import { Engine, ResourceManager, Texture2D } from "@galacean/engine";
 // import { SkeletonData, TextureAtlas } from "@esotericsoftware/spine-core";
 import { SpineLoader } from '../../src/loader/SpineLoader';
 import { createSkeletonData, createTextureAtlas, loadTextureAtlas, loadTexturesByPath } from '../../src/loader/LoaderUtils';
-import { SpineResource } from '../../src/loader/SpineResource';
+import { SkeletonDataResource } from '../../src/loader/SkeletonDataResource';
 import { BufferReader } from '../../src/util/BufferReader';
 
 describe('SpineLoader', () => {
@@ -16,7 +16,7 @@ describe('SpineLoader', () => {
     //     mockTexture = new Texture2D();
     //     buffer = new ArrayBuffer(8);
     //     skeletonData = new SkeletonData();
-    //     skeletonDataResource = new SpineResource(engine, skeletonData);
+    //     skeletonDataResource = new SkeletonDataResource(engine, skeletonData);
     //     textureAtlas = new TextureAtlas();
     //     skeletonTextData = '{"bones": [], "slots": [], "skins": []}';
 
@@ -94,7 +94,7 @@ describe('SpineLoader', () => {
     //             };
     //             const loader = new SpineLoader();
     //             const result = await loader.load(loadItem, resourceManager);
-    //             expect(result).to.be.instanceof(SpineResource);
+    //             expect(result).to.be.instanceof(SkeletonDataResource);
     //         });
     //     });
 
@@ -103,7 +103,7 @@ describe('SpineLoader', () => {
     //             const reader = new BufferReader(new Uint8Array(buffer));
     //             const loader = new SpineLoader();
     //             const result = await loader._handleEditorAsset(buffer, reader, 'spine:skel', resourceManager);
-    //             expect(result).to.be.instanceof(SpineResource);
+    //             expect(result).to.be.instanceof(SkeletonDataResource);
     //         });
     //     });
 
@@ -115,7 +115,7 @@ describe('SpineLoader', () => {
     //             };
     //             const loader = new SpineLoader();
     //             const result = await loader._handleOriginAsset(loadItem, resourceManager, buffer);
-    //             expect(result).to.be.instanceof(SpineResource);
+    //             expect(result).to.be.instanceof(SkeletonDataResource);
     //         });
     //     });
 
