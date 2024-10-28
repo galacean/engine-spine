@@ -1,10 +1,18 @@
-import { AnimationStateData, SkeletonData } from "@esotericsoftware/spine-core";
+import { AnimationStateData, Skeleton, SkeletonData } from "@esotericsoftware/spine-core";
 import { Engine, ReferResource, Texture2D } from "@galacean/engine";
 
 export class SpineResource extends ReferResource {
+  private static _cache = new Map<SkeletonData, SpineResource>();
   private _texturesInSpineAtlas: Texture2D[] = [];
   private _skeletonData: SkeletonData;
   private _animationData: AnimationStateData;
+
+  /** @internal */
+  static addRefCount(skeletonData: SkeletonData, count: number) {
+    const resource = SpineResource._cache.get(skeletonData);
+    // @ts-ignore
+    resource._addReferCount(count);
+  }
 
   get skeletonData(): SkeletonData {
     return this._skeletonData;
@@ -19,6 +27,7 @@ export class SpineResource extends ReferResource {
     this._skeletonData = skeletonData;
     this._animationData = new AnimationStateData(skeletonData);
     this._associationTextureInSkeletonData(skeletonData);
+    SpineResource._cache.set(skeletonData, this);
   }
 
   protected override _onDestroy(): void {

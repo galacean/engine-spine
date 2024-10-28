@@ -36,9 +36,19 @@ export class SpineAnimationRenderer extends Renderer {
 
   /** @internal */
   static _materialCache = new Map<string, Material>();
-  /** @internal */
-  static _animationDataCache = new Map<SkeletonData, AnimationStateData>();
 
+  /**
+   * Creates a new `Entity` with a `SpineAnimationRenderer` component attached and initializes it
+   * with the specified `SpineResource`. 
+   * @param resource - The `SpineResource` used to initialize the `SpineAnimationRenderer`, 
+   * @returns The newly created `SpineAnimationRenderer` component attached to the new `Entity`.
+   * 
+   * @example
+   * ```typescript
+   * const spineAnimation = SpineAnimationRenderer.createWithEntity(spineResource);
+   * root.addChild(spineAnimation.entity); // Add the new entity with animation to the scene root
+   * ```
+  */
   static createWithEntity(resource: SpineResource): SpineAnimationRenderer {
     const { skeletonData, animationData } = resource;
     const engine = resource.engine;
@@ -50,9 +60,29 @@ export class SpineAnimationRenderer extends Renderer {
 
     spineAnimationRenderer.skeleton = skeleton;
     spineAnimationRenderer.state = state;
+    return spineAnimationRenderer;
+  }
 
-    spineAnimationRenderer._addResourceReferCount(resource, 1);
-    spineAnimationRenderer.initialize();
+  /**
+    * Quickly attaches a `SpineAnimationRenderer` component to an existing `Entity`
+    * and configures it with the specified `SpineResource`.
+    * 
+    * @param entity - The existing `Entity` to attach the component to.
+    * @param resource - The `SpineResource` used to initialize the `SpineAnimationRenderer`.
+    * @returns The newly created `SpineAnimationRenderer` component.
+    * @example
+    * ```typescript
+    * const spineAnimation = SpineAnimationRenderer.attachToEntity(existingEntity, spineResource);
+    * ```
+  */
+  static attachToEntity(entity: Entity, resource: SpineResource): SpineAnimationRenderer {
+    const { skeletonData, animationData } = resource;
+    const skeleton = new Skeleton(skeletonData);
+    const state = new AnimationState(animationData);
+
+    const spineAnimationRenderer = entity.addComponent(SpineAnimationRenderer);
+    spineAnimationRenderer.skeleton = skeleton;
+    spineAnimationRenderer.state = state;
     return spineAnimationRenderer;
   }
 
@@ -74,7 +104,10 @@ export class SpineAnimationRenderer extends Renderer {
     return defaultMaterial.clone();
   }
 
-  zSpacing = 0.01; // The spacing between z layers
+  /**
+   * The spacing between z layers
+  */
+  zSpacing = 0.01;
   /**
    * Default state for spine animation.
    * Contains the default animation name to be played, whether this animation should loop,
@@ -116,37 +149,38 @@ export class SpineAnimationRenderer extends Renderer {
   private _state: AnimationState;
   @ignoreClone
   private _needsInitialize = false;
-  @ignoreClone
-  private _isClone = false;
 
   /**
+   * * @deprecated This property is deprecated and will be removed in future releases. 
    * Spine resource of current spine animation.This property allows you to switch between different animations at runtime.
    */
   get resource(): SpineResource {
     return this._resource;
   }
 
+  /**
+   * * @deprecated This property is deprecated and will be removed in future releases. 
+   * Sets the Spine resource for the current animation. This property allows switching
+   * to a different `SpineResource`, enabling the runtime to change animations, skeletons,
+   * and associated data dynamically.
+   * 
+   * @param value - The new `SpineResource` to be used for the current animation.
+   */
   set resource(value: SpineResource) {
     if (!value) {
-      this._state = null;
-      this._skeleton = null;
+      this.state = null;
+      this.skeleton = null;
       this._resource = null;
       return;
     }
     this._resource = value;
-    this._addResourceReferCount(value, 1);
-    const { skeletonData } = value;
+    const { skeletonData, animationData } = value;
     this.skeleton = new Skeleton(skeletonData);
-    let animationData = SpineAnimationRenderer._animationDataCache.get(skeletonData);
-    if (!animationData) {
-      animationData = new AnimationStateData(skeletonData);
-      SpineAnimationRenderer._animationDataCache.set(skeletonData, animationData);
-    }
     this.state = new AnimationState(animationData);
-    this.initialize();
   }
 
-  initialize() {
+  private _initialize() {
+    this._applyDefaultState();
     this._dirtyUpdateFlag |= SpineAnimationUpdateFlags.InitialVolume;
     this._state.addListener({
       start: () => {
@@ -177,8 +211,12 @@ export class SpineAnimationRenderer extends Renderer {
    * @param state - The new `AnimationState` instance to control animation playback and transitions.
    */
   set state(state: AnimationState) {
-    this._state = state;
-    this._needsInitialize = true;
+    if (this._state !== state) {
+      this._state && SpineResource.addRefCount(this._state.data.skeletonData, -1);
+      state && SpineResource.addRefCount(state.data.skeletonData, 1);
+      this._state = state;
+      this._needsInitialize = !!state;
+    }
   }
 
   /**
@@ -198,8 +236,12 @@ export class SpineAnimationRenderer extends Renderer {
    * @param skeleton - The new `Skeleton` instance representing the character's skeletal structure.
    */
   set skeleton(skeleton: Skeleton) {
-    this._skeleton = skeleton;
-    this._needsInitialize = true;
+    if (this._skeleton !== skeleton) {
+      this._skeleton && SpineResource.addRefCount(this._skeleton.data, -1);
+      skeleton && SpineResource.addRefCount(skeleton.data, 1);
+      this._skeleton = skeleton;
+      this._needsInitialize = !!skeleton;
+    }
   }
 
   /**
@@ -222,17 +264,14 @@ export class SpineAnimationRenderer extends Renderer {
     this._applyDefaultState();
   }
 
-
   /**
    * @internal
    */
   override update(delta: number): void {
     const { _state, _skeleton } = this;
     if (_state && _skeleton) {
-      if (!this._isClone) {
-        _state.update(delta);
-        _state.apply(_skeleton);
-      }
+      _state.update(delta);
+      _state.apply(_skeleton);
       _skeleton.update(delta);
       _skeleton.updateWorldTransform(Physics.update);
       SpineAnimationRenderer._spineGenerator.buildPrimitive(this._skeleton, this);
@@ -252,7 +291,7 @@ export class SpineAnimationRenderer extends Renderer {
   // @ts-ignore
   override _render(context: any): void {
     if (this._needsInitialize) {
-      this.initialize();
+      this._initialize();
       this._needsInitialize = false;
     }
     const { _primitive, _subPrimitives } = this;
@@ -307,9 +346,12 @@ export class SpineAnimationRenderer extends Renderer {
    */
   // @ts-ignore
   override _cloneTo(target: SpineAnimationRenderer): void {
-    target.skeleton = this._skeleton;
-    target.state = this._state;
-    target._isClone = true;
+    const skeletonData = this._skeleton.data;
+    const animationData = new AnimationStateData(skeletonData);
+    const skeleton = new Skeleton(skeletonData);
+    const state = new AnimationState(animationData);
+    target.skeleton = skeleton;
+    target.state = state;
   }
 
   /**
@@ -321,14 +363,11 @@ export class SpineAnimationRenderer extends Renderer {
     if (_primitive) {
       _primitive.destroy();
     }
-    if (_resource) {
-      this._addResourceReferCount(_resource, -1);
-    }
     this._clearMaterialCache();
     this._primitive = null;
     this._resource = null;
-    this._skeleton = null;
-    this._state = null;
+    this.skeleton = null;
+    this.state = null;
     super._onDestroy();
   }
 
