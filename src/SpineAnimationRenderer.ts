@@ -438,7 +438,7 @@ export enum RendererUpdateFlags {
  */
 export class SpineAnimationDefaultConfig {
   /**
-   * Creates an instance of Default config
+   * Creates an instance of default config
    */
   constructor(
     /**
