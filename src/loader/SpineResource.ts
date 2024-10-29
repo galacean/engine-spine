@@ -93,7 +93,6 @@ export class SpineResource extends ReferResource {
         const attachment = skins[i].getAttachment(slot.index, slot.name);
         const texture = (<RegionAttachment | MeshAttachment>attachment)?.region?.texture?.texture;
         if (texture) {
-          console.log(texture);
           texture._disassociationSuperResource(this);
           (<RegionAttachment | MeshAttachment>attachment).region.texture.texture = null;
         }
