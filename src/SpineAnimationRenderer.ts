@@ -115,7 +115,10 @@ export class SpineAnimationRenderer extends Renderer {
     return this._state;
   }
 
-  set state(state: AnimationState) {
+  /**
+   * @internal
+   */
+  _setState(state: AnimationState) {
     if (this._state !== state) {
       this._state = state;
       this._needsInitialize = !!state;
@@ -131,7 +134,10 @@ export class SpineAnimationRenderer extends Renderer {
     return this._skeleton;
   }
 
-  set skeleton(skeleton: Skeleton) {
+  /**
+   * @internal
+   */
+  _setSkeleton(skeleton: Skeleton) {
     if (this._skeleton !== skeleton) {
       this._skeleton = skeleton;
       this._needsInitialize = !!skeleton;
@@ -244,15 +250,15 @@ export class SpineAnimationRenderer extends Renderer {
     const animationStateData = new AnimationStateData(skeletonData);
     const skeleton = new Skeleton(skeletonData);
     const state = new AnimationState(animationStateData);
-    target.skeleton = skeleton;
-    target.state = state;
+    target._setSkeleton(skeleton);
+    target._setState(state);
   }
 
   /**
    * @internal
    */
   override _onDestroy(): void {
-    const { _primitive, _subPrimitives, _resource } = this;
+    const { _primitive, _subPrimitives } = this;
     _subPrimitives.length = 0;
     if (_primitive) {
       _primitive.destroy();
@@ -260,8 +266,8 @@ export class SpineAnimationRenderer extends Renderer {
     this._clearMaterialCache();
     this._primitive = null;
     this._resource = null;
-    this.skeleton = null;
-    this.state = null;
+    this._skeleton = null;
+    this._state = null;
     super._onDestroy();
   }
 
@@ -394,15 +400,17 @@ export class SpineAnimationRenderer extends Renderer {
   */
   set resource(value: SpineResource) {
     if (!value) {
-      this.state = null;
-      this.skeleton = null;
+      this._state = null;
+      this._skeleton = null;
       this._resource = null;
       return;
     }
     this._resource = value;
     const { skeletonData, animationStateData } = value;
-    this.skeleton = new Skeleton(skeletonData);
-    this.state = new AnimationState(animationStateData);
+    const skeleton = new Skeleton(skeletonData);
+    const state = new AnimationState(animationStateData);
+    this._setSkeleton(skeleton);
+    this._setState(state);
   }
 
 }

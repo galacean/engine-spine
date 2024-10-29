@@ -60,8 +60,8 @@ export class SpineResource extends ReferResource {
     const spineAnimationRenderer = spineEntity.addComponent(SpineAnimationRenderer);
     const skeleton = new Skeleton(this._skeletonData);
     const state = new AnimationState(this._animationStateData);
-    spineAnimationRenderer.skeleton = skeleton;
-    spineAnimationRenderer.state = state;
+    spineAnimationRenderer._setSkeleton(skeleton);
+    spineAnimationRenderer._setState(state);
     // @ts-ignore
     spineEntity._markAsTemplate(this);
     this._template = spineEntity;
