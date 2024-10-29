@@ -1,4 +1,4 @@
-import { Skeleton, SkeletonData, AnimationState, Physics, TrackEntry, AnimationStateData } from "@esotericsoftware/spine-core";
+import { Skeleton, AnimationState, Physics, TrackEntry, AnimationStateData } from "@esotericsoftware/spine-core";
 import { SpineGenerator } from "./SpineGenerator";
 import {
   Buffer,
@@ -116,32 +116,12 @@ export class SpineAnimationRenderer extends Renderer {
   }
 
   /**
-   * @internal
-   */
-  _setState(state: AnimationState) {
-    if (this._state !== state) {
-      this._state = state;
-      this._needsInitialize = !!state;
-    }
-  }
-
-  /**
    * The Spine.Skeleton object of this SpineAnimationRenderer.
    * Through its API, users can manipulate bone positions, rotations, scaling 
    * and change spine attachment to customize character appearances dynamically during runtime.
    */
   get skeleton(): Skeleton {
     return this._skeleton;
-  }
-
-  /**
-   * @internal
-   */
-  _setSkeleton(skeleton: Skeleton) {
-    if (this._skeleton !== skeleton) {
-      this._skeleton = skeleton;
-      this._needsInitialize = !!skeleton;
-    }
   }
 
   /**
@@ -239,6 +219,26 @@ export class SpineAnimationRenderer extends Renderer {
       this.entity.transform.worldMatrix,
       worldBounds,
     );
+  }
+
+  /**
+   * @internal
+   */
+  _setSkeleton(skeleton: Skeleton) {
+    if (this._skeleton !== skeleton) {
+      this._skeleton = skeleton;
+      this._needsInitialize = !!skeleton;
+    }
+  }
+
+  /**
+   * @internal
+   */
+  _setState(state: AnimationState) {
+    if (this._state !== state) {
+      this._state = state;
+      this._needsInitialize = !!state;
+    }
   }
 
   /**
@@ -406,9 +406,9 @@ export class SpineAnimationRenderer extends Renderer {
       return;
     }
     this._resource = value;
-    const { skeletonData, animationStateData } = value;
+    const { skeletonData, stateData } = value;
     const skeleton = new Skeleton(skeletonData);
-    const state = new AnimationState(animationStateData);
+    const state = new AnimationState(stateData);
     this._setSkeleton(skeleton);
     this._setState(state);
   }

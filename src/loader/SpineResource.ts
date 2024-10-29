@@ -12,7 +12,7 @@ export class SpineResource extends ReferResource {
 
   private _texturesInSpineAtlas: Texture2D[] = [];
   private _skeletonData: SkeletonData;
-  private _animationStateData: AnimationStateData;
+  private _stateData: AnimationStateData;
 
   private _template: Entity;
 
@@ -20,7 +20,7 @@ export class SpineResource extends ReferResource {
     super(engine);
     this.url = url;
     this._skeletonData = skeletonData;
-    this._animationStateData = new AnimationStateData(skeletonData);
+    this._stateData = new AnimationStateData(skeletonData);
     this._associationTextureInSkeletonData(skeletonData);
     this._createTemplate();
   }
@@ -35,8 +35,8 @@ export class SpineResource extends ReferResource {
   /**
    * The animation state data associated with this Spine resource.
    */
-  get animationStateData(): AnimationStateData {
-    return this._animationStateData;
+  get stateData(): AnimationStateData {
+    return this._stateData;
   }
 
   /**
@@ -51,7 +51,7 @@ export class SpineResource extends ReferResource {
     super._onDestroy();
     this._disassociationSuperResource();
     this._skeletonData = null;
-    this._animationStateData = null;
+    this._stateData = null;
   }
 
   private _createTemplate(): void {
@@ -59,7 +59,7 @@ export class SpineResource extends ReferResource {
     const spineEntity = new Entity(this.engine, name);
     const spineAnimationRenderer = spineEntity.addComponent(SpineAnimationRenderer);
     const skeleton = new Skeleton(this._skeletonData);
-    const state = new AnimationState(this._animationStateData);
+    const state = new AnimationState(this._stateData);
     spineAnimationRenderer._setSkeleton(skeleton);
     spineAnimationRenderer._setState(state);
     // @ts-ignore
