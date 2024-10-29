@@ -1,4 +1,4 @@
-import { AnimationState, AnimationStateData, Skeleton, SkeletonData } from "@esotericsoftware/spine-core";
+import { AnimationState, AnimationStateData, MeshAttachment, RegionAttachment, Skeleton, SkeletonData } from "@esotericsoftware/spine-core";
 import { Engine, Entity, ReferResource, Texture2D } from "@galacean/engine";
 import { SpineAnimationRenderer } from "../SpineAnimationRenderer";
 
@@ -9,20 +9,20 @@ import { SpineAnimationRenderer } from "../SpineAnimationRenderer";
 export class SpineResource extends ReferResource {
   private _texturesInSpineAtlas: Texture2D[] = [];
   private _skeletonData: SkeletonData;
-  private _animationData: AnimationStateData;
+  private _animationStateData: AnimationStateData;
 
   private _template: Entity;
 
   constructor(engine: Engine, skeletonData: SkeletonData) {
     super(engine);
     this._skeletonData = skeletonData;
-    this._animationData = new AnimationStateData(skeletonData);
+    this._animationStateData = new AnimationStateData(skeletonData);
     this._associationTextureInSkeletonData(skeletonData);
     this._createTemplate();
   }
 
   /**
-   * The keleton data associated with this Spine resource.
+   * The skeleton data associated with this Spine resource.
    * 
   */
   get skeletonData(): SkeletonData {
@@ -32,8 +32,8 @@ export class SpineResource extends ReferResource {
   /**
    * The animation state data associated with this Spine resource.
   */
-  get animationData(): AnimationStateData {
-    return this._animationData;
+  get animationStateData(): AnimationStateData {
+    return this._animationStateData;
   }
 
   /**
@@ -47,18 +47,17 @@ export class SpineResource extends ReferResource {
 
   protected override _onDestroy(): void {
     super._onDestroy();
-    const { _texturesInSpineAtlas, _skeletonData } = this;
-    _texturesInSpineAtlas && this._disassociationSuperResource(_texturesInSpineAtlas);
+    const { _skeletonData } = this;
     this._clearAttachmentTextures(_skeletonData);
     this._skeletonData = null;
-    this._animationData = null;
+    this._animationStateData = null;
   }
 
   private _createTemplate(): void {
     const spineEntity = new Entity(this.engine, 'spine-template');
     const spineAnimationRenderer = spineEntity.addComponent(SpineAnimationRenderer);
     const skeleton = new Skeleton(this._skeletonData);
-    const state = new AnimationState(this._animationData);
+    const state = new AnimationState(this._animationStateData);
     spineAnimationRenderer.skeleton = skeleton;
     spineAnimationRenderer.state = state;
     // @ts-ignore
@@ -66,42 +65,40 @@ export class SpineResource extends ReferResource {
     this._template = spineEntity;
   }
 
-  private _disassociationSuperResource(resources: ReferResource[]): void {
-    for (let i = 0, n = resources.length; i < n; i++) {
-      // @ts-ignore
-      resources[i]._disassociationSuperResource(this);
+  private _associationTextureInSkeletonData(skeletonData: SkeletonData): void {
+    const { skins, slots } = skeletonData;
+    const textures = this._texturesInSpineAtlas;
+
+    for (let i = 0, n = skins.length; i < n; i++) {
+      for (let j = 0, m = slots.length; j < m; j++) {
+        const slot = slots[j];
+        const attachment = skins[i].getAttachment(slot.index, slot.name);
+        const texture = <Texture2D>(<RegionAttachment | MeshAttachment>attachment)?.region?.texture.texture;
+        if (texture) {
+          if (!textures.includes(texture)) {
+            textures.push(texture);
+            // @ts-ignore
+            texture._associationSuperResource(this);
+          }
+        }
+      }
     }
   }
 
-  private _associationTextureInSkeletonData(skeletonData: SkeletonData) {
-    const { skins } = skeletonData;
-    skins.forEach((skin) => {
-      const { attachments } = skin;
-      attachments.forEach((attachmentMap) => {
-        const attachment = Object.values(attachmentMap)[0];
-        // @ts-ignore
-        const texture = attachment?.region?.texture.texture;
-        if (texture && !this._texturesInSpineAtlas.find(item => item.instanceId === texture.instanceId)) {
-          this._texturesInSpineAtlas.push(texture);
-          texture._associationSuperResource(this);
-        }
-      });
-    });
-  }
-
   private _clearAttachmentTextures(skeletonData: SkeletonData) {
-    const { skins } = skeletonData;
-    skins.forEach((skin) => {
-      const { attachments } = skin;
-      attachments.forEach((attachmentMap) => {
-        const attachment = Object.values(attachmentMap)[0];
-        // @ts-ignore
-        if (attachment?.region?.texture) {
-          // @ts-ignore
-          attachment.region.texture.texture = null;
+    const { skins, slots } = skeletonData;
+    for (let i = 0, n = skins.length; i < n; i++) {
+      for (let j = 0, m = slots.length; j < m; j++) {
+        const slot = slots[j];
+        const attachment = skins[i].getAttachment(slot.index, slot.name);
+        const texture = (<RegionAttachment | MeshAttachment>attachment)?.region?.texture?.texture;
+        if (texture) {
+          console.log(texture);
+          texture._disassociationSuperResource(this);
+          (<RegionAttachment | MeshAttachment>attachment).region.texture.texture = null;
         }
-      });
-    });
+      }
+    }
   }
 
 }

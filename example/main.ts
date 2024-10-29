@@ -188,6 +188,13 @@ async function loadSpine(root: Entity, engine: Engine, resource) {
   spineAnimation.resource = spineResource;
   root.addChild(spineEntity);
 
+  console.log(spineResource.skeletonData);
+
+  setTimeout(() => {
+    spineEntity.destroy();
+    engine.resourceManager.gc();
+  }, 1000);
+
   // const clone = spineEntity.clone();
   // clone.name = 'test';
   // clone.transform.setPosition(25, -15, 0);

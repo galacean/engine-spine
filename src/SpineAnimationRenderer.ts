@@ -115,11 +115,6 @@ export class SpineAnimationRenderer extends Renderer {
     return this._state;
   }
 
-  /**
-   * Sets the `AnimationState` instance, which manages and controls animation playback for the skeleton.
-   * 
-   * @param state - The new `AnimationState` instance to control animation playback and transitions
-   */
   set state(state: AnimationState) {
     if (this._state !== state) {
       this._state = state;
@@ -136,11 +131,6 @@ export class SpineAnimationRenderer extends Renderer {
     return this._skeleton;
   }
 
-  /**
-   * Sets the `Skeleton` instance for this renderer, which defines the structure and bones of the Spine model.
-   * 
-   * @param skeleton - The new `Skeleton` instance representing the character's skeletal structure
-   */
   set skeleton(skeleton: Skeleton) {
     if (this._skeleton !== skeleton) {
       this._skeleton = skeleton;
@@ -251,9 +241,9 @@ export class SpineAnimationRenderer extends Renderer {
   // @ts-ignore
   override _cloneTo(target: SpineAnimationRenderer): void {
     const skeletonData = this._skeleton.data;
-    const animationData = new AnimationStateData(skeletonData);
+    const animationStateData = new AnimationStateData(skeletonData);
     const skeleton = new Skeleton(skeletonData);
-    const state = new AnimationState(animationData);
+    const state = new AnimationState(animationStateData);
     target.skeleton = skeleton;
     target.state = state;
   }
@@ -410,9 +400,9 @@ export class SpineAnimationRenderer extends Renderer {
       return;
     }
     this._resource = value;
-    const { skeletonData, animationData } = value;
+    const { skeletonData, animationStateData } = value;
     this.skeleton = new Skeleton(skeletonData);
-    this.state = new AnimationState(animationData);
+    this.state = new AnimationState(animationStateData);
   }
 
 }
