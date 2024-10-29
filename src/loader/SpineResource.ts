@@ -2,6 +2,15 @@ import { AnimationState, AnimationStateData, Skeleton, SkeletonData } from "@eso
 import { Engine, Entity, ReferResource, Texture2D } from "@galacean/engine";
 import { SpineAnimationRenderer } from "../SpineAnimationRenderer";
 
+/**
+ * Represents a resource that manages Spine animation data, textures, and entity templates for the Galacean engine.
+ * 
+ * `SpineResource` handles the setup and lifecycle of resources needed for rendering Spine animations,
+ * including the association of textures and skeleton data, creation of a reusable entity template,
+ * and cleanup of resources upon destruction. It provides methods to instantiate new entities from 
+ * the template, ensuring consistent use of skeleton and animation data across instances.
+ * 
+*/
 export class SpineResource extends ReferResource {
   private _texturesInSpineAtlas: Texture2D[] = [];
   private _skeletonData: SkeletonData;
