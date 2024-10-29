@@ -108,34 +108,6 @@ export class SpineAnimationRenderer extends Renderer {
   private _needsInitialize = false;
 
   /**
-   * * @deprecated This property is deprecated and will be removed in future releases. 
-   * Spine resource of current spine animation.
-   */
-  get resource(): SpineResource {
-    return this._resource;
-  }
-
-  /**
-   * * @deprecated This property is deprecated and will be removed in future releases. 
-   * Sets the Spine resource for the current animation. This property allows switching to a different `SpineResource`.
-   * 
-   * @param value - The new `SpineResource` to be used for the current animation
-   */
-  set resource(value: SpineResource) {
-    if (!value) {
-      this.state = null;
-      this.skeleton = null;
-      this._resource = null;
-      return;
-    }
-    this._resource = value;
-    const { skeletonData, animationData } = value;
-    this.skeleton = new Skeleton(skeletonData);
-    this.state = new AnimationState(animationData);
-  }
-
-
-  /**
    * The Spine.AnimationState object of this SpineAnimationRenderer.
    * You can use its API to manage, blend, and transition between multiple simultaneous animations effectively.
    */
@@ -414,6 +386,33 @@ export class SpineAnimationRenderer extends Renderer {
         state.setAnimation(0, animationName, loop);
       }
     }
+  }
+
+  /**
+   * * @deprecated This property is deprecated and will be removed in future releases. 
+   * Spine resource of current spine animation.
+  */
+  get resource(): SpineResource {
+    return this._resource;
+  }
+
+  /**
+   * * @deprecated This property is deprecated and will be removed in future releases. 
+   * Sets the Spine resource for the current animation. This property allows switching to a different `SpineResource`.
+   * 
+   * @param value - The new `SpineResource` to be used for the current animation
+  */
+  set resource(value: SpineResource) {
+    if (!value) {
+      this.state = null;
+      this.skeleton = null;
+      this._resource = null;
+      return;
+    }
+    this._resource = value;
+    const { skeletonData, animationData } = value;
+    this.skeleton = new Skeleton(skeletonData);
+    this.state = new AnimationState(animationData);
   }
 
 }
