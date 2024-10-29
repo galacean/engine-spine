@@ -7,9 +7,7 @@ import { SpineAnimationRenderer } from "../SpineAnimationRenderer";
  * 
 */
 export class SpineResource extends ReferResource {
-  /**
-   * The url of skeletonData.
-   */
+  /** The url of skeletonData.*/
   readonly url: string;
 
   private _texturesInSpineAtlas: Texture2D[] = [];
@@ -43,7 +41,6 @@ export class SpineResource extends ReferResource {
 
   /**
    * Creates and returns a new instance of the spine entity template.
-   * 
    * @returns A instance of the spine entity template
    */
   instantiate(): Entity {
@@ -59,7 +56,6 @@ export class SpineResource extends ReferResource {
 
   private _createTemplate(): void {
     const name = this._extractFileName(this.url);
-    console.log(name);
     const spineEntity = new Entity(this.engine, name);
     const spineAnimationRenderer = spineEntity.addComponent(SpineAnimationRenderer);
     const skeleton = new Skeleton(this._skeletonData);
@@ -100,8 +96,8 @@ export class SpineResource extends ReferResource {
   }
 
   private _extractFileName(url: string): string {
-    if (!url) return "new_spine_entity";
+    if (!url) return "Spine Entity";
     const match = url.match(/\/([^\/]+?)(\.[^\/]*)?$/);
-    return match ? match[1] : "new_spine_entity";
+    return match ? match[1] : "Spine Entity";
   }
 }
