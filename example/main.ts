@@ -11,9 +11,9 @@ import {
 } from "@galacean/engine";
 import { OrbitControl, Stats } from "@galacean/engine-toolkit";
 import * as dat from 'dat.gui';
-import { SpineAnimationRenderer, SkeletonData } from "../src/index";
+import { SpineAnimationRenderer } from "../src/index";
 import BoundingBoxLine from './outline';
-import { SkeletonDataResource } from "../src/loader/SkeletonDataResource";
+import { SpineResource } from "../src/loader/SpineResource";
 
 Logger.enable();
 console.log(SpineAnimationRenderer);
@@ -157,35 +157,34 @@ WebGLEngine.create({
 });
 
 async function loadSpine(root: Entity, engine: Engine, resource) {
-  let skeletonDataResource: SkeletonDataResource | null = null;
+  let spineResource: SpineResource | null = null;
   const { scene } = resource;
   try {
-    skeletonDataResource = (await engine.resourceManager.load({
+    spineResource = (await engine.resourceManager.load({
       ...resource,
       type: 'spine'
-    })) as SkeletonDataResource;
+    })) as SpineResource;
   } catch (err) {
     console.error('spine asset load error: ', err);
   }
-  if (!skeletonDataResource) return;
+  if (!spineResource) return;
   if (scene === 'upload') {
     console.log(blobResource);
     loadSpine(root, engine, blobResource);
     return;
   }
-  console.log('spine asset loaded =>', skeletonDataResource.skeletonData);
+  console.log('spine asset loaded =>', spineResource.skeletonData);
   removeController();
-  const animationNames = skeletonDataResource.skeletonData.animations.map(item => item.name);
+  const animationNames = spineResource.skeletonData.animations.map(item => item.name);
   const firstAnimation = animationNames[0];
 
   const spineEntity = new Entity(engine, 'spine-entity');
   spineEntity.transform.setPosition(-25 + Math.random() * 50, -250, 0);
   const spineAnimation = spineEntity.addComponent(SpineAnimationRenderer);
-  spineAnimation.defaultState.scale = 1;
   if (scene === 'physic') {
-    spineAnimation.defaultState.scale = 0.5;
+    spineEntity.transform.setScale(0.5, 0.5, 0.5);
   }
-  spineAnimation.resource = skeletonDataResource;
+  spineAnimation.resource = spineResource;
   root.addChild(spineEntity);
 
   // const clone = spineEntity.clone();
@@ -249,7 +248,7 @@ async function handleChangeResource(engine: Engine, spineAnimation: SpineAnimati
       "https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/jdjQ6mGxWknZ7TtQ/raptor/raptor.png",
     ],
     type: 'spine'
-  })) as SkeletonDataResource;
+  })) as SpineResource;
   setTimeout(() => {
     spineAnimation.defaultState.animationName = 'roar';
     spineAnimation.resource = newResource;
