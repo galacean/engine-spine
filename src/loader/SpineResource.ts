@@ -29,7 +29,6 @@ export class SpineResource extends ReferResource {
 
   /**
    * The skeleton data associated with this Spine resource.
-   * 
    */
   get skeletonData(): SkeletonData {
     return this._skeletonData;
@@ -59,7 +58,7 @@ export class SpineResource extends ReferResource {
   }
 
   private _createTemplate(): void {
-    const name = extractFileName(this.url);
+    const name = this._extractFileName(this.url);
     console.log(name);
     const spineEntity = new Entity(this.engine, name);
     const spineAnimationRenderer = spineEntity.addComponent(SpineAnimationRenderer);
@@ -100,18 +99,9 @@ export class SpineResource extends ReferResource {
     }
   }
 
-}
-
-function extractFileName(url: string): string {
-  if (!url) return "new_spine_entity";
-  if (url.startsWith("blob:")) {
-    return "blob_file";
+  private _extractFileName(url: string): string {
+    if (!url) return "new_spine_entity";
+    const match = url.match(/\/([^\/]+?)(\.[^\/]*)?$/);
+    return match ? match[1] : "new_spine_entity";
   }
-  const parsedUrl = new URL(url);
-  const pathParts = parsedUrl.pathname.split('/');
-  let fileName = pathParts[pathParts.length - 1];
-  return fileName.replace(/\.[^/.]+$/, "");
 }
-
-
-
