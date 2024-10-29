@@ -63,8 +63,7 @@ export class SpineAnimationRenderer extends Renderer {
   
   /**
    * Default state for spine animation.
-   * Contains the default animation name to be played, whether this animation should loop,
-   * the default skin name, and the default scale of the skeleton.
+   * Contains the default animation name to be played, whether this animation should loop, the default skin name.
    */
   @deepClone
   readonly defaultConfig: SpineAnimationDefaultConfig = new SpineAnimationDefaultConfig();
