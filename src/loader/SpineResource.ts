@@ -103,29 +103,15 @@ export class SpineResource extends ReferResource {
 }
 
 function extractFileName(url: string): string {
-  if (!url) {
-    return "new_spine_entity";
-  }
-
+  if (!url) return "new_spine_entity";
   if (url.startsWith("blob:")) {
     return "blob_file";
   }
-
   const parsedUrl = new URL(url);
   const pathParts = parsedUrl.pathname.split('/');
   let fileName = pathParts[pathParts.length - 1];
-
-  if (parsedUrl.searchParams.has("af_fileName")) {
-    fileName = parsedUrl.searchParams.get("af_fileName") || fileName;
-  }
-
-  if (fileName.endsWith(".json")) {
-    return fileName.replace(".json", "");
-  }
-
-  if (!fileName.includes(".")) {
-    return fileName;
-  }
-
-  return fileName.split('.')[0];
+  return fileName.replace(/\.[^/.]+$/, "");
 }
+
+
+
