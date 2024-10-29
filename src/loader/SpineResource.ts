@@ -107,31 +107,25 @@ function extractFileName(url: string): string {
     return "new_spine_entity";
   }
 
-  // 如果是 Blob URL，给一个自定义名称
   if (url.startsWith("blob:")) {
     return "blob_file";
   }
 
-  // 处理标准 URL，提取文件名
   const parsedUrl = new URL(url);
   const pathParts = parsedUrl.pathname.split('/');
   let fileName = pathParts[pathParts.length - 1];
 
-  // 如果有查询参数，尝试获取 af_fileName 参数作为文件名
   if (parsedUrl.searchParams.has("af_fileName")) {
     fileName = parsedUrl.searchParams.get("af_fileName") || fileName;
   }
 
-  // 去除文件后缀，如果是 .json 文件，则保留主名
   if (fileName.endsWith(".json")) {
     return fileName.replace(".json", "");
   }
 
-  // 如果没有文件后缀，则直接返回文件名
   if (!fileName.includes(".")) {
     return fileName;
   }
 
-  // 如果文件有其他后缀名，比如 .skel 或其他情况，返回文件主名
   return fileName.split('.')[0];
 }

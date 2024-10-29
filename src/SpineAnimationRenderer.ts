@@ -57,12 +57,12 @@ export class SpineAnimationRenderer extends Renderer {
 
   /**
    * The spacing between z layers.
-  */
+   */
   @assignmentClone
   zSpacing = 0.01;
   /**
    * Whether to use spine clipping feature. If false, ClippingAttachments will be ignored.
-  */
+   */
   @assignmentClone
   useClipping = true;
   /**
