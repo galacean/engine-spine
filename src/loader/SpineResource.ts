@@ -22,18 +22,15 @@ export class SpineResource extends ReferResource {
   }
 
   /**
-   * Gets the skeleton data associated with this Spine resource.
+   * The keleton data associated with this Spine resource.
    * 
-   * @returns The skeleton data for this resource.
   */
   get skeletonData(): SkeletonData {
     return this._skeletonData;
   }
 
   /**
-   * Gets the animation state data associated with this Spine resource.
-   * 
-   * @returns The animation state data of this resource.
+   * The animation state data associated with this Spine resource.
   */
   get animationData(): AnimationStateData {
     return this._animationData;
@@ -42,7 +39,7 @@ export class SpineResource extends ReferResource {
   /**
    * Creates and returns a new instance of the spine entity template.
    * 
-   * @returns A cloned instance of the spine entity template.
+   * @returns A cloned instance of the spine entity template
   */
   instantiate(): Entity {
     return this._template.clone();

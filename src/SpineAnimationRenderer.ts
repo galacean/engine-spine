@@ -136,7 +136,7 @@ export class SpineAnimationRenderer extends Renderer {
 
 
   /**
-   * Provides access to `AnimationState` which controls animation playback on a skeleton. 
+   * The Spine.AnimationState object of this SpineAnimationRenderer.
    * You can use its API to manage, blend, and transition between multiple simultaneous animations effectively.
    */
   get state(): AnimationState {
@@ -156,7 +156,7 @@ export class SpineAnimationRenderer extends Renderer {
   }
 
   /**
-   * Provides access to `Skeleton`, which defines the structure of a Spine model.
+   * The Spine.Skeleton object of this SpineAnimationRenderer.
    * Through its API, users can manipulate bone positions, rotations, scaling 
    * and change spine attachment to customize character appearances dynamically during runtime.
    */
