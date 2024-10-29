@@ -79,7 +79,6 @@ export class SpineGenerator {
       _vertices,
       _vertexCount,
       _subPrimitives,
-      useClipping,
       zSpacing,
     } = renderer;
     let {
@@ -116,9 +115,7 @@ export class SpineGenerator {
       let vertexSize = isClipping ? 2 : SpineGenerator.VERTEX_SIZE;
 
       if (!attachment) {
-        if (useClipping) {
-          _clipper.clipEndWithSlot(slot);
-        }
+        _clipper.clipEndWithSlot(slot);
         continue;
       }
 
@@ -157,15 +154,11 @@ export class SpineGenerator {
           texture = meshAttachment.region.texture;
         break;
         case ClippingAttachment:
-          if (useClipping) {
-            let clip = <ClippingAttachment>attachment;
-            _clipper.clipStart(slot, clip);
-          }
+          let clip = <ClippingAttachment>attachment;
+          _clipper.clipStart(slot, clip);
           continue;
         default:
-          if (useClipping) {
-            _clipper.clipEndWithSlot(slot);
-          }
+          _clipper.clipEndWithSlot(slot);
           continue;
       }
 
@@ -393,19 +386,6 @@ export class SpineGenerator {
     const newMaxZ = Math.max(max.z, z);
     min.set(newMinX, newMinY, newMinZ);
     max.set(newMaxX, newMaxY, newMaxZ);
-  }
-
-  private _collectUniqueAttachments(skin: Skin, uniqueAttachments: Set<Attachment>) {
-    const { attachments } = skin;
-    for (let i = 0, n = attachments.length; i < n; i++) {
-      const slotAttachment = attachments[i];
-      for (let key in slotAttachment) {
-        const attachment = slotAttachment[key];
-        if (attachment && !uniqueAttachments.has(attachment)) {
-          uniqueAttachments.add(attachment);
-        }
-      }
-    }
   }
 
 }

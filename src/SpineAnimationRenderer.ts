@@ -60,18 +60,15 @@ export class SpineAnimationRenderer extends Renderer {
    */
   @assignmentClone
   zSpacing = 0.01;
-  /**
-   * Whether to use spine clipping feature. If false, ClippingAttachments will be ignored.
-   */
-  @assignmentClone
-  useClipping = true;
+  
   /**
    * Default state for spine animation.
    * Contains the default animation name to be played, whether this animation should loop,
    * the default skin name, and the default scale of the skeleton.
    */
   @deepClone
-  defaultState: DefaultState = new DefaultState();
+  readonly defaultConfig: SpineAnimationDefaultConfig = new SpineAnimationDefaultConfig();
+
   /** @internal */
   @ignoreClone
   _primitive: Primitive;
@@ -109,7 +106,7 @@ export class SpineAnimationRenderer extends Renderer {
 
   /**
    * The Spine.AnimationState object of this SpineAnimationRenderer.
-   * You can use its API to manage, blend, and transition between multiple simultaneous animations effectively.
+   * Manage, blend, and transition between multiple simultaneous animations effectively.
    */
   get state(): AnimationState {
     return this._state;
@@ -117,7 +114,7 @@ export class SpineAnimationRenderer extends Renderer {
 
   /**
    * The Spine.Skeleton object of this SpineAnimationRenderer.
-   * Through its API, users can manipulate bone positions, rotations, scaling 
+   * Manipulate bone positions, rotations, scaling 
    * and change spine attachment to customize character appearances dynamically during runtime.
    */
   get skeleton(): Skeleton {
@@ -141,7 +138,7 @@ export class SpineAnimationRenderer extends Renderer {
    */
   // @ts-ignore
   override _onEnable(): void {
-    this._applyDefaultState();
+    this._applyDefaultConfig();
   }
 
   /**
@@ -336,7 +333,7 @@ export class SpineAnimationRenderer extends Renderer {
   }
 
   private _initialize() {
-    this._applyDefaultState();
+    this._applyDefaultConfig();
     this._dirtyUpdateFlag |= SpineAnimationUpdateFlags.InitialVolume;
     this._state.addListener({
       start: () => {
@@ -368,12 +365,10 @@ export class SpineAnimationRenderer extends Renderer {
     });
   }
 
-  private _applyDefaultState(): void {
+  private _applyDefaultConfig(): void {
     const { skeleton, state } = this;
     if (skeleton && state) {
-      const { animationName, skinName, loop, scale } = this.defaultState;
-      skeleton.scaleX = scale;
-      skeleton.scaleY = scale;
+      const { animationName, skinName, loop } = this.defaultConfig;
       if (skinName !== 'default') {
         skeleton.setSkinByName(skinName);
         skeleton.setToSetupPose();
@@ -442,16 +437,11 @@ export enum RendererUpdateFlags {
  * Contains the default animation name to be played, whether this animation should loop,
  * the default skin name, and the default scale of the skeleton.
  */
-export class DefaultState {
+export class SpineAnimationDefaultConfig {
   /**
-   * Creates an instance of DefaultState
+   * Creates an instance of Default config
    */
   constructor(
-    /**
-     * The default scale of the animation @defaultValue `1`
-     */
-    public scale: number = 1,
-
     /**
      * Whether the default animation should loop @defaultValue `true. The default animation should loop`
      */

@@ -181,9 +181,8 @@ async function loadSpine(root: Entity, engine: Engine, resource) {
   const spineEntity = new Entity(engine, 'spine-entity');
   spineEntity.transform.setPosition(-25 + Math.random() * 50, -250, 0);
   const spineAnimation = spineEntity.addComponent(SpineAnimationRenderer);
-  spineAnimation.defaultState.scale = 1;
   if (scene === 'physic') {
-    spineAnimation.defaultState.scale = 0.5;
+    spineEntity.transform.setScale(0.5, 0.5, 0.5);
   }
   spineAnimation.resource = spineResource;
   root.addChild(spineEntity);
