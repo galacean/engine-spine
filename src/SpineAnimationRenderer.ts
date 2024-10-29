@@ -38,56 +38,6 @@ export class SpineAnimationRenderer extends Renderer {
   /** @internal */
   static _materialCache = new Map<string, Material>();
 
-  /**
-   * Creates a new `Entity` with a `SpineAnimationRenderer` component attached and initializes it
-   * with the specified `SpineResource`. 
-   * @param resource - The `SpineResource` used to initialize the `SpineAnimationRenderer`, 
-   * @returns The newly created `SpineAnimationRenderer` component attached to the new `Entity`.
-   * 
-   * @example
-   * ```typescript
-   * const spineAnimation = SpineAnimationRenderer.createWithEntity(spineResource);
-   * root.addChild(spineAnimation.entity); // Add the new entity with animation to the scene root
-   * ```
-  */
-  static createWithEntity(resource: SpineResource): SpineAnimationRenderer {
-    const { skeletonData, animationData } = resource;
-    const engine = resource.engine;
-    const skeleton = new Skeleton(skeletonData);
-    const state = new AnimationState(animationData);
-
-    const spineEntity = new Entity(engine, 'new-spine-entity');
-    const spineAnimationRenderer = spineEntity.addComponent(SpineAnimationRenderer);
-
-    spineAnimationRenderer.skeleton = skeleton;
-    spineAnimationRenderer.state = state;
-    return spineAnimationRenderer;
-  }
-
-  /**
-    * Quickly attaches a `SpineAnimationRenderer` component to an existing `Entity`
-    * and configures it with the specified `SpineResource`.
-    * 
-    * @param entity - The existing `Entity` to attach the component to.
-    * @param resource - The `SpineResource` used to initialize the `SpineAnimationRenderer`.
-    * @returns The newly created `SpineAnimationRenderer` component.
-    * @example
-    * ```typescript
-    * const spineAnimation = SpineAnimationRenderer.attachToEntity(existingEntity, spineResource);
-    * ```
-  */
-  static attachToEntity(entity: Entity, resource: SpineResource): SpineAnimationRenderer {
-    const { skeletonData, animationData } = resource;
-    const skeleton = new Skeleton(skeletonData);
-    const state = new AnimationState(animationData);
-
-    const spineAnimationRenderer = entity.addComponent(SpineAnimationRenderer);
-    spineAnimationRenderer.skeleton = skeleton;
-    spineAnimationRenderer.state = state;
-    return spineAnimationRenderer;
-  }
-
-
   /** @internal */
   static _getDefaultMaterial(engine: Engine): Material {
     let defaultMaterial = this._defaultMaterial;
@@ -205,8 +155,6 @@ export class SpineAnimationRenderer extends Renderer {
    */
   set state(state: AnimationState) {
     if (this._state !== state) {
-      this._state && SpineResource.addRefCount(this._state.data.skeletonData, -1);
-      state && SpineResource.addRefCount(state.data.skeletonData, 1);
       this._state = state;
       this._needsInitialize = !!state;
     }
@@ -230,8 +178,6 @@ export class SpineAnimationRenderer extends Renderer {
    */
   set skeleton(skeleton: Skeleton) {
     if (this._skeleton !== skeleton) {
-      this._skeleton && SpineResource.addRefCount(this._skeleton.data, -1);
-      skeleton && SpineResource.addRefCount(skeleton.data, 1);
       this._skeleton = skeleton;
       this._needsInitialize = !!skeleton;
     }

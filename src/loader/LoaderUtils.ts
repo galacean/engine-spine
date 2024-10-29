@@ -108,7 +108,6 @@ export function createTextureAtlas(atlasText: string, textures: Texture2D[]): Te
   } catch (error) {
     // Case 2: If failed in parsing, indicating it's an custom asset.
     // No further processing required for custom atlas assets
-    console.log("atlasText is not a valid JSON with 'data' and 'textures' properties.");
   }
   const textureAtlas = new TextureAtlas(atlasText);
   textureAtlas.pages.forEach((page, index) => {

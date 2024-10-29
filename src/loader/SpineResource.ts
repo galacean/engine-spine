@@ -1,33 +1,61 @@
-import { AnimationStateData, Skeleton, SkeletonData } from "@esotericsoftware/spine-core";
-import { Engine, ReferResource, Texture2D } from "@galacean/engine";
+import { AnimationState, AnimationStateData, Skeleton, SkeletonData } from "@esotericsoftware/spine-core";
+import { Engine, Entity, ReferResource, Texture2D } from "@galacean/engine";
+import { SpineAnimationRenderer } from "../SpineAnimationRenderer";
 
 export class SpineResource extends ReferResource {
-  private static _cache = new Map<SkeletonData, SpineResource>();
   private _texturesInSpineAtlas: Texture2D[] = [];
   private _skeletonData: SkeletonData;
   private _animationData: AnimationStateData;
 
-  /** @internal */
-  static addRefCount(skeletonData: SkeletonData, count: number) {
-    const resource = SpineResource._cache.get(skeletonData);
-    // @ts-ignore
-    resource._addReferCount(count);
-  }
-
-  get skeletonData(): SkeletonData {
-    return this._skeletonData;
-  }
-
-  get animationData(): AnimationStateData {
-    return this._animationData;
-  }
+  private _template: Entity;
 
   constructor(engine: Engine, skeletonData: SkeletonData) {
     super(engine);
     this._skeletonData = skeletonData;
     this._animationData = new AnimationStateData(skeletonData);
     this._associationTextureInSkeletonData(skeletonData);
-    SpineResource._cache.set(skeletonData, this);
+    this._createTemplate();
+  }
+
+  /**
+   * Gets the skeleton data associated with this Spine resource.
+   * 
+   * This getter provides access to the `SkeletonData` used in constructing
+   * the skeleton entity template. It contains the static configuration for
+   * bones, slots, skins, events, and animations. External components or systems 
+   * can use this data to access and manipulate the structure and animations of the skeleton.
+   * 
+   * @returns {SkeletonData} The skeleton data for this resource.
+  */
+  get skeletonData(): SkeletonData {
+    return this._skeletonData;
+  }
+
+  /**
+   * Gets the animation state data associated with this Spine resource.
+   * 
+   * This property provides access to `AnimationStateData`, which stores settings
+   * like default mix durations between animations. External systems can use this
+   * data to configure or adjust animation blending for instances created from this template.
+   * 
+   * @returns {AnimationStateData} The animation state data of this resource.
+  */
+  get animationData(): AnimationStateData {
+    return this._animationData;
+  }
+
+  /**
+   * Creates and returns a new instance of the spine entity template.
+   * 
+   * This method clones the `_template` entity, which includes the skeleton and animation state 
+   * configured with the associated `SpineAnimationRenderer` component, and returns a new instance 
+   * with the same setup. The cloned instance shares references to the original skeleton data, 
+   * animation state data, and textures, ensuring consistent resources across multiple entities.
+   * 
+   * @returns {Entity} A cloned instance of the spine entity template.
+  */
+  instantiate(): Entity {
+    return this._template.clone();
   }
 
   protected override _onDestroy(): void {
@@ -37,6 +65,18 @@ export class SpineResource extends ReferResource {
     this._clearAttachmentTextures(_skeletonData);
     this._skeletonData = null;
     this._animationData = null;
+  }
+
+  private _createTemplate(): void {
+    const spineEntity = new Entity(this.engine, 'spine-template');
+    const spineAnimationRenderer = spineEntity.addComponent(SpineAnimationRenderer);
+    const skeleton = new Skeleton(this._skeletonData);
+    const state = new AnimationState(this._animationData);
+    spineAnimationRenderer.skeleton = skeleton;
+    spineAnimationRenderer.state = state;
+    // @ts-ignore
+    spineEntity._markAsTemplate(this);
+    this._template = spineEntity;
   }
 
   private _disassociationSuperResource(resources: ReferResource[]): void {
