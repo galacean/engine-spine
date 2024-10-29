@@ -44,6 +44,7 @@ export function createSpineResource(
   engine: Engine,
   skeletonRawData: SkeletonRawData,
   atlas: TextureAtlas,
+  url?: string,
 ): SpineResource {
   const atlasLoader = new AtlasAttachmentLoader(atlas);
   let inputSkeletonData: string | any;
@@ -78,7 +79,7 @@ export function createSpineResource(
   } else {
     skeletonData =  new SkeletonBinary(atlasLoader).readSkeletonData(new Uint8Array(skeletonRawData as ArrayBuffer));
   }
-  return new SpineResource(engine, skeletonData);
+  return new SpineResource(engine, skeletonData, url);
 }
 
 /**

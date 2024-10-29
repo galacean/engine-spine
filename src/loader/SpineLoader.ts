@@ -92,7 +92,7 @@ export class SpineLoader extends Loader<SpineResource> {
         const reader = new BufferReader(new Uint8Array(buffer));
         const header = reader.nextStr();
         if (header.startsWith('spine')) {
-          resource = await this._handleEditorAsset(buffer, reader, header, resourceManager);
+          resource = await this._handleEditorAsset(item, buffer, reader, header, resourceManager);
         } else {
           resource = await this._handleOriginAsset(item, resourceManager, buffer);
         }
@@ -102,6 +102,7 @@ export class SpineLoader extends Loader<SpineResource> {
   }
 
   private async _handleEditorAsset(
+    item: LoadItem, 
     buffer: ArrayBuffer, 
     reader: BufferReader, 
     header: string, 
@@ -123,7 +124,7 @@ export class SpineLoader extends Loader<SpineResource> {
     }
     // @ts-ignore
     const textureAtlas = await resourceManager.getResourceByRef({ refId: atlasRefId });
-    return createSpineResource(engine, skeletonRawData, textureAtlas);
+    return createSpineResource(engine, skeletonRawData, textureAtlas, item.url);
   }
 
   private async _handleOriginAsset(
@@ -147,7 +148,7 @@ export class SpineLoader extends Loader<SpineResource> {
       }
       const textureAtlas = await loadTextureAtlas(atlasPath, engine);
       const { skeletonRawData } = this._determineSkeletonDataType(buffer);
-      return createSpineResource(engine, skeletonRawData, textureAtlas);
+      return createSpineResource(engine, skeletonRawData, textureAtlas, skeletonPath);
     } else { // multi url
       fileExtensions = SpineLoader.verifyFileExtensions(fileExtensions, true);
       for (let i = 0; i < item.urls.length; i += 1) {
@@ -176,7 +177,7 @@ export class SpineLoader extends Loader<SpineResource> {
         loadQueue.push(loadTextureAtlas(atlasPath, engine));
         [skeletonRawData, textureAtlas] = await Promise.all(loadQueue);
       }
-      return createSpineResource(engine, skeletonRawData, textureAtlas);
+      return createSpineResource(engine, skeletonRawData, textureAtlas, skeletonPath);
     }
   }
 
