@@ -119,7 +119,7 @@ export class SpineAnimationRenderer extends Renderer {
    * * @deprecated This property is deprecated and will be removed in future releases. 
    * Sets the Spine resource for the current animation. This property allows switching to a different `SpineResource`.
    * 
-   * @param value - The new `SpineResource` to be used for the current animation.
+   * @param value - The new `SpineResource` to be used for the current animation
    */
   set resource(value: SpineResource) {
     if (!value) {
@@ -146,7 +146,7 @@ export class SpineAnimationRenderer extends Renderer {
   /**
    * Sets the `AnimationState` instance, which manages and controls animation playback for the skeleton.
    * 
-   * @param state - The new `AnimationState` instance to control animation playback and transitions.
+   * @param state - The new `AnimationState` instance to control animation playback and transitions
    */
   set state(state: AnimationState) {
     if (this._state !== state) {
@@ -167,7 +167,7 @@ export class SpineAnimationRenderer extends Renderer {
   /**
    * Sets the `Skeleton` instance for this renderer, which defines the structure and bones of the Spine model.
    * 
-   * @param skeleton - The new `Skeleton` instance representing the character's skeletal structure.
+   * @param skeleton - The new `Skeleton` instance representing the character's skeletal structure
    */
   set skeleton(skeleton: Skeleton) {
     if (this._skeleton !== skeleton) {
