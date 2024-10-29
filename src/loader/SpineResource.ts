@@ -5,11 +5,6 @@ import { SpineAnimationRenderer } from "../SpineAnimationRenderer";
 /**
  * Represents a resource that manages Spine animation data, textures, and entity templates for the Galacean engine.
  * 
- * `SpineResource` handles the setup and lifecycle of resources needed for rendering Spine animations,
- * including the association of textures and skeleton data, creation of a reusable entity template,
- * and cleanup of resources upon destruction. It provides methods to instantiate new entities from 
- * the template, ensuring consistent use of skeleton and animation data across instances.
- * 
 */
 export class SpineResource extends ReferResource {
   private _texturesInSpineAtlas: Texture2D[] = [];
@@ -29,12 +24,7 @@ export class SpineResource extends ReferResource {
   /**
    * Gets the skeleton data associated with this Spine resource.
    * 
-   * This getter provides access to the `SkeletonData` used in constructing
-   * the skeleton entity template. It contains the static configuration for
-   * bones, slots, skins, events, and animations. External components or systems 
-   * can use this data to access and manipulate the structure and animations of the skeleton.
-   * 
-   * @returns {SkeletonData} The skeleton data for this resource.
+   * @returns The skeleton data for this resource.
   */
   get skeletonData(): SkeletonData {
     return this._skeletonData;
@@ -43,11 +33,7 @@ export class SpineResource extends ReferResource {
   /**
    * Gets the animation state data associated with this Spine resource.
    * 
-   * This property provides access to `AnimationStateData`, which stores settings
-   * like default mix durations between animations. External systems can use this
-   * data to configure or adjust animation blending for instances created from this template.
-   * 
-   * @returns {AnimationStateData} The animation state data of this resource.
+   * @returns The animation state data of this resource.
   */
   get animationData(): AnimationStateData {
     return this._animationData;
@@ -56,12 +42,7 @@ export class SpineResource extends ReferResource {
   /**
    * Creates and returns a new instance of the spine entity template.
    * 
-   * This method clones the `_template` entity, which includes the skeleton and animation state 
-   * configured with the associated `SpineAnimationRenderer` component, and returns a new instance 
-   * with the same setup. The cloned instance shares references to the original skeleton data, 
-   * animation state data, and textures, ensuring consistent resources across multiple entities.
-   * 
-   * @returns {Entity} A cloned instance of the spine entity template.
+   * @returns A cloned instance of the spine entity template.
   */
   instantiate(): Entity {
     return this._template.clone();

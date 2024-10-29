@@ -109,7 +109,7 @@ export class SpineAnimationRenderer extends Renderer {
 
   /**
    * * @deprecated This property is deprecated and will be removed in future releases. 
-   * Spine resource of current spine animation.This property allows you to switch between different animations at runtime.
+   * Spine resource of current spine animation.
    */
   get resource(): SpineResource {
     return this._resource;
@@ -117,9 +117,7 @@ export class SpineAnimationRenderer extends Renderer {
 
   /**
    * * @deprecated This property is deprecated and will be removed in future releases. 
-   * Sets the Spine resource for the current animation. This property allows switching
-   * to a different `SpineResource`, enabling the runtime to change animations, skeletons,
-   * and associated data dynamically.
+   * Sets the Spine resource for the current animation. This property allows switching to a different `SpineResource`.
    * 
    * @param value - The new `SpineResource` to be used for the current animation.
    */
@@ -147,9 +145,6 @@ export class SpineAnimationRenderer extends Renderer {
 
   /**
    * Sets the `AnimationState` instance, which manages and controls animation playback for the skeleton.
-   * Assigning a new `AnimationState` enables configuring and blending between multiple animations 
-   * on the assigned skeleton. Setting this value triggers an initialization flag, ensuring 
-   * updates are applied in the next render cycle.
    * 
    * @param state - The new `AnimationState` instance to control animation playback and transitions.
    */
@@ -171,8 +166,6 @@ export class SpineAnimationRenderer extends Renderer {
 
   /**
    * Sets the `Skeleton` instance for this renderer, which defines the structure and bones of the Spine model.
-   * By assigning a new `Skeleton`, the model structure is updated, and an initialization flag is set to 
-   * ensure that any necessary adjustments are applied during the next render cycle.
    * 
    * @param skeleton - The new `Skeleton` instance representing the character's skeletal structure.
    */

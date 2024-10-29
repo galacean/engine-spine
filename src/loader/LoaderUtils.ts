@@ -32,18 +32,13 @@ export type SkeletonRawData =
 /**
  * Creates a Spine resource by parsing and processing the provided skeleton data and atlas.
  *
- * This function supports multiple formats for skeleton data: JSON (custom assets),
- * binary data in an ArrayBuffer, and object format with `data`, `atlas`, and `spine` properties.
- * Based on the type of skeleton data, it processes it accordingly and uses the appropriate
- * parser to generate a `SkeletonData` instance, which is then used to create a `SpineResource`.
- *
- * @param {Engine} engine - The game engine instance used for rendering and managing resources.
- * @param {SkeletonRawData} skeletonRawData - The raw skeleton data, which can be a JSON string, 
+ * @param engine - The game engine instance used for rendering and managing resources.
+ * @param skeletonRawData - The raw skeleton data, which can be a JSON string, 
  *                                            binary ArrayBuffer, or an object with structured data.
- * @param {TextureAtlas} atlas - The texture atlas containing the sprite sheet or images 
+ * @param atlas - The texture atlas containing the sprite sheet or images 
  *                               required for the Spine skeleton.
  * 
- * @returns {SpineResource} - A new SpineResource instance containing skeleton data and animation data.
+ * @returns A new SpineResource instance containing skeleton data and animation data.
  */
 export function createSpineResource(
   engine: Engine,
@@ -89,14 +84,9 @@ export function createSpineResource(
 /**
  * Creates a TextureAtlas instance using atlas text and an array of textures.
  *
- * This function initializes a TextureAtlas with the provided atlas text, then iterates over 
- * each page in the atlas. For each page, it finds the matching texture by name in the 
- * provided textures array or falls back to the texture at the current index. Finally, it 
- * applies an adaptive texture for each page to ensure compatibility.
- *
- * @param {string} atlasText - The spine atlas exported from spine editor
- * @param {Texture2D[]} textures - An array of galacean Texture2D.Atlas page textures are ordered according to the Texture2D array
- * @returns {TextureAtlas} - A TextureAtlas instance with each page linked to the corresponding texture.
+ * @param atlasText - The spine atlas exported from spine editor
+ * @param textures - An array of galacean Texture2D.Atlas page textures are ordered according to the Texture2D array
+ * @returns A TextureAtlas instance with each page linked to the corresponding texture.
  */
 export function createTextureAtlas(atlasText: string, textures: Texture2D[]): TextureAtlas {
   try {
