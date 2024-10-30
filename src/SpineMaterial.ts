@@ -1,12 +1,12 @@
 import {
-  BlendFactor,
-  BlendOperation,
   CullMode,
   Engine,
   Material,
   RenderQueueType,
   Shader,
 } from "@galacean/engine";
+import { setBlendMode } from "./util/BlendMode";
+import { BlendMode } from "@esotericsoftware/spine-core";
 
 export class SpineMaterial extends Material {
   private static _spineVS = `
@@ -52,12 +52,7 @@ export class SpineMaterial extends Material {
     const renderState = this.renderState;
     const target = renderState.blendState.targetBlendState;
     target.enabled = true;
-    target.sourceColorBlendFactor = BlendFactor.SourceAlpha;
-    target.destinationColorBlendFactor = BlendFactor.OneMinusSourceAlpha;
-    target.sourceAlphaBlendFactor = BlendFactor.One;
-    target.destinationAlphaBlendFactor = BlendFactor.OneMinusSourceAlpha;
-    target.colorBlendOperation = target.alphaBlendOperation =
-      BlendOperation.Add;
+    setBlendMode(this, BlendMode.Normal);
     renderState.depthState.writeEnabled = false;
     renderState.rasterState.cullMode = CullMode.Off;
     renderState.renderQueueType = RenderQueueType.Transparent;
