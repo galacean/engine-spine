@@ -12,11 +12,12 @@ import {
 } from "@galacean/engine";
 import { OrbitControl, Stats } from "@galacean/engine-toolkit";
 import * as dat from 'dat.gui';
-import { SpineAnimation, SkeletonData } from "../src/index";
+import { SpineAnimationRenderer } from "../src/index";
 import BoundingBoxLine from './outline';
+import { SpineResource } from "../src/loader/SpineResource";
 
 Logger.enable();
-console.log(SpineAnimation);
+console.log(SpineAnimationRenderer);
 
 document.getElementById("canvas")!.oncontextmenu = function (e) {
   e.preventDefault();
@@ -127,12 +128,12 @@ WebGLEngine.create({
 
   const cameraEntity = root.createChild("camera_node");
   const camera = cameraEntity.addComponent(Camera);
-  cameraEntity.transform.position = new Vector3(0, 0, 80);
+  cameraEntity.transform.position = new Vector3(0, 0, 2000);
   camera.nearClipPlane = 0.001;
   camera.farClipPlane = 20000;
   
-  cameraEntity.addComponent(OrbitControl);
-  cameraEntity.addComponent(Stats);
+  // cameraEntity.addComponent(OrbitControl);
+  // cameraEntity.addComponent(Stats);
 
   const outlineEntity = root.createChild('outline');
   outline = outlineEntity.addComponent(BoundingBoxLine);
@@ -149,36 +150,48 @@ WebGLEngine.create({
 });
 
 async function loadSpine(root: Entity, engine: Engine, resource) {
-  let skeletonData: SkeletonData | null = null;
+  let spineResource: SpineResource | null = null;
   const { scene } = resource;
   try {
-    skeletonData = (await engine.resourceManager.load({
+    spineResource = (await engine.resourceManager.load({
       ...resource,
       type: 'spine'
-    })) as SkeletonData;
+    })) as SpineResource;
   } catch (err) {
     console.error('spine asset load error: ', err);
   }
-  if (!skeletonData) return;
+  if (!spineResource) return;
   if (scene === 'upload') {
     console.log(blobResource);
     loadSpine(root, engine, blobResource);
     return;
   }
-  console.log('spine asset loaded =>', skeletonData);
+  console.log('spine asset loaded =>', spineResource.skeletonData);
   removeController();
-  const animationNames = skeletonData.animations.map(item => item.name);
+  const animationNames = spineResource.skeletonData.animations.map(item => item.name);
   const firstAnimation = animationNames[0];
 
-  const spineEntity = root.createChild('spine-entity');
-  spineEntity.transform.setPosition(0, -15, 0);
-  const spineAnimation = spineEntity.addComponent(SpineAnimation);
-  const mtl = SpineAnimation.getDefaultMaterial(engine);
-  spineAnimation.setMaterial(mtl);
-  spineAnimation.initialize(skeletonData);
-  spineAnimation.skeleton.scaleX = 0.05;
-  spineAnimation.skeleton.scaleY = 0.05;
+  const spineEntity = new Entity(engine, 'spine-entity');
+  spineEntity.transform.setPosition(-25 + Math.random() * 50, -250, 0);
+  const spineAnimation = spineEntity.addComponent(SpineAnimationRenderer);
+  if (scene === 'physic') {
+    spineEntity.transform.setScale(0.5, 0.5, 0.5);
+  }
+  spineAnimation.resource = spineResource;
+  root.addChild(spineEntity);
 
+  // const clone = spineEntity.clone();
+  // clone.name = 'test';
+  // clone.transform.setPosition(25, -15, 0);
+  // const animation2 = clone.getComponent(SpineAnimationRenderer);
+  // animation2!.defaultState.skinName = 'full-skins/boy';
+  // animation2!.defaultState.scale = 0.04;
+  // animation2!.defaultState.animationName = 'dance';
+  // animation2!.defaultState.loop = true;
+  // root.addChild(clone);
+
+  // const outlineEntity = root.createChild('outline');
+  // outline = outlineEntity.addComponent(BoundingBoxLine);
   // outline.attachToEntity(spineEntity);
   // outline.isActive = true;
   // setInterval(() => {
@@ -192,53 +205,18 @@ async function loadSpine(root: Entity, engine: Engine, resource) {
 
   if (scene === 'changeSkin') {
     handleChangeSkinScene(spineAnimation);
-  } else if (scene === 'hackSlotTexture') {
-    handleHackSlotTexture(spineAnimation, engine);
-  } else if (scene === 'changeAttachment') {
-    handleChangeAttachment(spineAnimation, skeletonData);
   }
+
+  if (scene === 'changeResource') {
+    handleChangeResource(engine, spineAnimation);
+  }
+
 }
 
-function handleChangeAttachment(spineAnimation: SpineAnimation, skeletonData: SkeletonData) {
-  const { skeleton, state } = spineAnimation;
-  skeleton.setSkinByName("fullskin/0101"); // 1. Set the active skin
-  skeleton.setSlotsToSetupPose(); // 2. Use setup pose to set base attachments.
-  state.apply(skeleton);
-  const slotName = "fBody";
-  const info = {
-    更换衣服部件: "fullskin/0101",
-  };
-  attachmentController = gui
-    .add(info, "更换衣服部件", [
-      "fullskin/0101",
-      "fullskin/autumn",
-      "fullskin/carnival",
-      "fullskin/fishing",
-      "fullskin/football",
-      "fullskin/newyear",
-      "fullskin/painter",
-      "fullskin/snowman",
-    ])
-    .onChange((skinName) => {
-      const currentSkin = skeleton.skin;
-      const slotIndex = skeleton.findSlotIndex(slotName);
-      const changeSkin = skeletonData.findSkin(skinName);
-      const changeAttachment = changeSkin!.getAttachment(
-        slotIndex,
-        slotName
-      );
-      if (changeAttachment) {
-        currentSkin.removeAttachment(slotIndex, slotName);
-        currentSkin.setAttachment(slotIndex, slotName, changeAttachment);
-      }
-    });
-}
-
-function handleChangeSkinScene(spineAnimation: SpineAnimation) {
-  const { skeleton, state } = spineAnimation;
+function handleChangeSkinScene(spineAnimation: SpineAnimationRenderer) {
+  const { skeleton } = spineAnimation;
   skeleton.setSkinByName("full-skins/girl"); // 1. Set the active skin
   skeleton.setSlotsToSetupPose(); // 2. Use setup pose to set base attachments.
-  state.apply(skeleton);
   const info = {
     skin: "full-skins/girl",
   };
@@ -252,97 +230,22 @@ function handleChangeSkinScene(spineAnimation: SpineAnimation) {
   .onChange((skinName) => {
     skeleton.setSkinByName(skinName); // 1. Set the active skin
     skeleton.setSlotsToSetupPose(); // 2. Use setup pose to set base attachments.
-    state.apply(skeleton);
   });
 }
 
-async function handleHackSlotTexture(spineAnimation: SpineAnimation, engine: Engine) {
-  spineAnimation.skeleton.setSkinByName("skin1");
-  spineAnimation.skeleton.scaleX = 0.07;
-  spineAnimation.skeleton.scaleY = 0.07;
-
-  spineAnimation.addSeparateSlot("defult/head_hair");
-  spineAnimation.addSeparateSlot("defult/arm_rigth_weapon");
-  spineAnimation.addSeparateSlot("defult/Sleeveless_01");
-
-  const textures = await generateSkinResource(engine);
-  const info = {
-    换头饰: "hair_0",
-    换衣服: "clothes_0",
-    换武器: "weapon_0",
-  };
-
-  const hatConfig: string[] = [];
-  const clothConfig: string[] = [];
-  const weaponConfig: string[] = [];
-  for (let i = 0; i < textures.length; i++) {
-    hatConfig.push(`hair_${i}`);
-    clothConfig.push(`clothes_${i}`);
-    weaponConfig.push(`weapon_${i}`);
-  }
-  slotHackController1 = gui.add(info, "换头饰", hatConfig).onChange((v) => {
-    changeSlotTexture(v, textures, spineAnimation);
-  });
-  slotHackController2 = gui.add(info, "换衣服", clothConfig).onChange((v) => {
-    changeSlotTexture(v, textures, spineAnimation);
-  });
-  slotHackController3 = gui.add(info, "换武器", weaponConfig).onChange((v) => {
-    changeSlotTexture(v, textures, spineAnimation);
-  });
-}
-
-async function generateSkinResource(engine: Engine) {
-  const skinImgs = [
-    "https://gw.alicdn.com/imgextra/i4/O1CN01NVzIQ61Hf7DT0jDWS_!!6000000000784-2-tps-802-256.png",
-    "https://gw.alicdn.com/imgextra/i3/O1CN01g3HnB21FPQPnjavP3_!!6000000000479-2-tps-802-256.png",
-    "https://gw.alicdn.com/imgextra/i1/O1CN01CvmDQl1gRFcWeh3Na_!!6000000004138-2-tps-802-256.png",
-    "https://gw.alicdn.com/imgextra/i3/O1CN01BviZcq1Rc2iTh127L_!!6000000002131-2-tps-802-256.png",
-    "https://gw.alicdn.com/imgextra/i3/O1CN01mkkLpR1ihrDHyYr1H_!!6000000004445-2-tps-802-256.png",
-    "https://gw.alicdn.com/imgextra/i2/O1CN019ENsCO2992jTG9RGD_!!6000000008024-2-tps-802-256.png",
-    "https://gw.alicdn.com/imgextra/i4/O1CN01fzyJFg1cNoBGRLSCI_!!6000000003589-2-tps-802-256.png",
-    "https://gw.alicdn.com/imgextra/i4/O1CN01duImZL1J8iQk2YzEj_!!6000000000984-2-tps-802-256.png",
-    "https://gw.alicdn.com/imgextra/i2/O1CN01b23DDj1QD1SoNL7ua_!!6000000001941-2-tps-802-256.png",
-    "https://gw.alicdn.com/imgextra/i1/O1CN01powK3y29HHrZCBnbg_!!6000000008042-2-tps-802-256.png",
-    "https://gw.alicdn.com/imgextra/i1/O1CN01n7R3dE1IRfCVUgvhE_!!6000000000890-2-tps-802-256.png",
-    "https://gw.alicdn.com/imgextra/i3/O1CN01t0nsyV24AoBFhIfyZ_!!6000000007351-2-tps-802-256.png",
-    "https://gw.alicdn.com/imgextra/i4/O1CN01mYwBUD1eBYp2rE0qV_!!6000000003833-2-tps-802-256.png",
-    "https://gw.alicdn.com/imgextra/i1/O1CN01ks7zZs1mbgKwBjlFS_!!6000000004973-2-tps-802-256.png",
-    "https://gw.alicdn.com/imgextra/i3/O1CN01mgFHl5262gO0L0JeR_!!6000000007604-2-tps-802-256.png",
-    "https://gw.alicdn.com/imgextra/i1/O1CN01SJbFkU1udWrRhXPbd_!!6000000006060-2-tps-802-256.png",
-    "https://gw.alicdn.com/imgextra/i3/O1CN01VGL8pe26qbYegHClp_!!6000000007713-2-tps-802-256.png",
-    "https://gw.alicdn.com/imgextra/i2/O1CN01EeZs6N1auCy4QbXiY_!!6000000003389-2-tps-802-256.png",
-    "https://gw.alicdn.com/imgextra/i3/O1CN01DOfF5J1UTkOMHSnwV_!!6000000002519-2-tps-802-256.png",
-    "https://gw.alicdn.com/imgextra/i1/O1CN01iWGD1h1G0ytSTLs67_!!6000000000561-2-tps-802-256.png",
-    "https://gw.alicdn.com/imgextra/i1/O1CN01xjhSTG245JQVrtEhL_!!6000000007339-2-tps-802-256.png",
-    "https://gw.alicdn.com/imgextra/i3/O1CN01NJAp7c22RdV8PC1Dq_!!6000000007117-2-tps-802-256.png",
-    "https://gw.alicdn.com/imgextra/i1/O1CN01A2Mdh01INXdP46W6B_!!6000000000881-2-tps-802-256.png",
-    "https://gw.alicdn.com/imgextra/i3/O1CN01AqHn4524RIRMTuuNH_!!6000000007387-2-tps-802-256.png",
-    "https://gw.alicdn.com/imgextra/i4/O1CN01yU8Z771SPVUUS0Die_!!6000000002239-2-tps-802-256.png",
-    "https://gw.alicdn.com/imgextra/i3/O1CN01orLkIg1JOkIFur5Fj_!!6000000001019-2-tps-802-256.png",
-    "https://gw.alicdn.com/imgextra/i3/O1CN01jRRXrV1b4HgOXGqov_!!6000000003411-2-tps-802-256.png",
-    "https://gw.alicdn.com/imgextra/i2/O1CN01XOchrA1Mh0wFgddGl_!!6000000001465-2-tps-802-256.png",
-    "https://gw.alicdn.com/imgextra/i2/O1CN01zPPHrD1pIOVHtvDqD_!!6000000005337-2-tps-802-256.png",
-  ];
-  const resource = skinImgs.map((item) => {
-    return {
-      type: AssetType.Texture2D,
-      url: item,
-    };
-  });
-  return await engine.resourceManager.load(resource) as Texture2D[];
-}
-
-function changeSlotTexture(selectItem, textures: Texture2D[], spineAnimation: SpineAnimation) {
-  const slotNameMap = {
-    hair: "defult/head_hair",
-    weapon: "defult/arm_rigth_weapon",
-    clothes: "defult/Sleeveless_01",
-  };
-  const slotKey = selectItem.split("_")[0];
-  const slotName = slotNameMap[slotKey];
-  const index = selectItem.split("_")[1];
-  console.log(slotKey, slotName, index);
-  spineAnimation.hackSeparateSlotTexture(slotName, textures[index]);
+async function handleChangeResource(engine: Engine, spineAnimation: SpineAnimationRenderer) {
+  const newResource = (await engine.resourceManager.load({
+    urls: [
+      "https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/jdjQ6mGxWknZ7TtQ/raptor/raptor.json",
+      "https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/jdjQ6mGxWknZ7TtQ/raptor/raptor.atlas",
+      "https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/jdjQ6mGxWknZ7TtQ/raptor/raptor.png",
+    ],
+    type: 'spine'
+  })) as SpineResource;
+  setTimeout(() => {
+    spineAnimation.defaultConfig.animationName = 'roar';
+    spineAnimation.resource = newResource;
+  }, 1000);
 }
 
 function removeController() {
@@ -353,22 +256,6 @@ function removeController() {
   if (skinController) {
     skinController.remove();
     skinController = null;
-  }
-  if (slotHackController1) {
-    slotHackController1.remove();
-    slotHackController1 = null;
-  }
-  if (slotHackController2) {
-    slotHackController2.remove();
-    slotHackController2 = null;
-  }
-  if (slotHackController3) {
-    slotHackController3.remove();
-    slotHackController3 = null;
-  }
-  if (attachmentController) {
-    attachmentController.remove();
-    attachmentController = null;
   }
 }
 

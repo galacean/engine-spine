@@ -39,7 +39,7 @@ const commonPlugins = [
       jsc: {
         loose: true,
         externalHelpers: true,
-        target: "es5",
+        target: "esnext",
       },
       sourceMaps: true,
     })
@@ -61,7 +61,7 @@ function config({ location, pkgJson }) {
     pkgJson.dependencies ?? {},
     pkgJson.peerDependencies ?? {}
   );
-  const external = Object.keys(dependencies);
+  const external = ['@galacean/engine'];
   commonPlugins.push(
     replace({
       preventAssignment: true,
