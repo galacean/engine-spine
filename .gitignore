@@ -11,3 +11,9 @@ tsconfig.tsbuildinfo
 package-lock.json
 .aci.yml
 LEGAL.md
+coverage
+e2e/videos/*
+e2e/screenshots/*
+e2e/downloads/*
+e2e/diff/*
+e2e/.dev/mpa
