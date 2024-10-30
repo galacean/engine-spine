@@ -181,6 +181,7 @@ export class SpineGenerator {
         if (isClipping) {
           _clipper.clipTriangles(
             tempVerts,
+            numFloats,
             triangles,
             triangles.length,
             uvs,
