@@ -57,19 +57,7 @@ export class SpineGenerator {
   private _separateSlots = new Map();
   private _separateSlotTextureMap: Map<string, Texture2D> = new Map();
 
-  getMaxVertexCount(skeletonData: SkeletonData) {
-    const uniqueAttachments = new Set<Attachment>();
-    const { skins } = skeletonData;
-    const skinLen = skins.length;
-    for (let i = 0; i < skinLen; i++) {
-      const skin = skins[i];
-      this._collectUniqueAttachments(skin, uniqueAttachments);
-    }
-    return this._calculateTotalVertexCount(uniqueAttachments);
-  }
-
   buildPrimitive(skeleton: Skeleton, renderer: SpineAnimationRenderer) {
-    const { useClipping, zSpacing, premultipliedAlpha } = renderer.setting;
     const {
       _clipper,
       _separateSlots,
@@ -89,7 +77,10 @@ export class SpineGenerator {
       engine,
       _indices, 
       _vertices,
+      _vertexCount,
       _subPrimitives,
+      zSpacing,
+      premultipliedAlpha,
     } = renderer;
     let {
       tempVerts,
@@ -125,9 +116,7 @@ export class SpineGenerator {
       let vertexSize = isClipping ? 2 : SpineGenerator.VERTEX_SIZE;
 
       if (!attachment) {
-        if (useClipping) {
-          _clipper.clipEndWithSlot(slot);
-        }
+        _clipper.clipEndWithSlot(slot);
         continue;
       }
 
@@ -166,15 +155,11 @@ export class SpineGenerator {
           texture = meshAttachment.region.texture;
         break;
         case ClippingAttachment:
-          if (useClipping) {
-            let clip = <ClippingAttachment>attachment;
-            _clipper.clipStart(slot, clip);
-          }
+          let clip = <ClippingAttachment>attachment;
+          _clipper.clipStart(slot, clip);
           continue;
         default:
-          if (useClipping) {
-            _clipper.clipEndWithSlot(slot);
-          }
+          _clipper.clipEndWithSlot(slot);
           continue;
       }
 
@@ -368,6 +353,13 @@ export class SpineGenerator {
       }
       renderer.setMaterial(i, material);
     }
+
+    if (indicesLength > _vertexCount) {
+      renderer._createAndBindBuffer(indicesLength);
+      this.buildPrimitive(skeleton, renderer);
+      return;
+    }
+
     renderer._vertexBuffer.setData(_vertices);
     renderer._indexBuffer.setData(_indices);
   }
@@ -397,32 +389,6 @@ export class SpineGenerator {
     const newMaxZ = Math.max(max.z, z);
     min.set(newMinX, newMinY, newMinZ);
     max.set(newMaxX, newMaxY, newMaxZ);
-  }
-
-  private _collectUniqueAttachments(skin: Skin, uniqueAttachments: Set<Attachment>) {
-    const { attachments } = skin;
-    for (let i = 0, n = attachments.length; i < n; i++) {
-      const slotAttachment = attachments[i];
-      for (let key in slotAttachment) {
-        const attachment = slotAttachment[key];
-        if (attachment && !uniqueAttachments.has(attachment)) {
-          uniqueAttachments.add(attachment);
-        }
-      }
-    }
-  }
-
-  private _calculateTotalVertexCount(uniqueAttachments: Set<Attachment>) {
-    let totalVertexCount = 0;
-    const QUAD_TRIANGLE_LENGTH = SpineGenerator.QUAD_TRIANGLES.length;
-    uniqueAttachments.forEach(attachment => {
-      if (attachment instanceof RegionAttachment) {
-        totalVertexCount += QUAD_TRIANGLE_LENGTH;
-      } else if (attachment instanceof MeshAttachment) {
-        totalVertexCount += attachment.triangles.length;
-      }
-    });
-    return totalVertexCount;
   }
 
 }
