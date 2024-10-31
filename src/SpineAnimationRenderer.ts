@@ -62,6 +62,12 @@ export class SpineAnimationRenderer extends Renderer {
   zSpacing = 0.01;
   
   /**
+   * Whether to premultiplied alpha for texture.
+   */
+  @assignmentClone
+  premultipliedAlpha = false;
+
+  /**
    * Default state for spine animation.
    * Contains the default animation name to be played, whether this animation should loop, the default skin name.
    */
@@ -429,7 +435,6 @@ export enum RendererUpdateFlags {
   /** Include world position and world bounds. */
   WorldVolume = 0x1
 }
-
 
 /**
  * Default state for spine animation.
