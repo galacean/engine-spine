@@ -178,13 +178,12 @@ async function loadSpine(root: Entity, engine: Engine, resource) {
   const animationNames = spineResource.skeletonData.animations.map(item => item.name);
   const firstAnimation = animationNames[0];
 
-  const spineEntity = new Entity(engine, 'spine-entity');
-  spineEntity.transform.setPosition(-25 + Math.random() * 50, -250, 0);
-  const spineAnimation = spineEntity.addComponent(SpineAnimationRenderer);
+  const spineEntity = spineResource.instantiate();
+  // spineEntity.transform.setPosition(-25 + Math.random() * 50, -250, 0);
+  const spineAnimation = spineEntity.getComponent(SpineAnimationRenderer);
   if (scene === 'physic') {
     spineEntity.transform.setScale(0.5, 0.5, 0.5);
   }
-  spineAnimation.resource = spineResource;
   root.addChild(spineEntity);
 
   // const clone = spineEntity.clone();

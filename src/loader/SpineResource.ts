@@ -7,8 +7,8 @@ import { SpineAnimationRenderer } from "../SpineAnimationRenderer";
  * 
 */
 export class SpineResource extends ReferResource {
-  /** The url of skeletonData. */
-  readonly url: string;
+  /** Name of skeletonData. */
+  readonly name: string = 'Spine Entity';
 
   private _texturesInSpineAtlas: Texture2D[] = [];
   private _skeletonData: SkeletonData;
@@ -16,9 +16,9 @@ export class SpineResource extends ReferResource {
 
   private _template: Entity;
 
-  constructor(engine: Engine, skeletonData: SkeletonData, url?: string) {
+  constructor(engine: Engine, skeletonData: SkeletonData, name?: string) {
     super(engine);
-    this.url = url;
+    this.name = name;
     this._skeletonData = skeletonData;
     this._stateData = new AnimationStateData(skeletonData);
     this._associationTextureInSkeletonData(skeletonData);
@@ -55,7 +55,7 @@ export class SpineResource extends ReferResource {
   }
 
   private _createTemplate(): void {
-    const name = this._extractFileName(this.url);
+    const name = this.name;
     const spineEntity = new Entity(this.engine, name);
     const spineAnimationRenderer = spineEntity.addComponent(SpineAnimationRenderer);
     const skeleton = new Skeleton(this._skeletonData);
@@ -93,11 +93,5 @@ export class SpineResource extends ReferResource {
       // @ts-ignore
       textures[i]._disassociationSuperResource(this);
     }
-  }
-
-  private _extractFileName(url: string): string {
-    if (!url) return "Spine Entity";
-    const match = url.match(/\/([^\/]+?)(\.[^\/]*)?$/);
-    return match ? match[1] : "Spine Entity";
   }
 }

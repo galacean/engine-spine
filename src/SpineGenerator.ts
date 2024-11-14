@@ -80,6 +80,7 @@ export class SpineGenerator {
       _vertexCount,
       _subPrimitives,
       zSpacing,
+      premultipliedAlpha,
     } = renderer;
     let {
       tempVerts,
@@ -171,15 +172,17 @@ export class SpineGenerator {
         let skeleton = slot.bone.skeleton;
         let skeletonColor = skeleton.color;
         let slotColor = slot.color;
-        let alpha = skeletonColor.a * slotColor.a * attachmentColor.a;
-        let color = SpineGenerator.tempColor;
+        let finalColor = SpineGenerator.tempColor;
         let dark = SpineGenerator.tempDark;
-        color.set(
-          skeletonColor.r * slotColor.r * attachmentColor.r,
-          skeletonColor.g * slotColor.g * attachmentColor.g,
-          skeletonColor.b * slotColor.b * attachmentColor.b,
-          alpha,
-        );
+        finalColor.r = skeletonColor.r * slotColor.r * attachmentColor.r;
+				finalColor.g = skeletonColor.g * slotColor.g * attachmentColor.g;
+				finalColor.b = skeletonColor.b * slotColor.b * attachmentColor.b;
+				finalColor.a = skeletonColor.a * slotColor.a * attachmentColor.a;
+        if (premultipliedAlpha) {
+          finalColor.r *= finalColor.a;
+					finalColor.g *= finalColor.a;
+					finalColor.b *= finalColor.a;
+        }
 
         if (isClipping) {
           _clipper.clipTriangles(
@@ -187,7 +190,7 @@ export class SpineGenerator {
             triangles,
             triangles.length,
             uvs,
-            color,
+            finalColor,
             dark,
             false,
           );
@@ -197,7 +200,7 @@ export class SpineGenerator {
           finalIndicesLength = finalIndices.length;
         } else {
           let verts = tempVerts;
-          const { r, g, b, a } = color;
+          const { r, g, b, a } = finalColor;
           for (
             let v = 2, u = 0, n = numFloats;
             v < n;
@@ -345,7 +348,7 @@ export class SpineGenerator {
       const key = `${subTexture.instanceId}_${blendMode}`;
       let material = SpineAnimationRenderer._materialCache.get(key);
       if (!material) {
-        material = this._createMaterialForTexture(subTexture, engine, blendMode);
+        material = this._createMaterialForTexture(subTexture, engine, blendMode, premultipliedAlpha);
         SpineAnimationRenderer._materialCache.set(key, material);
       }
       renderer.setMaterial(i, material);
@@ -369,10 +372,10 @@ export class SpineGenerator {
     this._separateSlotTextureMap.set(slotName, texture);
   }
 
-  private _createMaterialForTexture(texture: Texture2D, engine: Engine, blendMode: BlendMode): Material {
+  private _createMaterialForTexture(texture: Texture2D, engine: Engine, blendMode: BlendMode, premultipliedAlpha: boolean): Material {
     const material = SpineAnimationRenderer._getDefaultMaterial(engine);
     material.shaderData.setTexture("material_SpineTexture", texture);
-    setBlendMode(material, blendMode);
+    setBlendMode(material, blendMode, premultipliedAlpha);
     return material;
   }
 

@@ -17,21 +17,10 @@ import {
   TextureFilter,
   TextureWrap,
 } from "@esotericsoftware/spine-core";
+import { SpineResource } from "./SpineResource";
 
-export function createSkeletonData(
-  textureAtlas: TextureAtlas, 
-  skeletonTextData: string | ArrayBuffer, 
-  skeletonFileType: 'json' | 'skel',
-): SkeletonData {
-  const atlasLoader = new AtlasAttachmentLoader(textureAtlas);
-  if (skeletonFileType === 'json') {
-    return new SkeletonJson(atlasLoader).readSkeletonData(skeletonTextData);
-  } else {
-    return new SkeletonBinary(atlasLoader).readSkeletonData(new Uint8Array(skeletonTextData as ArrayBuffer));
-  }
-}
 
-export async function loadTexturesByPath(
+export async function loadTexturesByPaths(
   imagePaths: string[],
   imageExtensions: string[],
   engine: Engine,
@@ -45,7 +34,10 @@ export async function loadTexturesByPath(
     } else if (ext === 'ktx2') {
       imageLoaderType = AssetType.KTX2;
     }
-    return loadTexture(imagePath, engine, imageLoaderType);
+    return engine.resourceManager.load({
+      url: imagePath,
+      type: imageLoaderType,
+    });
   });
   try {
     textures = await Promise.all(texturePromises);
@@ -56,7 +48,7 @@ export async function loadTexturesByPath(
 }
 
 export async function loadTextureAtlas(
-  atlasPath: string, 
+  atlasPath: string,
   engine: Engine,
 ): Promise<TextureAtlas> {
   const baseUrl = getBaseUrl(atlasPath);
@@ -71,7 +63,10 @@ export async function loadTextureAtlas(
   const loadTexturePromises = [];
   for (let page of textureAtlas.pages) {
     const textureUrl = baseUrl + page.name;
-    loadTexturePromises.push(loadTexture(textureUrl, engine));
+    loadTexturePromises.push(engine.resourceManager.load({
+      url: textureUrl,
+      type: AssetType.Texture2D,
+    }));
   }
   try {
     textures = await Promise.all(loadTexturePromises);
@@ -82,23 +77,6 @@ export async function loadTextureAtlas(
   return textureAtlas;
 }
 
-export function createTextureAtlas(atlasText: string, textures: Texture2D[]) {
-  const textureAtlas = new TextureAtlas(atlasText);
-  textureAtlas.pages.forEach((page, index) => {
-    const engineTexture = textures.find(item => item.name === page.name) || textures[index];
-    const texture = createAdaptiveTexture(engineTexture);
-    page.setTexture(texture);
-  });
-  return textureAtlas;
-}
-
-export function loadTexture(
-  url: string, 
-  engine: Engine,
-  imageLoaderType: string = AssetType.Texture2D
-): AssetPromise<Texture2D> {
-  return engine.resourceManager.load<Texture2D>({ url, type: imageLoaderType });
-}
 
 export function createAdaptiveTexture(texture: Texture2D) {
   return new AdaptiveTexture(new Image(), texture);
@@ -108,6 +86,44 @@ export function getBaseUrl(url: string): string {
   const parsedUrl = new URL(url);
   const basePath = parsedUrl.origin + parsedUrl.pathname;
   return basePath.endsWith('/') ? basePath : basePath.substring(0, basePath.lastIndexOf('/') + 1);
+}
+
+
+export function createSpineResource(engine: Engine, skeletonRawData: string | ArrayBuffer, textureAtlas: TextureAtlas, name?: string) {
+
+  const skeletonData = createSkeletonData();
+  return new SpineResource(engine, skeletonData, name);
+}
+
+export function createSkeletonData(
+  skeletonRawData: string | ArrayBuffer,
+  textureAtlas: TextureAtlas,
+): SkeletonData {
+  const atlasLoader = new AtlasAttachmentLoader(textureAtlas);
+  if (typeof skeletonRawData === 'string') {
+    return new SkeletonJson(atlasLoader).readSkeletonData(skeletonRawData);
+  } else {
+    return new SkeletonBinary(atlasLoader).readSkeletonData(new Uint8Array(skeletonRawData as ArrayBuffer));
+  }
+}
+
+export function createTextureAtlas(atlasText: string, textures: Texture2D[]): TextureAtlas {
+  try {
+    // editor asset
+    const { data, textures } = JSON.parse(atlasText);
+    if (data && textures) {
+      atlasText = data;
+    }
+  } catch {
+    // atlasText
+  }
+  const textureAtlas = new TextureAtlas(atlasText);
+  textureAtlas.pages.forEach((page, index) => {
+    const engineTexture = textures.find(item => item.name === page.name) || textures[index];
+    const texture = createAdaptiveTexture(engineTexture);
+    page.setTexture(texture);
+  });
+  return textureAtlas;
 }
 
 export class AdaptiveTexture extends Texture {
