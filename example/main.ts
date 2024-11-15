@@ -37,7 +37,7 @@ const blobResource: any = {
   }
 };
 
-const baseDemo = 'spineBoy-单json';
+const baseDemo = '三文件-无后缀bin';
 const demos = {
   'spineBoy-单json': {
     url: "https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/yKbdfgijyLGzQDyQ/spineboy/spineboy.json",
@@ -107,10 +107,6 @@ const demos = {
     ],
     scene: 'physic',
   },
-  '素材替换': {
-    url: "https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/yKbdfgijyLGzQDyQ/spineboy/spineboy.json",
-    scene: 'changeResource',
-  },
   '本地上传文件': {
     url: "https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/kx5353rrNIDn4CsX/spineboy-pro/spineboy-pro.json",
     scene: 'upload',
@@ -148,10 +144,7 @@ WebGLEngine.create({
   loadSpine(root, engine, demos[baseDemo]);
 
   gui.add({ name: baseDemo }, 'name', Object.keys(demos)).onChange((demoName) => {
-    const spineEntity = root.findByName('spine-entity');
-    if (spineEntity) {
-      spineEntity.destroy();
-    }
+    root.children[1].destroy();
 		loadSpine(root, engine, demos[demoName]);
 	});
 });
@@ -179,8 +172,8 @@ async function loadSpine(root: Entity, engine: Engine, resource) {
   const firstAnimation = animationNames[0];
 
   const spineEntity = spineResource.instantiate();
-  // spineEntity.transform.setPosition(-25 + Math.random() * 50, -250, 0);
-  const spineAnimation = spineEntity.getComponent(SpineAnimationRenderer);
+  spineEntity.transform.setPosition(-25 + Math.random() * 50, -250, 0);
+  const spineAnimation = spineEntity.getComponent(SpineAnimationRenderer) as SpineAnimationRenderer;
   if (scene === 'physic') {
     spineEntity.transform.setScale(0.5, 0.5, 0.5);
   }
@@ -212,11 +205,6 @@ async function loadSpine(root: Entity, engine: Engine, resource) {
   if (scene === 'changeSkin') {
     handleChangeSkinScene(spineAnimation);
   }
-
-  if (scene === 'changeResource') {
-    handleChangeResource(engine, spineAnimation);
-  }
-
 }
 
 function handleChangeSkinScene(spineAnimation: SpineAnimationRenderer) {
@@ -237,21 +225,6 @@ function handleChangeSkinScene(spineAnimation: SpineAnimationRenderer) {
     skeleton.setSkinByName(skinName); // 1. Set the active skin
     skeleton.setSlotsToSetupPose(); // 2. Use setup pose to set base attachments.
   });
-}
-
-async function handleChangeResource(engine: Engine, spineAnimation: SpineAnimationRenderer) {
-  const newResource = (await engine.resourceManager.load({
-    urls: [
-      "https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/jdjQ6mGxWknZ7TtQ/raptor/raptor.json",
-      "https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/jdjQ6mGxWknZ7TtQ/raptor/raptor.atlas",
-      "https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/jdjQ6mGxWknZ7TtQ/raptor/raptor.png",
-    ],
-    type: 'spine'
-  })) as SpineResource;
-  setTimeout(() => {
-    spineAnimation.defaultState.animationName = 'roar';
-    spineAnimation.resource = newResource;
-  }, 1000);
 }
 
 function removeController() {

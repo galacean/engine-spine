@@ -16,7 +16,8 @@ class EditorSpineAtlasLoader extends Loader<TextureAtlas> {
     resourceManager: ResourceManager
   ): AssetPromise<TextureAtlas> {
     return new AssetPromise(async (resolve) => {
-      const text = await this.request<string>(item.url, { type: "text" });
+      // @ts-ignore
+      const text = await resourceManager._request<string>(item.url, { type: "text" });
       const { data: atlasText, textures: textureRefs } = JSON.parse(text);
       // @ts-ignore
       const promises = textureRefs.map(refItem => resourceManager.getResourceByRef({ refId: refItem.refId }));

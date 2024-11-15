@@ -6,6 +6,7 @@ import {
   AssetType,
   TextureFilterMode,
   TextureWrapMode,
+  BufferReader,
 } from "@galacean/engine";
 import { 
   TextureAtlas, 
@@ -18,6 +19,7 @@ import {
   TextureWrap,
 } from "@esotericsoftware/spine-core";
 import { SpineResource } from "./SpineResource";
+import { read } from "fs";
 
 
 export async function loadTexturesByPaths(
@@ -88,10 +90,28 @@ export function getBaseUrl(url: string): string {
   return basePath.endsWith('/') ? basePath : basePath.substring(0, basePath.lastIndexOf('/') + 1);
 }
 
-
 export function createSpineResource(engine: Engine, skeletonRawData: string | ArrayBuffer, textureAtlas: TextureAtlas, name?: string) {
-
-  const skeletonData = createSkeletonData();
+  if (typeof skeletonRawData === 'string') {
+    try {
+      // editor asset
+      const { data } = JSON.parse(skeletonRawData);
+      if (data) {
+        skeletonRawData = data;
+      }
+    } catch {
+      // origin asset
+      console.log('origin')
+    }
+  } else {
+    const reader = new BufferReader(new Uint8Array(skeletonRawData));
+    const header = reader.nextStr();
+    const isEditorAsset = header.startsWith('spine');
+    if (isEditorAsset) {
+      reader.nextStr(); // atlas id
+      skeletonRawData = reader.nextImageData();
+    }
+  }
+  const skeletonData = createSkeletonData(skeletonRawData, textureAtlas);
   return new SpineResource(engine, skeletonData, name);
 }
 
@@ -115,7 +135,7 @@ export function createTextureAtlas(atlasText: string, textures: Texture2D[]): Te
       atlasText = data;
     }
   } catch {
-    // atlasText
+    // origin asset
   }
   const textureAtlas = new TextureAtlas(atlasText);
   textureAtlas.pages.forEach((page, index) => {

@@ -266,7 +266,7 @@ export class SpineAnimationRenderer extends Renderer {
       _primitive.destroy();
     }
     this._clearMaterialCache();
-    this._resource.destroy();
+    this._resource && this._resource.destroy();
     this._primitive = null;
     this._resource = null;
     this._skeleton = null;

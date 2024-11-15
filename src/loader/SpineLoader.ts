@@ -5,13 +5,13 @@ import {
   resourceLoader,
   ResourceManager,
   Texture2D,
+  BufferReader,
 } from "@galacean/engine";
 import { TextureAtlas } from "@esotericsoftware/spine-core";
 import { createSpineResource, createTextureAtlas, loadTextureAtlas, loadTexturesByPaths } from "./LoaderUtils";
 import { SpineResource } from "./SpineResource";
-import { BufferReader } from "../util/BufferReader";
 
-export type SpineAssetBundle = {
+export type SpineAssetPath = {
   skeletonPath: string;
   atlasPath: string;
   imagePaths: string[];
@@ -29,24 +29,24 @@ export class SpineLoader extends Loader<SpineResource> {
   static imageExtensions = ["png", "jpg", "webp", "jpeg", "ktx", "ktx2"];
   static skeletonExtensions = ["skel", "json", "bin"];
 
-  static parseAndAssignSpineAsset(url: string, fileExtension: string | null, bundle: SpineAssetBundle) {
+  static parseAndAssignSpineAsset(url: string, fileExtension: string | null, assetPath: SpineAssetPath) {
     const { imageExtensions, skeletonExtensions } = SpineLoader;
     const ext = SpineLoader.getUrlExtension(url, fileExtension);
     if (!ext) return;
   
     if (skeletonExtensions.includes(ext)) {
-      bundle.skeletonPath = url;
+      assetPath.skeletonPath = url;
     }
     if (ext === 'atlas') {
-      bundle.atlasPath = url;
+      assetPath.atlasPath = url;
     }
     if (imageExtensions.includes(ext)) {
-      bundle.imagePaths.push(url);
-      bundle.imageExtensions.push(ext);
+      assetPath.imagePaths.push(url);
+      assetPath.imageExtensions.push(ext);
     }
   }
 
-  static deriveAndAssignSpineAsset(url: string, fileExtension: string | null, bundle: SpineAssetBundle) {
+  static deriveAndAssignSpineAsset(url: string, fileExtension: string | null, bundle: SpineAssetPath) {
     const ext = SpineLoader.getUrlExtension(url, fileExtension);
     if (!ext) return;
     bundle.skeletonPath = url;
@@ -85,48 +85,73 @@ export class SpineLoader extends Loader<SpineResource> {
     return null;
   }
 
-  private _bufferReader: BufferReader = new BufferReader();
+  private _bufferReader: BufferReader;
   private _fileName = 'Spine Entity';
+  private _decoder = new TextDecoder('utf-8');
+  private _resourceManager: ResourceManager;
+  private _isSingleUrl = false;
 
   load(
     item: SpineLoadItem,
     resourceManager: ResourceManager,
   ): AssetPromise<SpineResource> {
     return new AssetPromise(async (resolve) => {
+      this._resourceManager = resourceManager;
       let resource: SpineResource;
-      if (item.urls) {  // origin asset
-        resource = await this._handleOriginAsset(item, resourceManager);
-      } else { 
-        this._fileName = this._extractFileName(item.url);
-        let skeletonRawData: ArrayBuffer | string;
-        // @ts-ignore
-        skeletonRawData = await resourceManager._request(item.url, { type: 'arraybuffer' }) as ArrayBuffer;
-        this._bufferReader.init(new Uint8Array(skeletonRawData));
-        const header = this._bufferReader.nextStr();
-        const isEditorAsset = header.startsWith('spine');
-        const isBin = header.startsWith('spine:skel');
-        if (!isBin) {
-          const decoder = new TextDecoder('utf-8');
-          const jsonString = decoder.decode(skeletonRawData);
-          skeletonRawData = jsonString;
+      let { fileExtensions } = item.params || {};
+      const spineAssetPath: SpineAssetPath = {
+        skeletonPath: '',
+        atlasPath: '',
+        imagePaths: [],
+        imageExtensions: [],
+      };
+
+      this._isSingleUrl = !item.urls;
+      if (this._isSingleUrl) {
+        fileExtensions = SpineLoader.verifyFileExtensions(fileExtensions, true);
+        for (let i = 0; i < item.urls.length; i += 1) {
+          const url = item.urls[i];
+          const extension = fileExtensions && fileExtensions[i] || null;
+          SpineLoader.parseAndAssignSpineAsset(url, extension, spineAssetPath);
         }
-        if (isEditorAsset) {
-          // editor asset
-          resource = await this._handleEditorAsset(item, resourceManager, skeletonRawData);
-        } else {
-          // origin asset
-          resource = await this._handleOriginAsset(item, resourceManager, skeletonRawData);
-        }
+      } else {
+        const fileExtension = SpineLoader.verifyFileExtensions(fileExtensions, false);
+        SpineLoader.deriveAndAssignSpineAsset(item.url, fileExtension as string, spineAssetPath);
+      }
+
+      const { skeletonPath, atlasPath } = spineAssetPath;
+      if (!skeletonPath || !atlasPath) {
+        throw new Error('Failed to load spine assets. Please check the file path and ensure the file extension is included.');
+      }
+
+      this._fileName = this._extractFileName(skeletonPath);
+
+      // @ts-ignore
+      let skeletonRawData: ArrayBuffer | string = await resourceManager._request(skeletonPath, { type: 'arraybuffer' }) as ArrayBuffer;
+      this._bufferReader = new BufferReader(new Uint8Array(skeletonRawData));
+      const header = this._bufferReader.nextStr();
+      const isEditorAsset = header.startsWith('spine');
+      try {
+        const decoder = this._decoder;
+        const jsonString = decoder.decode(skeletonRawData);
+        skeletonRawData = jsonString;
+      } catch {}
+
+      if (!this._isSingleUrl) {  // origin asset
+        resource = await this._handleOriginAsset(skeletonRawData, spineAssetPath);
+      } else if (isEditorAsset) {
+        // editor asset
+        resource = await this._handleEditorAsset(skeletonRawData);
+      } else {
+        // origin asset
+        resource = await this._handleOriginAsset(skeletonRawData, spineAssetPath);
       }
       resolve(resource);
     });
   }
 
-  private async _handleEditorAsset(
-    item: LoadItem,
-    resourceManager: ResourceManager,
-    skeletonRawData: ArrayBuffer | string, 
-  ): Promise<SpineResource> {
+  private async _handleEditorAsset(skeletonRawData: ArrayBuffer | string): Promise<SpineResource> {
+    const resourceManager = this._resourceManager;
     let atlasRefId: string;
     if (typeof skeletonRawData === 'string') {
       const { atlas } = JSON.parse(skeletonRawData);
@@ -141,40 +166,19 @@ export class SpineLoader extends Loader<SpineResource> {
   }
 
   private async _handleOriginAsset(
-    item: LoadItem, 
-    resourceManager: ResourceManager, 
-    skeletonRawData?: ArrayBuffer | string,
+    skeletonRawData: ArrayBuffer | string,
+    spineAssetPath: SpineAssetPath
   ): Promise<SpineResource> {
-    let { fileExtensions } = item.params || {};
-    let spineAssetBundle: SpineAssetBundle = {
-      skeletonPath: '',
-      atlasPath: '',
-      imagePaths: [],
-      imageExtensions: [],
-    };
+    const resourceManager = this._resourceManager;
     const { engine } = resourceManager;
-    if (skeletonRawData) { // single url
-      this._fileName = this._extractFileName(item.url);
-      const fileExtension = SpineLoader.verifyFileExtensions(fileExtensions, false);
-      SpineLoader.deriveAndAssignSpineAsset(item.url, fileExtension as string, spineAssetBundle);
-      const { skeletonPath, atlasPath } = spineAssetBundle;
-      if (!skeletonPath || !atlasPath) {
-        throw new Error('Failed to load spine assets. Please check the file path and ensure the file extension is included.');
-      }
+    if (this._isSingleUrl) {
+      // single url
+      const { atlasPath } = spineAssetPath;
       const textureAtlas = await loadTextureAtlas(atlasPath, engine);
       return createSpineResource(engine, skeletonRawData, textureAtlas, this._fileName);
-    } else { // multi url
-      fileExtensions = SpineLoader.verifyFileExtensions(fileExtensions, true);
-      for (let i = 0; i < item.urls.length; i += 1) {
-        const url = item.urls[i];
-        const extension = fileExtensions && fileExtensions[i] || null;
-        SpineLoader.parseAndAssignSpineAsset(url, extension, spineAssetBundle);
-      }
-      const { skeletonPath, atlasPath, imagePaths, imageExtensions }  = spineAssetBundle;
-      if (!skeletonPath || !atlasPath) {
-        throw new Error('Failed to load spine assets. Please check the file path and ensure the file extension is included.');
-      }
-      this._fileName = this._extractFileName(skeletonPath);
+    } else {
+      // multi url
+      const { atlasPath, imagePaths, imageExtensions } = spineAssetPath;
       let textureAtlas: TextureAtlas;
       if (imagePaths.length > 0) {
         let atlasText: string, textures: Texture2D[];
