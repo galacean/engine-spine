@@ -13,8 +13,8 @@ export default defineConfig({
     }),
   ],
   server: {
-    port: 5173,
-    https: false
+    host: "127.0.0.1", // 使用 127.0.0.1 替代 localhost
+    port: 3000,        // 可以指定端口（默认 3000）
   },
   resolve: {
     alias: [{ find: /^~/, replacement: "" }],

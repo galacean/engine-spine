@@ -108,17 +108,18 @@ export class SpineLoader extends Loader<SpineResource> {
 
       this._isSingleUrl = !item.urls;
       if (this._isSingleUrl) {
+        const fileExtension = SpineLoader.verifyFileExtensions(fileExtensions, false);
+        SpineLoader.deriveAndAssignSpineAsset(item.url, fileExtension as string, spineAssetPath);
+      } else {
         fileExtensions = SpineLoader.verifyFileExtensions(fileExtensions, true);
         for (let i = 0; i < item.urls.length; i += 1) {
           const url = item.urls[i];
           const extension = fileExtensions && fileExtensions[i] || null;
           SpineLoader.parseAndAssignSpineAsset(url, extension, spineAssetPath);
         }
-      } else {
-        const fileExtension = SpineLoader.verifyFileExtensions(fileExtensions, false);
-        SpineLoader.deriveAndAssignSpineAsset(item.url, fileExtension as string, spineAssetPath);
       }
 
+      console.log(spineAssetPath)
       const { skeletonPath, atlasPath } = spineAssetPath;
       if (!skeletonPath || !atlasPath) {
         throw new Error('Failed to load spine assets. Please check the file path and ensure the file extension is included.');
@@ -129,15 +130,20 @@ export class SpineLoader extends Loader<SpineResource> {
       // @ts-ignore
       let skeletonRawData: ArrayBuffer | string = await resourceManager._request(skeletonPath, { type: 'arraybuffer' }) as ArrayBuffer;
       this._bufferReader = new BufferReader(new Uint8Array(skeletonRawData));
-      const header = this._bufferReader.nextStr();
-      const isEditorAsset = header.startsWith('spine');
+      let isEditorAsset = false;
+      try {
+        const header = this._bufferReader.nextStr(); // origin asset might exceed when read next str
+        isEditorAsset = header.startsWith('spine');
+      } catch {}
       try {
         const decoder = this._decoder;
         const jsonString = decoder.decode(skeletonRawData);
+        JSON.parse(jsonString);
         skeletonRawData = jsonString;
       } catch {}
 
-      if (!this._isSingleUrl) {  // origin asset
+      if (!this._isSingleUrl) {
+        // origin asset
         resource = await this._handleOriginAsset(skeletonRawData, spineAssetPath);
       } else if (isEditorAsset) {
         // editor asset
