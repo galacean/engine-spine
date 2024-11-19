@@ -1,5 +1,5 @@
 {
-  "version": "0.0.0-experimental-engine-spine-20241115",
+  "version": "4.2.2",
   "description": "galacean spine runtime",
   "name": "@galacean/engine-spine",
   "main": "dist/main.js",
