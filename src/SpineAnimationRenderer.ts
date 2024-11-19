@@ -60,6 +60,12 @@ export class SpineAnimationRenderer extends Renderer {
    */
   @assignmentClone
   zSpacing = 0.01;
+
+  /**
+   * Whether to premultiplied alpha for texture.
+   */
+  @assignmentClone
+  premultipliedAlpha = false;
   
   /**
    * Default state for spine animation.
