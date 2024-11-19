@@ -132,15 +132,21 @@ export class SpineLoader extends Loader<SpineResource> {
       this._bufferReader = new BufferReader(new Uint8Array(skeletonRawData));
       let isEditorAsset = false;
       try {
-        const header = this._bufferReader.nextStr(); // origin asset might exceed when read next str
-        isEditorAsset = header.startsWith('spine');
-      } catch {}
-      try {
         const decoder = this._decoder;
         const jsonString = decoder.decode(skeletonRawData);
-        JSON.parse(jsonString);
+        const parsedJson = JSON.parse(jsonString);
         skeletonRawData = jsonString;
-      } catch {}
+        if (parsedJson.spine) {
+          isEditorAsset = true;
+        }
+      } catch {
+        
+        try {
+          this._bufferReader = new BufferReader(new Uint8Array(skeletonRawData as ArrayBuffer));
+          const header = this._bufferReader.nextStr();
+          isEditorAsset = header.startsWith('spine');
+        } catch {} // origin asset may exceed when call next str 
+      }
 
       if (!this._isSingleUrl) {
         // origin asset
