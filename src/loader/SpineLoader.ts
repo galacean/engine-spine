@@ -46,10 +46,10 @@ export class SpineLoader extends Loader<SpineResource> {
     }
   }
 
-  static deriveAndAssignSpineAsset(url: string, fileExtension: string | null, bundle: SpineAssetPath) {
+  static deriveAndAssignSpineAsset(url: string, fileExtension: string | null, assetPath: SpineAssetPath) {
     const ext = SpineLoader.getUrlExtension(url, fileExtension);
     if (!ext) return;
-    bundle.skeletonPath = url;
+    assetPath.skeletonPath = url;
     const extensionPattern: RegExp = /(\.(json|bin|skel))$/;
     let baseUrl;
     if (extensionPattern.test(url)) {
@@ -57,7 +57,7 @@ export class SpineLoader extends Loader<SpineResource> {
     }
     if (baseUrl) {
       const atlasUrl = baseUrl + '.atlas';
-      bundle.atlasPath = atlasUrl;
+      assetPath.atlasPath = atlasUrl;
     }
   }
 
@@ -90,6 +90,12 @@ export class SpineLoader extends Loader<SpineResource> {
   private _decoder = new TextDecoder('utf-8');
   private _resourceManager: ResourceManager;
   private _isSingleUrl = false;
+  private _assetPath: SpineAssetPath = {
+    skeletonPath: '',
+    atlasPath: '',
+    imagePaths: [],
+    imageExtensions: [],
+  };
 
   load(
     item: SpineLoadItem,
@@ -99,12 +105,12 @@ export class SpineLoader extends Loader<SpineResource> {
       this._resourceManager = resourceManager;
       let resource: SpineResource;
       let { fileExtensions } = item.params || {};
-      const spineAssetPath: SpineAssetPath = {
-        skeletonPath: '',
-        atlasPath: '',
-        imagePaths: [],
-        imageExtensions: [],
-      };
+      const spineAssetPath = this._assetPath;
+      spineAssetPath.skeletonPath = '';
+      spineAssetPath.atlasPath = '';
+      spineAssetPath.imagePaths.length = 0;
+      spineAssetPath.imageExtensions.length = 0;
+      
 
       this._isSingleUrl = !item.urls;
       if (this._isSingleUrl) {
@@ -112,14 +118,14 @@ export class SpineLoader extends Loader<SpineResource> {
         SpineLoader.deriveAndAssignSpineAsset(item.url, fileExtension as string, spineAssetPath);
       } else {
         fileExtensions = SpineLoader.verifyFileExtensions(fileExtensions, true);
-        for (let i = 0; i < item.urls.length; i += 1) {
-          const url = item.urls[i];
+        const urls = item.urls;
+        for (let i = 0; i < urls.length; i += 1) {
+          const url = urls[i];
           const extension = fileExtensions && fileExtensions[i] || null;
           SpineLoader.parseAndAssignSpineAsset(url, extension, spineAssetPath);
         }
       }
 
-      console.log(spineAssetPath)
       const { skeletonPath, atlasPath } = spineAssetPath;
       if (!skeletonPath || !atlasPath) {
         throw new Error('Failed to load spine assets. Please check the file path and ensure the file extension is included.');
@@ -127,8 +133,7 @@ export class SpineLoader extends Loader<SpineResource> {
 
       this._fileName = this._extractFileName(skeletonPath);
 
-      // @ts-ignore
-      let skeletonRawData: ArrayBuffer | string = await resourceManager._request(skeletonPath, { type: 'arraybuffer' }) as ArrayBuffer;
+      let skeletonRawData: ArrayBuffer | string = await this.request(skeletonPath, { type: 'arraybuffer' }) as ArrayBuffer;
       this._bufferReader = new BufferReader(new Uint8Array(skeletonRawData));
       let isEditorAsset = false;
       try {
@@ -195,8 +200,7 @@ export class SpineLoader extends Loader<SpineResource> {
       if (imagePaths.length > 0) {
         let atlasText: string, textures: Texture2D[];
         [atlasText, textures] = await Promise.all([
-          // @ts-ignore
-          resourceManager._request(atlasPath, { type: 'text'}) as Promise<string>,
+          this.request(atlasPath, { type: 'text'}) as Promise<string>,
           loadTexturesByPaths(imagePaths, imageExtensions, engine),
         ]);
         textureAtlas = createTextureAtlas(atlasText, textures);

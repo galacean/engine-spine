@@ -1,4 +1,4 @@
-import { MeshAttachment, RegionAttachment, TextureAtlasRegion } from "@esotericsoftware/spine-core";
+import { Attachment, MeshAttachment, RegionAttachment, TextureAtlasRegion } from "@esotericsoftware/spine-core";
 
 /**
  * Creates a new `RegionAttachment` from a specified texture atlas region.
@@ -14,7 +14,7 @@ export function createAttachmentFromRegion(
   attachmentName: string,
   scale: number = 1,
   rotation: number = 0,
-) {
+): RegionAttachment {
   const attachment = new RegionAttachment(attachmentName, region.name);
   attachment.region = region;
   attachment.scaleX = 1;
@@ -46,22 +46,27 @@ export function cloneAttachmentWithRegion(
   useOriginalRegionSize: boolean = false,
   scale: number = 1,
   cloneMeshAsLinked: boolean = true,
-) {
-  if (attachment.constructor === RegionAttachment) {
-    const newAttachment = (attachment.copy() as RegionAttachment);
-    newAttachment.region = atlasRegion;
-    if (!useOriginalRegionSize) {
-      newAttachment.width = atlasRegion.width * scale;
-      newAttachment.height = atlasRegion.height * scale;
-    }
-    newAttachment.updateRegion();
-    return newAttachment;
-  } else if (attachment.constructor === MeshAttachment) {
-    const meshAttachment = attachment as MeshAttachment;
-    const newAttachment = (cloneMeshAsLinked ? attachment.newLinkedMesh() : meshAttachment.copy()) as MeshAttachment;
-    newAttachment.region = atlasRegion;
-    newAttachment.updateRegion();
-    return newAttachment;
+): Attachment {
+  let newAttachment: RegionAttachment | MeshAttachment;
+  switch(attachment.constructor) {
+    case RegionAttachment:
+      newAttachment = (attachment.copy() as RegionAttachment);
+      newAttachment.region = atlasRegion;
+      if (!useOriginalRegionSize) {
+        newAttachment.width = atlasRegion.width * scale;
+        newAttachment.height = atlasRegion.height * scale;
+      }
+      newAttachment.updateRegion();
+    break;
+
+    case MeshAttachment:
+      const meshAttachment = attachment as MeshAttachment;
+      newAttachment = (cloneMeshAsLinked ? meshAttachment.newLinkedMesh() : meshAttachment.copy()) as MeshAttachment;
+      newAttachment.region = atlasRegion;
+      newAttachment.updateRegion();
+    break;
+    default:
+      return attachment.copy();
   }
-  return attachment.copy();
+  return newAttachment;
 }

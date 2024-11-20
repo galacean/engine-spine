@@ -29,24 +29,27 @@ import { SpineResource } from "./SpineResource";
  * @param name - An optional name for the created Spine resource.
  * @returns A `SpineResource` instance that represents the created Spine resource.
  */
-export function createSpineResource(engine: Engine, skeletonRawData: string | ArrayBuffer, textureAtlas: TextureAtlas, name?: string) {
+export function createSpineResource(engine: Engine, skeletonRawData: string | ArrayBuffer, textureAtlas: TextureAtlas, name?: string): SpineResource {
   if (typeof skeletonRawData === 'string') {
     try {
-      // editor asset
-      const { data } = JSON.parse(skeletonRawData);
-      if (data) {
-        skeletonRawData = data;
+      const skeletonObject = JSON.parse(skeletonRawData);
+      if (typeof skeletonObject == "object") {
+        const { data, spine } = skeletonObject;
+        if (data && spine) { // editor asset
+          skeletonRawData = data;
+        }
       }
-    } catch {
-      // origin asset
+    } catch(err) {
+      throw new Error(`Invalid JSON skeleton data: ${err.message}`);
     }
   } else {
+    // Bin file
     let isEditorAsset = false;
     const reader = new BufferReader(new Uint8Array(skeletonRawData));
     try {
       const header = reader.nextStr(); // origin asset might exceed when read next str
       isEditorAsset = header.startsWith('spine');
-    } catch {}
+    } catch {} // origin asset
     if (isEditorAsset) {
       reader.nextStr(); // atlas id
       skeletonRawData = reader.nextImageData();
@@ -77,14 +80,11 @@ export function createSkeletonData(
  */
 export function createTextureAtlas(atlasText: string, textures: Texture2D[]): TextureAtlas {
   try {
-    // editor asset
     const { data, textures } = JSON.parse(atlasText);
-    if (data && textures) {
+    if (data && textures) { // editor asset
       atlasText = data;
     }
-  } catch {
-    // origin asset
-  }
+  } catch {}  // origin asset
   const textureAtlas = new TextureAtlas(atlasText);
   textureAtlas.pages.forEach((page, index) => {
     const engineTexture = textures.find(item => item.name === page.name) || textures[index];
