@@ -177,11 +177,12 @@ export class SpineGenerator {
         finalColor.r = skeletonColor.r * slotColor.r * attachmentColor.r;
 				finalColor.g = skeletonColor.g * slotColor.g * attachmentColor.g;
 				finalColor.b = skeletonColor.b * slotColor.b * attachmentColor.b;
-				finalColor.a = skeletonColor.a * slotColor.a * attachmentColor.a;
+        const finalAlpha = skeletonColor.a * slotColor.a * attachmentColor.a;
+				finalColor.a = finalAlpha;
         if (premultipliedAlpha) {
-          finalColor.r *= finalColor.a;
-					finalColor.g *= finalColor.a;
-					finalColor.b *= finalColor.a;
+          finalColor.r *= finalAlpha;
+					finalColor.g *= finalAlpha;
+					finalColor.b *= finalAlpha;
         }
 
         if (isClipping) {
