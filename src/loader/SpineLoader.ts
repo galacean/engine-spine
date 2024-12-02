@@ -119,7 +119,8 @@ export class SpineLoader extends Loader<SpineResource> {
       } else {
         fileExtensions = SpineLoader.verifyFileExtensions(fileExtensions, true);
         const urls = item.urls;
-        for (let i = 0; i < urls.length; i += 1) {
+        const urlsLen = urls.length;
+        for (let i = 0; i < urlsLen; i += 1) {
           const url = urls[i];
           const extension = fileExtensions && fileExtensions[i] || null;
           SpineLoader.parseAndAssignSpineAsset(url, extension, spineAssetPath);
