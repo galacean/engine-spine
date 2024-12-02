@@ -90,12 +90,6 @@ export class SpineLoader extends Loader<SpineResource> {
   private _decoder = new TextDecoder('utf-8');
   private _resourceManager: ResourceManager;
   private _isSingleUrl = false;
-  private _assetPath: SpineAssetPath = {
-    skeletonPath: '',
-    atlasPath: '',
-    imagePaths: [],
-    imageExtensions: [],
-  };
 
   load(
     item: SpineLoadItem,
@@ -105,13 +99,12 @@ export class SpineLoader extends Loader<SpineResource> {
       this._resourceManager = resourceManager;
       let resource: SpineResource;
       let { fileExtensions } = item.params || {};
-      const spineAssetPath = this._assetPath;
-      spineAssetPath.skeletonPath = '';
-      spineAssetPath.atlasPath = '';
-      spineAssetPath.imagePaths.length = 0;
-      spineAssetPath.imageExtensions.length = 0;
-      
-
+      const spineAssetPath: SpineAssetPath = {
+        skeletonPath: '',
+        atlasPath: '',
+        imagePaths: [],
+        imageExtensions: [],
+      };
       this._isSingleUrl = !item.urls;
       if (this._isSingleUrl) {
         const fileExtension = SpineLoader.verifyFileExtensions(fileExtensions, false);
