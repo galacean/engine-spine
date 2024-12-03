@@ -17,3 +17,4 @@ e2e/screenshots/*
 e2e/downloads/*
 e2e/diff/*
 e2e/.dev/mpa
+pnpm-lock.yaml
