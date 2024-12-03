@@ -106,8 +106,6 @@ export class SpineLoader extends Loader<SpineResource> {
   ): AssetPromise<SpineResource> {
     return new AssetPromise(async (resolve) => {
       this._resourceManager = resourceManager;
-      let resource: SpineResource;
-      let { fileExtensions } = item.params || {};
       const spineAssetPath: SpineAssetPath = {
         skeletonPath: '',
         atlasPath: '',
@@ -115,6 +113,7 @@ export class SpineLoader extends Loader<SpineResource> {
         imageExtensions: [],
       };
       this._isSingleUrl = !item.urls;
+      let { fileExtensions } = item.params || {};
       if (this._isSingleUrl) {
         const fileExtension = SpineLoader.verifyFileExtensions(fileExtensions, false);
         SpineLoader.deriveAndAssignSpineAsset(item.url, fileExtension as string, spineAssetPath);
@@ -157,6 +156,7 @@ export class SpineLoader extends Loader<SpineResource> {
         }
       }
 
+      let resource: SpineResource;
       if (isEditorAsset) {
         resource = await this._handleEditorAsset(skeletonRawData);
       } else {
