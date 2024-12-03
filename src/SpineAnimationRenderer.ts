@@ -1,25 +1,25 @@
-import { Skeleton, AnimationState, Physics, TrackEntry, AnimationStateData } from "@esotericsoftware/spine-core";
-import { SpineGenerator } from "./SpineGenerator";
+import { AnimationState, AnimationStateData, Physics, Skeleton, TrackEntry } from "@esotericsoftware/spine-core";
 import {
-  Buffer,
-  Renderer,
-  Entity,
-  ignoreClone,
-  Material,
-  Engine,
+  assignmentClone,
   BoundingBox,
-  Primitive,
-  SubPrimitive,
-  deepClone,
-  VertexElement,
-  VertexElementFormat,
+  Buffer,
   BufferBindFlag,
   BufferUsage,
-  VertexBufferBinding,
+  deepClone,
+  Engine,
+  Entity,
+  ignoreClone,
   IndexBufferBinding,
   IndexFormat,
-  assignmentClone,
+  Material,
+  Primitive,
+  Renderer,
+  SubPrimitive,
+  VertexBufferBinding,
+  VertexElement,
+  VertexElementFormat,
 } from "@galacean/engine";
+import { SpineGenerator } from "./SpineGenerator";
 import { SpineMaterial } from "./SpineMaterial";
 import { SpineResource } from "./loader/SpineResource";
 import { getBlendMode } from "./util/BlendMode";
@@ -60,7 +60,16 @@ export class SpineAnimationRenderer extends Renderer {
    */
   @assignmentClone
   zSpacing = 0.01;
-  
+
+  /**
+   * Whether to use premultiplied alpha mode for rendering.
+   * When enabled, vertex color values are multiplied by the alpha channel.
+   * @remarks
+ If this option is enabled, the Spine editor must export textures with "Premultiply Alpha" checked.
+   */
+  @assignmentClone
+  premultipliedAlpha = false;
+
   /**
    * Whether to premultiplied alpha for texture.
    */
@@ -460,5 +469,5 @@ export class SpineAnimationDefaultConfig {
      * The name of the default skin @defaultValue `default`
      */
     public skinName: string = "default"
-  ) {}
+  ) { }
 }

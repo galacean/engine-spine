@@ -174,7 +174,7 @@ export class SpineLoader extends Loader<SpineResource> {
     }
     // @ts-ignore
     const textureAtlas = await resourceManager.getResourceByRef({ refId: atlasRefId });
-    return  createSpineResource(resourceManager.engine, skeletonRawData, textureAtlas, this._fileName);
+    return createSpineResource(resourceManager.engine, skeletonRawData, textureAtlas, this._fileName);
   }
 
   private async _handleOriginAsset(

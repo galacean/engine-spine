@@ -175,6 +175,7 @@ async function loadSpine(root: Entity, engine: Engine, resource) {
   spineEntity.transform.setPosition(-25 + Math.random() * 50, -250, 0);
   const spineAnimation = spineEntity.getComponent(SpineAnimationRenderer) as SpineAnimationRenderer;
   if (scene === 'physic') {
+    spineAnimation.premultipliedAlpha = true;
     spineEntity.transform.setScale(0.5, 0.5, 0.5);
   }
   root.addChild(spineEntity);
