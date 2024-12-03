@@ -127,9 +127,16 @@ export class SpineLoader extends Loader<SpineResource> {
 
       this._fileName = this._extractFileName(skeletonPath);
 
+
       let skeletonRawData: ArrayBuffer | string = await this.request(skeletonPath, { type: 'arraybuffer' }) as ArrayBuffer;
-      this._bufferReader = new BufferReader(new Uint8Array(skeletonRawData));
+
+      if (!this._isSingleUrl) {
+        resolve(await this._handleOriginAsset(skeletonRawData, spineAssetPath));
+        return;
+      }
+
       let isEditorAsset = false;
+
       try {
         const decoder = this._decoder;
         const jsonString = decoder.decode(skeletonRawData);
@@ -140,19 +147,15 @@ export class SpineLoader extends Loader<SpineResource> {
         }
       } catch {
         this._bufferReader = new BufferReader(new Uint8Array(skeletonRawData as ArrayBuffer));
-        console.log(this.canReadString(this._bufferReader));
-        const header = this._bufferReader.nextStr();
-        isEditorAsset = header.startsWith('spine');
+        if (this.canReadString(this._bufferReader)) {
+          const header = this._bufferReader.nextStr();
+          isEditorAsset = header.startsWith('spine');
+        }
       }
 
-      if (!this._isSingleUrl) {
-        // origin asset
-        resource = await this._handleOriginAsset(skeletonRawData, spineAssetPath);
-      } else if (isEditorAsset) {
-        // editor asset
+     if (isEditorAsset) {
         resource = await this._handleEditorAsset(skeletonRawData);
       } else {
-        // origin asset
         resource = await this._handleOriginAsset(skeletonRawData, spineAssetPath);
       }
       resolve(resource);
@@ -181,12 +184,10 @@ export class SpineLoader extends Loader<SpineResource> {
     const resourceManager = this._resourceManager;
     const { engine } = resourceManager;
     if (this._isSingleUrl) {
-      // single url
       const { atlasPath } = spineAssetPath;
       const textureAtlas = await loadTextureAtlas(atlasPath, engine);
       return createSpineResource(engine, skeletonRawData, textureAtlas, this._fileName);
     } else {
-      // multi url
       const { atlasPath, imagePaths, imageExtensions } = spineAssetPath;
       let textureAtlas: TextureAtlas;
       if (imagePaths.length > 0) {
@@ -216,6 +217,4 @@ export class SpineLoader extends Loader<SpineResource> {
     const strByteLength = bufferReader["_dataView"].getUint16(currentPosition, true);
     return currentPosition + 2 + strByteLength <= bufferReader.data.byteLength;
   }
-  
-
 }
