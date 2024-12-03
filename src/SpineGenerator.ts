@@ -1,30 +1,27 @@
 import {
-  Texture2D,
-  SubPrimitive,
-  Vector3,
-  Material,
-  Engine,
-  BoundingBox,
-} from "@galacean/engine";
-import {
-  Skeleton,
-  SkeletonClipping,
-  RegionAttachment,
-  MeshAttachment,
-  ClippingAttachment,
   ArrayLike,
-  Color,
   BlendMode,
-  SkeletonData,
-  Skin,
+  ClippingAttachment,
+  Color,
+  MeshAttachment,
   NumberArrayLike,
-  Attachment,
+  RegionAttachment,
+  Skeleton,
+  SkeletonClipping
 } from "@esotericsoftware/spine-core";
+import {
+  BoundingBox,
+  Engine,
+  Material,
+  SubPrimitive,
+  Texture2D,
+  Vector3,
+} from "@galacean/engine";
 import { SpineAnimationRenderer } from "./SpineAnimationRenderer";
 import { AdaptiveTexture } from "./loader/LoaderUtils";
-import { ReturnablePool } from "./util/ReturnablePool";
-import { ClearablePool } from "./util/ClearablePool";
 import { setBlendMode } from "./util/BlendMode";
+import { ClearablePool } from "./util/ClearablePool";
+import { ReturnablePool } from "./util/ReturnablePool";
 
 class SubRenderItem {
   subPrimitive: SubPrimitive;
@@ -80,6 +77,7 @@ export class SpineGenerator {
       _vertexCount,
       _subPrimitives,
       zSpacing,
+      premultipliedAlpha,
     } = renderer;
     let {
       tempVerts,
@@ -168,26 +166,31 @@ export class SpineGenerator {
         let finalIndices: ArrayLike<number>;
         let finalIndicesLength: number;
 
-        let skeleton = slot.bone.skeleton;
-        let skeletonColor = skeleton.color;
-        let slotColor = slot.color;
-        let alpha = skeletonColor.a * slotColor.a * attachmentColor.a;
-        let color = SpineGenerator.tempColor;
-        let dark = SpineGenerator.tempDark;
-        color.set(
-          skeletonColor.r * slotColor.r * attachmentColor.r,
-          skeletonColor.g * slotColor.g * attachmentColor.g,
-          skeletonColor.b * slotColor.b * attachmentColor.b,
-          alpha,
-        );
+        const skeleton = slot.bone.skeleton;
+        const skeletonColor = skeleton.color;
+        const slotColor = slot.color;
+        const finalColor = SpineGenerator.tempColor;
+        const finalAlpha = skeletonColor.a * slotColor.a * attachmentColor.a;
+       
+        finalColor.r = skeletonColor.r * slotColor.r * attachmentColor.r;
+				finalColor.g = skeletonColor.g * slotColor.g * attachmentColor.g;
+				finalColor.b = skeletonColor.b * slotColor.b * attachmentColor.b;
+				finalColor.a = finalAlpha;
+
+        if (premultipliedAlpha) {
+          finalColor.r *= finalAlpha;
+					finalColor.g *= finalAlpha;
+					finalColor.b *= finalAlpha;
+        }
 
         if (isClipping) {
+          const dark = SpineGenerator.tempDark;
           _clipper.clipTriangles(
             tempVerts,
             triangles,
             triangles.length,
             uvs,
-            color,
+            finalColor,
             dark,
             false,
           );
@@ -197,7 +200,7 @@ export class SpineGenerator {
           finalIndicesLength = finalIndices.length;
         } else {
           let verts = tempVerts;
-          const { r, g, b, a } = color;
+          const { r, g, b, a } = finalColor;
           for (
             let v = 2, u = 0, n = numFloats;
             v < n;
@@ -345,7 +348,7 @@ export class SpineGenerator {
       const key = `${subTexture.instanceId}_${blendMode}`;
       let material = SpineAnimationRenderer._materialCache.get(key);
       if (!material) {
-        material = this._createMaterialForTexture(subTexture, engine, blendMode);
+        material = this._createMaterialForTexture(subTexture, engine, blendMode, premultipliedAlpha);
         SpineAnimationRenderer._materialCache.set(key, material);
       }
       renderer.setMaterial(i, material);
@@ -369,10 +372,10 @@ export class SpineGenerator {
     this._separateSlotTextureMap.set(slotName, texture);
   }
 
-  private _createMaterialForTexture(texture: Texture2D, engine: Engine, blendMode: BlendMode): Material {
+  private _createMaterialForTexture(texture: Texture2D, engine: Engine, blendMode: BlendMode, premultipliedAlpha: boolean): Material {
     const material = SpineAnimationRenderer._getDefaultMaterial(engine);
     material.shaderData.setTexture("material_SpineTexture", texture);
-    setBlendMode(material, blendMode);
+    setBlendMode(material, blendMode, premultipliedAlpha);
     return material;
   }
 
