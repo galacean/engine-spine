@@ -98,7 +98,8 @@ export class SpineLoader extends Loader<SpineResource> {
       if (item.urls) { // single url might be editor asset
         resource = await this._handleOriginAsset(item, resourceManager);
       } else {
-        const buffer: ArrayBuffer = await this.request(item.url, { type: 'arraybuffer' });
+        // @ts-ignore
+        const buffer: ArrayBuffer = await resourceManager._request(item.url, { type: 'arraybuffer' });
         const reader = new BufferReader(new Uint8Array(buffer));
         const header = reader.nextStr();
         if (header.startsWith('spine')) {
@@ -174,14 +175,16 @@ export class SpineLoader extends Loader<SpineResource> {
       if (!skeletonPath || !atlasPath) {
         throw new Error('Failed to load spine assets. Please check the file path and ensure the file extension is included.');
       }
-      const skeletonPromise = skeletonExtension === 'json' ? this.request(skeletonPath, { type: 'text'}) : this.request(skeletonPath, { type: 'arraybuffer' });
+      // @ts-ignore
+      const skeletonPromise = skeletonExtension === 'json' ? resourceManager._request(skeletonPath, { type: 'text'}) : resourceManager._request(skeletonPath, { type: 'arraybuffer' });
       const type = skeletonExtension === 'json' ? 'json' : 'skel';
       let loadQueue: Promise<any>[] = [ skeletonPromise ];
       let textureAtlas: TextureAtlas;
       let skeletonTextData: string | ArrayBuffer;
       if (imagePaths.length > 0) {
         loadQueue = loadQueue.concat([
-          this.request(atlasPath, { type: 'text'}),
+          // @ts-ignore
+          resourceManager._request(atlasPath, { type: 'text'}),
           loadTexturesByPath(imagePaths, imageExtensions, engine),
         ]);
         let atlasText: string, textures: Texture2D[];
