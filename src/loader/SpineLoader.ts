@@ -157,9 +157,7 @@ export class SpineLoader extends Loader<SpineResource> {
         }
       }
 
-      if (!this._isSingleUrl) {
-        resource = await this._handleOriginAsset(skeletonRawData, spineAssetPath);
-      } else if (isEditorAsset) {
+      if (isEditorAsset) {
         resource = await this._handleEditorAsset(skeletonRawData);
       } else {
         resource = await this._handleOriginAsset(skeletonRawData, spineAssetPath);
