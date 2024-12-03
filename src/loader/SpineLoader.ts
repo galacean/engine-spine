@@ -139,12 +139,10 @@ export class SpineLoader extends Loader<SpineResource> {
           isEditorAsset = true;
         }
       } catch {
-        
-        try {
-          this._bufferReader = new BufferReader(new Uint8Array(skeletonRawData as ArrayBuffer));
-          const header = this._bufferReader.nextStr();
-          isEditorAsset = header.startsWith('spine');
-        } catch {} // origin asset may exceed when call next str 
+        this._bufferReader = new BufferReader(new Uint8Array(skeletonRawData as ArrayBuffer));
+        console.log(this.canReadString(this._bufferReader));
+        const header = this._bufferReader.nextStr();
+        isEditorAsset = header.startsWith('spine');
       }
 
       if (!this._isSingleUrl) {
@@ -209,4 +207,15 @@ export class SpineLoader extends Loader<SpineResource> {
     const match = url.match(/\/([^\/]+?)(\.[^\/]*)?$/);
     return match ? match[1] : "Spine Entity";
   }
+
+  private canReadString(bufferReader: BufferReader): boolean {
+    const currentPosition = bufferReader.position;
+    if (currentPosition + 2 > bufferReader.data.byteLength) {
+      return false;
+    }
+    const strByteLength = bufferReader["_dataView"].getUint16(currentPosition, true);
+    return currentPosition + 2 + strByteLength <= bufferReader.data.byteLength;
+  }
+  
+
 }
