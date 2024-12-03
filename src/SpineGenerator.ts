@@ -1,30 +1,27 @@
 import {
-  Texture2D,
-  SubPrimitive,
-  Vector3,
-  Material,
-  Engine,
-  BoundingBox,
-} from "@galacean/engine";
-import {
-  Skeleton,
-  SkeletonClipping,
-  RegionAttachment,
-  MeshAttachment,
-  ClippingAttachment,
   ArrayLike,
-  Color,
   BlendMode,
-  SkeletonData,
-  Skin,
+  ClippingAttachment,
+  Color,
+  MeshAttachment,
   NumberArrayLike,
-  Attachment,
+  RegionAttachment,
+  Skeleton,
+  SkeletonClipping
 } from "@esotericsoftware/spine-core";
+import {
+  BoundingBox,
+  Engine,
+  Material,
+  SubPrimitive,
+  Texture2D,
+  Vector3,
+} from "@galacean/engine";
 import { SpineAnimationRenderer } from "./SpineAnimationRenderer";
 import { AdaptiveTexture } from "./loader/LoaderUtils";
-import { ReturnablePool } from "./util/ReturnablePool";
-import { ClearablePool } from "./util/ClearablePool";
 import { setBlendMode } from "./util/BlendMode";
+import { ClearablePool } from "./util/ClearablePool";
+import { ReturnablePool } from "./util/ReturnablePool";
 
 class SubRenderItem {
   subPrimitive: SubPrimitive;
@@ -169,16 +166,17 @@ export class SpineGenerator {
         let finalIndices: ArrayLike<number>;
         let finalIndicesLength: number;
 
-        let skeleton = slot.bone.skeleton;
-        let skeletonColor = skeleton.color;
-        let slotColor = slot.color;
-        let finalColor = SpineGenerator.tempColor;
-        let dark = SpineGenerator.tempDark;
+        const skeleton = slot.bone.skeleton;
+        const skeletonColor = skeleton.color;
+        const slotColor = slot.color;
+        const finalColor = SpineGenerator.tempColor;
+        const finalAlpha = skeletonColor.a * slotColor.a * attachmentColor.a;
+       
         finalColor.r = skeletonColor.r * slotColor.r * attachmentColor.r;
 				finalColor.g = skeletonColor.g * slotColor.g * attachmentColor.g;
 				finalColor.b = skeletonColor.b * slotColor.b * attachmentColor.b;
-        const finalAlpha = skeletonColor.a * slotColor.a * attachmentColor.a;
 				finalColor.a = finalAlpha;
+
         if (premultipliedAlpha) {
           finalColor.r *= finalAlpha;
 					finalColor.g *= finalAlpha;
@@ -186,6 +184,7 @@ export class SpineGenerator {
         }
 
         if (isClipping) {
+          const dark = SpineGenerator.tempDark;
           _clipper.clipTriangles(
             tempVerts,
             triangles,
