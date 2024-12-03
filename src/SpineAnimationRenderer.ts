@@ -62,7 +62,9 @@ export class SpineAnimationRenderer extends Renderer {
   zSpacing = 0.01;
 
   /**
-   * Whether to premultiplied alpha for texture.
+   * Whether to use premultiplied alpha mode for rendering.
+   * When enabled, vertex color values are multiplied by the alpha channel.
+   * @remarks If this option is enabled, the Spine editor must export textures with "Premultiply Alpha" checked.
    */
   @assignmentClone
   premultipliedAlpha = false;
