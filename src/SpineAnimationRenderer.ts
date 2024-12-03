@@ -71,12 +71,6 @@ export class SpineAnimationRenderer extends Renderer {
   premultipliedAlpha = false;
 
   /**
-   * Whether to premultiplied alpha for texture.
-   */
-  @assignmentClone
-  premultipliedAlpha = false;
-
-  /**
    * Default state for spine animation.
    * Contains the default animation name to be played, whether this animation should loop, the default skin name.
    */

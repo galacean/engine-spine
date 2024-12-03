@@ -1,14 +1,14 @@
+import { SkeletonData, TextureAtlas } from "@esotericsoftware/spine-core";
 import {
   AssetPromise,
+  BufferReader,
   Loader,
   LoadItem,
   resourceLoader,
   ResourceManager,
   Texture2D,
-  BufferReader,
 } from "@galacean/engine";
-import { TextureAtlas } from "@esotericsoftware/spine-core";
-import { createSpineResource, createTextureAtlas, loadTextureAtlas, loadTexturesByPaths } from "./LoaderUtils";
+import { createSkeletonData, createTextureAtlas, loadTextureAtlas, loadTexturesByPaths } from "./LoaderUtils";
 import { SpineResource } from "./SpineResource";
 
 export type SpineAssetPath = {
@@ -18,7 +18,7 @@ export type SpineAssetPath = {
   imageExtensions: string[];
 }
 
-type SpineLoaderParams =  {
+type SpineLoaderParams = {
   fileExtensions?: string | string[];
 }
 
@@ -33,7 +33,7 @@ export class SpineLoader extends Loader<SpineResource> {
     const { imageExtensions, skeletonExtensions } = SpineLoader;
     const ext = SpineLoader.getUrlExtension(url, fileExtension);
     if (!ext) return;
-  
+
     if (skeletonExtensions.includes(ext)) {
       assetPath.skeletonPath = url;
     }
@@ -85,6 +85,15 @@ export class SpineLoader extends Loader<SpineResource> {
     return null;
   }
 
+  static canReadString(bufferReader: BufferReader): boolean {
+    const currentPosition = bufferReader.position;
+    if (currentPosition + 2 > bufferReader.data.byteLength) {
+      return false;
+    }
+    const strByteLength = bufferReader["_dataView"].getUint16(currentPosition, true);
+    return currentPosition + 2 + strByteLength <= bufferReader.data.byteLength;
+  }
+
   private _bufferReader: BufferReader;
   private _fileName = 'Spine Entity';
   private _decoder = new TextDecoder('utf-8');
@@ -127,13 +136,8 @@ export class SpineLoader extends Loader<SpineResource> {
 
       this._fileName = this._extractFileName(skeletonPath);
 
-
-      let skeletonRawData: ArrayBuffer | string = await this.request(skeletonPath, { type: 'arraybuffer' }) as ArrayBuffer;
-
-      if (!this._isSingleUrl) {
-        resolve(await this._handleOriginAsset(skeletonRawData, spineAssetPath));
-        return;
-      }
+      // @ts-ignore
+      let skeletonRawData: ArrayBuffer | string = await resourceManager._request(skeletonPath, { type: 'arraybuffer' }) as ArrayBuffer;
 
       let isEditorAsset = false;
 
@@ -144,16 +148,18 @@ export class SpineLoader extends Loader<SpineResource> {
         skeletonRawData = jsonString;
         if (parsedJson.spine) {
           isEditorAsset = true;
+          skeletonRawData = parsedJson.data;
         }
       } catch {
         this._bufferReader = new BufferReader(new Uint8Array(skeletonRawData as ArrayBuffer));
-        if (this.canReadString(this._bufferReader)) {
-          const header = this._bufferReader.nextStr();
-          isEditorAsset = header.startsWith('spine');
+        if (SpineLoader.canReadString(this._bufferReader) && this._bufferReader.nextStr().startsWith('spine')) {
+          isEditorAsset = true;
         }
       }
 
-     if (isEditorAsset) {
+      if (!this._isSingleUrl) {
+        resource = await this._handleOriginAsset(skeletonRawData, spineAssetPath);
+      } else if (isEditorAsset) {
         resource = await this._handleEditorAsset(skeletonRawData);
       } else {
         resource = await this._handleOriginAsset(skeletonRawData, spineAssetPath);
@@ -171,10 +177,12 @@ export class SpineLoader extends Loader<SpineResource> {
     } else {
       const reader = this._bufferReader;
       atlasRefId = reader.nextStr();
+      skeletonRawData = reader.nextImageData();
     }
     // @ts-ignore
     const textureAtlas = await resourceManager.getResourceByRef({ refId: atlasRefId });
-    return createSpineResource(resourceManager.engine, skeletonRawData, textureAtlas, this._fileName);
+    const skeletonData = createSkeletonData(skeletonRawData, textureAtlas);
+    return new SpineResource(resourceManager.engine, skeletonData, this._fileName);
   }
 
   private async _handleOriginAsset(
@@ -183,38 +191,33 @@ export class SpineLoader extends Loader<SpineResource> {
   ): Promise<SpineResource> {
     const resourceManager = this._resourceManager;
     const { engine } = resourceManager;
+    let skeletonData: SkeletonData;
+    let textureAtlas: TextureAtlas;
     if (this._isSingleUrl) {
       const { atlasPath } = spineAssetPath;
-      const textureAtlas = await loadTextureAtlas(atlasPath, engine);
-      return createSpineResource(engine, skeletonRawData, textureAtlas, this._fileName);
+      textureAtlas = await loadTextureAtlas(atlasPath, engine);
+      skeletonData = createSkeletonData(skeletonRawData, textureAtlas);
     } else {
       const { atlasPath, imagePaths, imageExtensions } = spineAssetPath;
       let textureAtlas: TextureAtlas;
       if (imagePaths.length > 0) {
         let atlasText: string, textures: Texture2D[];
         [atlasText, textures] = await Promise.all([
-          this.request(atlasPath, { type: 'text'}) as Promise<string>,
+          // @ts-ignore
+          resourceManager._request(atlasPath, { type: 'text' }) as Promise<string>,
           loadTexturesByPaths(imagePaths, imageExtensions, engine),
         ]);
         textureAtlas = createTextureAtlas(atlasText, textures);
       } else {
         textureAtlas = await loadTextureAtlas(atlasPath, engine);
       }
-      return createSpineResource(engine, skeletonRawData, textureAtlas, this._fileName);
+      skeletonData = createSkeletonData(skeletonRawData, textureAtlas);
     }
+    return new SpineResource(engine, skeletonData, this._fileName);
   }
 
   private _extractFileName(url: string): string {
     const match = url.match(/\/([^\/]+?)(\.[^\/]*)?$/);
     return match ? match[1] : "Spine Entity";
-  }
-
-  private canReadString(bufferReader: BufferReader): boolean {
-    const currentPosition = bufferReader.position;
-    if (currentPosition + 2 > bufferReader.data.byteLength) {
-      return false;
-    }
-    const strByteLength = bufferReader["_dataView"].getUint16(currentPosition, true);
-    return currentPosition + 2 + strByteLength <= bufferReader.data.byteLength;
   }
 }

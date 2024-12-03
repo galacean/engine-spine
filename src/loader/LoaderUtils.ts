@@ -19,6 +19,7 @@ import {
   TextureWrap,
 } from "@esotericsoftware/spine-core";
 import { SpineResource } from "./SpineResource";
+import { SpineLoader } from "./SpineLoader";
 
 /**
  * Creates a runtime Spine resource based on skeleton raw data and a Spine `TextureAtlas`.
@@ -35,7 +36,7 @@ export function createSpineResource(engine: Engine, skeletonRawData: string | Ar
       const skeletonObject = JSON.parse(skeletonRawData);
       if (typeof skeletonObject == "object") {
         const { data, spine } = skeletonObject;
-        if (data && spine) { // editor asset
+        if (data && spine) {
           skeletonRawData = data;
         }
       }
@@ -43,20 +44,39 @@ export function createSpineResource(engine: Engine, skeletonRawData: string | Ar
       throw new Error(`Invalid JSON skeleton data: ${err.message}`);
     }
   } else {
-    // Bin file
-    let isEditorAsset = false;
     const reader = new BufferReader(new Uint8Array(skeletonRawData));
-    try {
-      const header = reader.nextStr(); // origin asset might exceed when read next str
-      isEditorAsset = header.startsWith('spine');
-    } catch {} // origin asset
-    if (isEditorAsset) {
-      reader.nextStr(); // atlas id
-      skeletonRawData = reader.nextImageData();
+    if (SpineLoader.canReadString(reader)) {
+      if (reader.nextStr().startsWith('spine')) {
+        reader.nextStr();
+        skeletonRawData = reader.nextImageData();
+      }
     }
   }
   const skeletonData = createSkeletonData(skeletonRawData, textureAtlas);
   return new SpineResource(engine, skeletonData, name);
+}
+
+/**
+ * Creates a `TextureAtlas` instance from atlas text and texture data.
+ * 
+ * @param atlasText - The atlas text data in Spine format.
+ * @param textures - An array of `Texture2D` objects representing the textures referenced in the atlas.
+ * @returns A `TextureAtlas` instance configured with the provided textures.
+ */
+export function createTextureAtlas(atlasText: string, textures: Texture2D[]): TextureAtlas {
+  try {
+    const { data, textures } = JSON.parse(atlasText);
+    if (data && textures) {
+      atlasText = data;
+    }
+  } catch {}
+  const textureAtlas = new TextureAtlas(atlasText);
+  textureAtlas.pages.forEach((page, index) => {
+    const engineTexture = textures.find(item => item.name === page.name) || textures[index];
+    const texture = createAdaptiveTexture(engineTexture);
+    page.setTexture(texture);
+  });
+  return textureAtlas;
 }
 
 export function createSkeletonData(
@@ -71,28 +91,6 @@ export function createSkeletonData(
   }
 }
 
-/**
- * Creates a `TextureAtlas` instance from atlas text and texture data.
- * 
- * @param atlasText - The atlas text data in Spine format.
- * @param textures - An array of `Texture2D` objects representing the textures referenced in the atlas.
- * @returns A `TextureAtlas` instance configured with the provided textures.
- */
-export function createTextureAtlas(atlasText: string, textures: Texture2D[]): TextureAtlas {
-  try {
-    const { data, textures } = JSON.parse(atlasText);
-    if (data && textures) { // editor asset
-      atlasText = data;
-    }
-  } catch {}  // origin asset
-  const textureAtlas = new TextureAtlas(atlasText);
-  textureAtlas.pages.forEach((page, index) => {
-    const engineTexture = textures.find(item => item.name === page.name) || textures[index];
-    const texture = createAdaptiveTexture(engineTexture);
-    page.setTexture(texture);
-  });
-  return textureAtlas;
-}
 
 export async function loadTexturesByPaths(
   imagePaths: string[],
