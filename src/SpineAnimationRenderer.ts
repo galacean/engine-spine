@@ -153,10 +153,6 @@ export class SpineAnimationRenderer extends Renderer {
    * @internal
    */
   override update(delta: number): void {
-    if (this._needsInitialize) {
-      this._initialize();
-      this._needsInitialize = false;
-    }
     const { _state, _skeleton } = this;
     if (_state && _skeleton) {
       _state.update(delta);
@@ -179,6 +175,10 @@ export class SpineAnimationRenderer extends Renderer {
    */
   // @ts-ignore
   override _render(context: any): void {
+    if (this._needsInitialize) {
+      this._initialize();
+      this._needsInitialize = false;
+    }
     const { _primitive, _subPrimitives } = this;
     const { _materials: materials, _engine: engine } = this;
     // @ts-ignore
@@ -269,7 +269,6 @@ export class SpineAnimationRenderer extends Renderer {
       _primitive.destroy();
     }
     this._clearMaterialCache();
-    this._resource && this._resource.destroy();
     this._primitive = null;
     this._resource = null;
     this._skeleton = null;
@@ -352,6 +351,7 @@ export class SpineAnimationRenderer extends Renderer {
         this._onAnimationComplete(entry);
       },
     });
+    this.update(0);
   }
 
   private _onAnimationStart(): void {
@@ -438,6 +438,7 @@ export enum RendererUpdateFlags {
   /** Include world position and world bounds. */
   WorldVolume = 0x1
 }
+
 
 /**
  * Default state for spine animation.
