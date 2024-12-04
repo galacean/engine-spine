@@ -1,19 +1,15 @@
 import {
-  WebGLEngine,
   Camera,
-  Entity,
-  Vector3,
-  AssetType,
-  Texture2D,
-  Logger,
-  KTX2TargetFormat,
   Engine,
+  Entity,
+  KTX2TargetFormat,
+  Logger,
+  Vector3,
+  WebGLEngine
 } from "@galacean/engine";
-import { OrbitControl, Stats } from "@galacean/engine-toolkit";
 import * as dat from 'dat.gui';
-import { SpineAnimationRenderer, SkeletonData } from "../src/index";
-import BoundingBoxLine from './outline';
-import { SkeletonDataResource } from "../src/loader/SkeletonDataResource";
+import { SpineAnimationRenderer } from "../src/index";
+import { SpineResource } from "../src/loader/SpineResource";
 
 Logger.enable();
 console.log(SpineAnimationRenderer);
@@ -37,7 +33,7 @@ const blobResource: any = {
   }
 };
 
-const baseDemo = 'ktx2';
+const baseDemo = 'spineBoy-单json';
 const demos = {
   'spineBoy-单json': {
     url: "https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/yKbdfgijyLGzQDyQ/spineboy/spineboy.json",
@@ -152,40 +148,40 @@ WebGLEngine.create({
     if (spineEntity) {
       spineEntity.destroy();
     }
-		loadSpine(root, engine, demos[demoName]);
-	});
+    loadSpine(root, engine, demos[demoName]);
+  });
 });
 
 async function loadSpine(root: Entity, engine: Engine, resource) {
-  let skeletonDataResource: SkeletonDataResource | null = null;
+  let spineResource: SpineResource | null = null;
   const { scene } = resource;
   try {
-    skeletonDataResource = (await engine.resourceManager.load({
+    spineResource = (await engine.resourceManager.load({
       ...resource,
       type: 'spine'
-    })) as SkeletonDataResource;
+    })) as SpineResource;
   } catch (err) {
     console.error('spine asset load error: ', err);
   }
-  if (!skeletonDataResource) return;
+  if (!spineResource) return;
   if (scene === 'upload') {
     console.log(blobResource);
     loadSpine(root, engine, blobResource);
     return;
   }
-  console.log('spine asset loaded =>', skeletonDataResource.skeletonData);
+  console.log('spine asset loaded =>', spineResource.skeletonData);
   removeController();
-  const animationNames = skeletonDataResource.skeletonData.animations.map(item => item.name);
+  const animationNames = spineResource.skeletonData.animations.map(item => item.name);
   const firstAnimation = animationNames[0];
 
   const spineEntity = new Entity(engine, 'spine-entity');
   spineEntity.transform.setPosition(-25 + Math.random() * 50, -250, 0);
   const spineAnimation = spineEntity.addComponent(SpineAnimationRenderer);
-  spineAnimation.defaultState.scale = 1;
   if (scene === 'physic') {
-    spineAnimation.defaultState.scale = 0.5;
+    spineAnimation.premultipliedAlpha = true;
+    spineEntity.transform.setScale(0.5, 0.5, 0.5);
   }
-  spineAnimation.resource = skeletonDataResource;
+  spineAnimation.resource = spineResource;
   root.addChild(spineEntity);
 
   // const clone = spineEntity.clone();
@@ -207,9 +203,9 @@ async function loadSpine(root: Entity, engine: Engine, resource) {
   // }, 67);
 
   spineAnimation.state.setAnimation(0, firstAnimation, true);
-  animationController = gui.add({ animation: firstAnimation  }, 'animation', animationNames).onChange((animationName) => {
-		spineAnimation.state.setAnimation(0, animationName, true);
-	});
+  animationController = gui.add({ animation: firstAnimation }, 'animation', animationNames).onChange((animationName) => {
+    spineAnimation.state.setAnimation(0, animationName, true);
+  });
 
   if (scene === 'changeSkin') {
     handleChangeSkinScene(spineAnimation);
@@ -229,16 +225,16 @@ function handleChangeSkinScene(spineAnimation: SpineAnimationRenderer) {
     skin: "full-skins/girl",
   };
   skinController = gui
-  .add(info, "skin", [
-    "full-skins/girl",
-    "full-skins/girl-blue-cape",
-    "full-skins/girl-spring-dress",
-    "full-skins/boy",
-  ])
-  .onChange((skinName) => {
-    skeleton.setSkinByName(skinName); // 1. Set the active skin
-    skeleton.setSlotsToSetupPose(); // 2. Use setup pose to set base attachments.
-  });
+    .add(info, "skin", [
+      "full-skins/girl",
+      "full-skins/girl-blue-cape",
+      "full-skins/girl-spring-dress",
+      "full-skins/boy",
+    ])
+    .onChange((skinName) => {
+      skeleton.setSkinByName(skinName); // 1. Set the active skin
+      skeleton.setSlotsToSetupPose(); // 2. Use setup pose to set base attachments.
+    });
 }
 
 async function handleChangeResource(engine: Engine, spineAnimation: SpineAnimationRenderer) {
@@ -249,7 +245,7 @@ async function handleChangeResource(engine: Engine, spineAnimation: SpineAnimati
       "https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/jdjQ6mGxWknZ7TtQ/raptor/raptor.png",
     ],
     type: 'spine'
-  })) as SkeletonDataResource;
+  })) as SpineResource;
   setTimeout(() => {
     spineAnimation.defaultState.animationName = 'roar';
     spineAnimation.resource = newResource;
@@ -267,10 +263,10 @@ function removeController() {
   }
 }
 
-window.onload = function() {
+window.onload = function () {
   const fileInput = document.getElementById('fileInput') as HTMLInputElement;
   const linkContainer = document.getElementById('linkContainer');
-  fileInput.addEventListener('change', function(event) {
+  fileInput.addEventListener('change', function (event) {
     const files = fileInput.files;
     if (files) {
       // Clear previous links

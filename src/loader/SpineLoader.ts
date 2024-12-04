@@ -61,16 +61,12 @@ export class SpineLoader extends Loader<SpineResource> {
     }
   }
 
-  static verifyFileExtensions(fileExtensions: string | string[], expectArray: boolean): string | string[] | null {
-    if (!fileExtensions) return null;
-    if (expectArray && !Array.isArray(fileExtensions)) {
-      console.error('Expect fileExtensions to be an array.');
-      return [];
-    } else if (!expectArray && typeof fileExtensions !== 'string') {
-      console.error('Expect fileExtensions to be a string.');
-      return null;
+  static normalizeFileExtensions(fileExtensions: string | string[], expectArray: boolean): string | string[] | null {
+    if (expectArray) {
+      return Array.isArray(fileExtensions) ? fileExtensions : [];
+    } else {
+      return typeof fileExtensions === 'string' ? fileExtensions : null; 
     }
-    return fileExtensions;
   }
 
   static getUrlExtension(url: string, fileExtension: string): string | null {
@@ -115,15 +111,15 @@ export class SpineLoader extends Loader<SpineResource> {
       this._isSingleUrl = !item.urls;
       let { fileExtensions } = item.params || {};
       if (this._isSingleUrl) {
-        const fileExtension = SpineLoader.verifyFileExtensions(fileExtensions, false);
+        const fileExtension = SpineLoader.normalizeFileExtensions(fileExtensions, false);
         SpineLoader.deriveAndAssignSpineAsset(item.url, fileExtension as string, spineAssetPath);
       } else {
-        fileExtensions = SpineLoader.verifyFileExtensions(fileExtensions, true);
+        fileExtensions = SpineLoader.normalizeFileExtensions(fileExtensions, true);
         const urls = item.urls;
         const urlsLen = urls.length;
         for (let i = 0; i < urlsLen; i += 1) {
           const url = urls[i];
-          const extension = fileExtensions && fileExtensions[i] || null;
+          const extension = fileExtensions[i] || null;
           SpineLoader.parseAndAssignSpineAsset(url, extension, spineAssetPath);
         }
       }
