@@ -147,7 +147,7 @@ WebGLEngine.create({
   camera.nearClipPlane = 0.01;
   camera.farClipPlane = 20000;
 
-  // cameraEntity.addComponent(OrbitControl);
+  cameraEntity.addComponent(OrbitControl);
   // cameraEntity.addComponent(Stats);
 
   loadSpine(root, engine, demos[baseDemo]);
