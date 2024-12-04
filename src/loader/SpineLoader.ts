@@ -127,6 +127,7 @@ export class SpineLoader extends Loader<SpineResource> {
       const { skeletonPath, atlasPath } = spineAssetPath;
       if (!skeletonPath || !atlasPath) {
         reject(new Error('Failed to load spine assets. Please check the file path and ensure the file extension is included.'));
+        return;
       }
 
       this._fileName = this._extractFileName(skeletonPath);
