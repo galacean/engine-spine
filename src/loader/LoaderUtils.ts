@@ -73,7 +73,7 @@ export function createTextureAtlas(atlasText: string, textures: Texture2D[]): Te
   const textureAtlas = new TextureAtlas(atlasText);
   textureAtlas.pages.forEach((page, index) => {
     const engineTexture = textures.find(item => item.name === page.name) || textures[index];
-    const texture = createAdaptiveTexture(engineTexture);
+    const texture = new AdaptiveTexture(new Image(), engineTexture);
     page.setTexture(texture);
   });
   return textureAtlas;
@@ -98,6 +98,7 @@ export async function loadTexturesByPaths(
   engine: Engine,
 ): Promise<Texture2D[]> {
   let textures: Texture2D[];
+  const resourceManager = engine.resourceManager;
   const texturePromises: AssetPromise<any>[] = imagePaths.map((imagePath, index) => {
     const ext = imageExtensions[index];
     let imageLoaderType = AssetType.Texture2D;
@@ -106,7 +107,7 @@ export async function loadTexturesByPaths(
     } else if (ext === 'ktx2') {
       imageLoaderType = AssetType.KTX2;
     }
-    return engine.resourceManager.load({
+    return resourceManager.load({
       url: imagePath,
       type: imageLoaderType,
     });
@@ -133,9 +134,10 @@ export async function loadTextureAtlas(
   }
   let textureAtlas = new TextureAtlas(atlasText);
   const loadTexturePromises = [];
+  const resourceManager = engine.resourceManager;
   for (let page of textureAtlas.pages) {
     const textureUrl = baseUrl + page.name;
-    loadTexturePromises.push(engine.resourceManager.load({
+    loadTexturePromises.push(resourceManager.load({
       url: textureUrl,
       type: AssetType.Texture2D,
     }));
@@ -147,11 +149,6 @@ export async function loadTextureAtlas(
   }
   textureAtlas = createTextureAtlas(atlasText, textures);
   return textureAtlas;
-}
-
-
-export function createAdaptiveTexture(texture: Texture2D) {
-  return new AdaptiveTexture(new Image(), texture);
 }
 
 export function getBaseUrl(url: string): string {
