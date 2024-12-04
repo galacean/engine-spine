@@ -46,7 +46,7 @@ export class SpineLoader extends Loader<SpineResource> {
     }
   }
 
-  static deriveAndAssignSpineAsset(url: string, fileExtension: string | null, assetPath: SpineAssetPath) {
+  static deriveAndAssignSpineAtlas(url: string, fileExtension: string | null, assetPath: SpineAssetPath) {
     const ext = SpineLoader.getUrlExtension(url, fileExtension);
     if (!ext) return;
     assetPath.skeletonPath = url;
@@ -112,7 +112,7 @@ export class SpineLoader extends Loader<SpineResource> {
       let { fileExtensions } = item.params || {};
       if (this._isSingleUrl) {
         const fileExtension = SpineLoader.normalizeFileExtensions(fileExtensions, false);
-        SpineLoader.deriveAndAssignSpineAsset(item.url, fileExtension as string, spineAssetPath);
+        SpineLoader.deriveAndAssignSpineAtlas(item.url, fileExtension as string, spineAssetPath);
       } else {
         fileExtensions = SpineLoader.normalizeFileExtensions(fileExtensions, true);
         const urls = item.urls;
