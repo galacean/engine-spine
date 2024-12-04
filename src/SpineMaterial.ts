@@ -52,7 +52,7 @@ export class SpineMaterial extends Material {
     const renderState = this.renderState;
     const target = renderState.blendState.targetBlendState;
     target.enabled = true;
-    setBlendMode(this, BlendMode.Normal);
+    setBlendMode(this, BlendMode.Normal, false);
     renderState.depthState.writeEnabled = false;
     renderState.rasterState.cullMode = CullMode.Off;
     renderState.renderQueueType = RenderQueueType.Transparent;
