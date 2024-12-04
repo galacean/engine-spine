@@ -104,7 +104,7 @@ export class SpineLoader extends Loader<SpineResource> {
     item: SpineLoadItem,
     resourceManager: ResourceManager,
   ): AssetPromise<SpineResource> {
-    return new AssetPromise(async (resolve) => {
+    return new AssetPromise(async (resolve, reject) => {
       this._resourceManager = resourceManager;
       const spineAssetPath: SpineAssetPath = {
         skeletonPath: '',
@@ -130,13 +130,19 @@ export class SpineLoader extends Loader<SpineResource> {
 
       const { skeletonPath, atlasPath } = spineAssetPath;
       if (!skeletonPath || !atlasPath) {
-        throw new Error('Failed to load spine assets. Please check the file path and ensure the file extension is included.');
+        reject(new Error('Failed to load spine assets. Please check the file path and ensure the file extension is included.'));
       }
 
       this._fileName = this._extractFileName(skeletonPath);
 
-      // @ts-ignore
-      let skeletonRawData: ArrayBuffer | string = await resourceManager._request(skeletonPath, { type: 'arraybuffer' }) as ArrayBuffer;
+      let skeletonRawData: ArrayBuffer | string
+      try {
+        // @ts-ignore
+        skeletonRawData = await resourceManager._request(skeletonPath, { type: 'arraybuffer' }) as ArrayBuffer;
+      } catch (err) {
+        reject(err);
+        return;
+      }
 
       let isEditorAsset = false;
 
@@ -157,10 +163,15 @@ export class SpineLoader extends Loader<SpineResource> {
       }
 
       let resource: SpineResource;
-      if (isEditorAsset) {
-        resource = await this._handleEditorAsset(skeletonRawData);
-      } else {
-        resource = await this._handleOriginAsset(skeletonRawData, spineAssetPath);
+      try {
+        if (isEditorAsset) {
+          resource = await this._handleEditorAsset(skeletonRawData);
+        } else {
+          resource = await this._handleOriginAsset(skeletonRawData, spineAssetPath);
+        }
+      } catch (err) {
+        reject(err);
+        return;
       }
       resolve(resource);
     });
@@ -177,8 +188,13 @@ export class SpineLoader extends Loader<SpineResource> {
       atlasRefId = reader.nextStr();
       skeletonRawData = reader.nextImageData();
     }
-    // @ts-ignore
-    const textureAtlas = await resourceManager.getResourceByRef({ refId: atlasRefId });
+    let textureAtlas: TextureAtlas;
+    try {
+      // @ts-ignore
+      textureAtlas = await resourceManager.getResourceByRef({ refId: atlasRefId });
+    } catch (err) {
+      throw err;
+    }
     const skeletonData = createSkeletonData(skeletonRawData, textureAtlas);
     return new SpineResource(resourceManager.engine, skeletonData, this._fileName);
   }
@@ -193,21 +209,30 @@ export class SpineLoader extends Loader<SpineResource> {
     let textureAtlas: TextureAtlas;
     if (this._isSingleUrl) {
       const { atlasPath } = spineAssetPath;
-      textureAtlas = await loadTextureAtlas(atlasPath, engine);
+      try {
+        textureAtlas = await loadTextureAtlas(atlasPath, engine);
+      } catch (err) {
+        throw err;
+      }
       skeletonData = createSkeletonData(skeletonRawData, textureAtlas);
     } else {
       const { atlasPath, imagePaths, imageExtensions } = spineAssetPath;
+      let atlasText: string
+      let textures: Texture2D[];
       let textureAtlas: TextureAtlas;
-      if (imagePaths.length > 0) {
-        let atlasText: string, textures: Texture2D[];
-        [atlasText, textures] = await Promise.all([
-          // @ts-ignore
-          resourceManager._request(atlasPath, { type: 'text' }) as Promise<string>,
-          loadTexturesByPaths(imagePaths, imageExtensions, engine),
-        ]);
-        textureAtlas = createTextureAtlas(atlasText, textures);
-      } else {
-        textureAtlas = await loadTextureAtlas(atlasPath, engine);
+      try {
+        if (imagePaths.length > 0) {
+          [atlasText, textures] = await Promise.all([
+            // @ts-ignore
+            resourceManager._request(atlasPath, { type: 'text' }) as Promise<string>,
+            loadTexturesByPaths(imagePaths, imageExtensions, engine),
+          ]);
+          textureAtlas = createTextureAtlas(atlasText, textures);
+        } else {
+          textureAtlas = await loadTextureAtlas(atlasPath, engine);
+        }
+      } catch (err) {
+        throw err;
       }
       skeletonData = createSkeletonData(skeletonRawData, textureAtlas);
     }
