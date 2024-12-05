@@ -16,11 +16,19 @@ import {
 } from "./LoaderUtils";
 import { SpineResource } from "./SpineResource";
 
-export type SpineAssetPath = {
+type SpineAssetPath = {
   skeletonPath: string;
   atlasPath: string;
   imagePaths: string[];
   imageExtensions: string[];
+};
+
+type SpineLoadContext = {
+  fileName: string;
+  atlasRefId?: string;
+  isSingleUrl: boolean;
+  spineAssetPath: SpineAssetPath;
+  skeletonRawData: string | ArrayBuffer;
 };
 
 type SpineLoaderParams = {
@@ -41,6 +49,7 @@ export class SpineLoader extends Loader<SpineResource> {
   ];
   private static _skeletonExtensions = ["skel", "json", "bin"];
   private static _BINARY_PREFIX = "spine:skel";
+  private static _decoder = new TextDecoder("utf-8");
 
   /** @internal */
   static _JSON_PREFIX = '{"spine":"json"';
@@ -135,26 +144,25 @@ export class SpineLoader extends Loader<SpineResource> {
     return null;
   }
 
-  private _fileName = "Spine Entity";
-  private _decoder = new TextDecoder("utf-8");
-  private _resourceManager: ResourceManager;
-  private _isSingleUrl = false;
-
   load(
     item: SpineLoadItem,
     resourceManager: ResourceManager
   ): AssetPromise<SpineResource> {
     return new AssetPromise(async (resolve, reject) => {
-      this._resourceManager = resourceManager;
-      const spineAssetPath: SpineAssetPath = {
-        skeletonPath: "",
-        atlasPath: "",
-        imagePaths: [],
-        imageExtensions: [],
+      const spineLoadContext: SpineLoadContext = {
+        fileName: "",
+        skeletonRawData: "",
+        isSingleUrl: !item.urls,
+        spineAssetPath: {
+          skeletonPath: "",
+          atlasPath: "",
+          imagePaths: [],
+          imageExtensions: [],
+        },
       };
-      this._isSingleUrl = !item.urls;
+      const { spineAssetPath, isSingleUrl } = spineLoadContext;
       let { fileExtensions } = item.params || {};
-      if (this._isSingleUrl) {
+      if (isSingleUrl) {
         const fileExtension = SpineLoader._normalizeFileExtensions(
           fileExtensions,
           false
@@ -188,7 +196,7 @@ export class SpineLoader extends Loader<SpineResource> {
         return;
       }
 
-      this._fileName = this._extractFileName(skeletonPath);
+      spineLoadContext.fileName = this._extractFileName(skeletonPath);
 
       let skeletonRawData: ArrayBuffer | string;
       try {
@@ -200,24 +208,24 @@ export class SpineLoader extends Loader<SpineResource> {
         reject(err);
         return;
       }
+      spineLoadContext.skeletonRawData = skeletonRawData;
 
-      const decoder = this._decoder;
-      const skeletonString = decoder.decode(skeletonRawData);
+      const skeletonString = SpineLoader._decoder.decode(skeletonRawData);
 
-      let atlasRefId: string;
       let isEditorAsset = false;
 
       if (skeletonString.startsWith("{")) {
-        if (skeletonString.startsWith(SpineLoader._JSON_PREFIX)) { // isEditorJson
+        if (skeletonString.startsWith(SpineLoader._JSON_PREFIX)) {
+          // isEditorJson
           isEditorAsset = true;
           const {
             data,
             atlas: { refId },
           } = JSON.parse(skeletonString);
-          skeletonRawData = data;
-          atlasRefId = refId;
+          spineLoadContext.skeletonRawData = data;
+          spineLoadContext.atlasRefId = refId;
         } else {
-          skeletonRawData = skeletonString;
+          spineLoadContext.skeletonRawData = skeletonString;
         }
       } else {
         const reader = new BufferReader(
@@ -225,22 +233,22 @@ export class SpineLoader extends Loader<SpineResource> {
         );
         if (SpineLoader._isEditorBinary(reader)) {
           isEditorAsset = true;
-          atlasRefId = reader.nextStr();
-          skeletonRawData = reader.nextImageData();
+          spineLoadContext.atlasRefId = reader.nextStr();
+          spineLoadContext.skeletonRawData = reader.nextImageData();
         }
       }
 
       let resource: SpineResource;
       if (isEditorAsset) {
         resource = await this._handleEditorAsset(
-          skeletonRawData,
-          atlasRefId,
+          spineLoadContext,
+          resourceManager,
           reject
         );
       } else {
         resource = await this._handleOriginAsset(
-          skeletonRawData,
-          spineAssetPath,
+          spineLoadContext,
+          resourceManager,
           reject
         );
       }
@@ -249,39 +257,35 @@ export class SpineLoader extends Loader<SpineResource> {
   }
 
   private async _handleEditorAsset(
-    skeletonRawData: ArrayBuffer | string,
-    atlasRefId: string,
+    spineLoadContext: SpineLoadContext,
+    resourceManager: ResourceManager,
     reject: (reason?: any) => void
   ): Promise<SpineResource> {
-    const resourceManager = this._resourceManager;
     let textureAtlas: TextureAtlas;
     try {
       // @ts-ignore
       textureAtlas = await resourceManager.getResourceByRef({
-        refId: atlasRefId,
+        refId: spineLoadContext.atlasRefId,
       });
     } catch (err) {
       reject(err);
       return;
     }
+    const { skeletonRawData, fileName } = spineLoadContext;
     const skeletonData = createSkeletonData(skeletonRawData, textureAtlas);
-    return new SpineResource(
-      resourceManager.engine,
-      skeletonData,
-      this._fileName
-    );
+    return new SpineResource(resourceManager.engine, skeletonData, fileName);
   }
 
   private async _handleOriginAsset(
-    skeletonRawData: ArrayBuffer | string,
-    spineAssetPath: SpineAssetPath,
+    spineLoadContext: SpineLoadContext,
+    resourceManager: ResourceManager,
     reject: (reason?: any) => void
   ): Promise<SpineResource> {
-    const resourceManager = this._resourceManager;
     const { engine } = resourceManager;
     let skeletonData: SkeletonData;
     let textureAtlas: TextureAtlas;
-    if (this._isSingleUrl) {
+    const { isSingleUrl, spineAssetPath, skeletonRawData } = spineLoadContext;
+    if (isSingleUrl) {
       const { atlasPath } = spineAssetPath;
       try {
         textureAtlas = await loadTextureAtlas(atlasPath, engine, reject);
@@ -312,9 +316,10 @@ export class SpineLoader extends Loader<SpineResource> {
         reject(err);
         return;
       }
+      console.log(skeletonRawData);
       skeletonData = createSkeletonData(skeletonRawData, textureAtlas);
     }
-    return new SpineResource(engine, skeletonData, this._fileName);
+    return new SpineResource(engine, skeletonData, spineLoadContext.fileName);
   }
 
   private _extractFileName(url: string): string {
