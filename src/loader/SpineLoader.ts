@@ -163,13 +163,9 @@ export class SpineLoader extends Loader<SpineResource> {
       const { spineAssetPath, isSingleUrl } = spineLoadContext;
       let { fileExtensions } = item.params || {};
       if (isSingleUrl) {
-        const fileExtension = SpineLoader._normalizeFileExtensions(
-          fileExtensions,
-          false
-        );
         SpineLoader._deriveAndAssignSpineAtlas(
           item.url,
-          fileExtension as string,
+          SpineLoader._normalizeFileExtensions(fileExtensions, false) as string,
           spineAssetPath
         );
       } else {
