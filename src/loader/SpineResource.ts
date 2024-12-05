@@ -1,14 +1,21 @@
-import { AnimationState, AnimationStateData, MeshAttachment, RegionAttachment, Skeleton, SkeletonData } from "@esotericsoftware/spine-core";
+import {
+  AnimationState,
+  AnimationStateData,
+  MeshAttachment,
+  RegionAttachment,
+  Skeleton,
+  SkeletonData,
+} from "@esotericsoftware/spine-core";
 import { Engine, Entity, ReferResource, Texture2D } from "@galacean/engine";
 import { SpineAnimationRenderer } from "../SpineAnimationRenderer";
 
 /**
  * Represents a resource that manages Spine animation data, textures, and entity templates for the Galacean engine.
- * 
-*/
+ *
+ */
 export class SpineResource extends ReferResource {
   /** Name of skeletonData. */
-  readonly name: string = 'Spine Entity';
+  readonly name: string = "Spine Entity";
 
   private _texturesInSpineAtlas: Texture2D[] = [];
   private _skeletonData: SkeletonData;
@@ -57,7 +64,9 @@ export class SpineResource extends ReferResource {
   private _createTemplate(): void {
     const name = this.name;
     const spineEntity = new Entity(this.engine, name);
-    const spineAnimationRenderer = spineEntity.addComponent(SpineAnimationRenderer);
+    const spineAnimationRenderer = spineEntity.addComponent(
+      SpineAnimationRenderer
+    );
     const skeleton = new Skeleton(this._skeletonData);
     const state = new AnimationState(this._stateData);
     spineAnimationRenderer._setSkeleton(skeleton);
@@ -75,7 +84,10 @@ export class SpineResource extends ReferResource {
       for (let j = 0, m = slots.length; j < m; j++) {
         const slot = slots[j];
         const attachment = skins[i].getAttachment(slot.index, slot.name);
-        const texture = <Texture2D>(<RegionAttachment | MeshAttachment>attachment)?.region?.texture.texture;
+        const texture = <Texture2D>(
+          (<RegionAttachment | MeshAttachment>attachment)?.region?.texture
+            .texture
+        );
         if (texture) {
           if (!textures.includes(texture)) {
             textures.push(texture);
