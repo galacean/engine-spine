@@ -312,7 +312,6 @@ export class SpineLoader extends Loader<SpineResource> {
         reject(err);
         return;
       }
-      console.log(skeletonRawData);
       skeletonData = createSkeletonData(skeletonRawData, textureAtlas);
     }
     return new SpineResource(engine, skeletonData, spineLoadContext.fileName);
