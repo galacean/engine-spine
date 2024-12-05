@@ -8,7 +8,7 @@ import {
   ResourceManager,
   Texture2D,
 } from "@galacean/engine";
-import { createSkeletonData, createTextureAtlas, loadTextureAtlas, loadTexturesByPaths } from "./LoaderUtils";
+import { createSkeletonData, createTextureAtlasWithOriginAsset, loadTextureAtlas, loadTexturesByPaths } from "./LoaderUtils";
 import { SpineResource } from "./SpineResource";
 
 export type SpineAssetPath = {
@@ -26,32 +26,58 @@ type SpineLoadItem = LoadItem & { params?: SpineLoaderParams };
 
 @resourceLoader("spine", ["json", "bin", "skel"])
 export class SpineLoader extends Loader<SpineResource> {
-  static imageExtensions = ["png", "jpg", "webp", "jpeg", "ktx", "ktx2"];
-  static skeletonExtensions = ["skel", "json", "bin"];
+  private static _imageExtensions = ["png", "jpg", "webp", "jpeg", "ktx", "ktx2"];
+  private static _skeletonExtensions = ["skel", "json", "bin"];
+  private static _JSON_PREFIX = '{"spine":"json"';
+  private static _BINARY_PREFIX = 'spine:skel';
 
-  static parseAndAssignSpineAsset(url: string, fileExtension: string | null, assetPath: SpineAssetPath) {
-    const { imageExtensions, skeletonExtensions } = SpineLoader;
-    const ext = SpineLoader.getUrlExtension(url, fileExtension);
+  /** @internal */
+  static _ATLAS_PREFIX = '{"data":"';
+
+  /** @internal */
+  static _isEditorBinary(reader: BufferReader): boolean {
+    const currentPosition = reader.position;
+    if (currentPosition + 2 > reader.data.byteLength) {
+      return false;
+    }
+    const strByteLength = reader["_dataView"].getUint16(currentPosition, true);
+    if (
+      currentPosition + 2 + strByteLength <= reader.data.byteLength &&
+      reader.nextStr() === SpineLoader._BINARY_PREFIX
+    ) {
+      return true;
+    }
+  }
+
+  /** @internal */
+  static _isEditorJson(skeletonString: string): boolean {
+    return skeletonString.startsWith(SpineLoader._JSON_PREFIX);
+  }
+
+
+  private static _parseAndAssignSpineAsset(url: string, fileExtension: string | null, assetPath: SpineAssetPath) {
+    const { _imageExtensions, _skeletonExtensions } = SpineLoader;
+    const ext = SpineLoader._getUrlExtension(url, fileExtension);
     if (!ext) return;
 
-    if (skeletonExtensions.includes(ext)) {
+    if (_skeletonExtensions.includes(ext)) {
       assetPath.skeletonPath = url;
     }
     if (ext === 'atlas') {
       assetPath.atlasPath = url;
     }
-    if (imageExtensions.includes(ext)) {
+    if (_imageExtensions.includes(ext)) {
       assetPath.imagePaths.push(url);
       assetPath.imageExtensions.push(ext);
     }
   }
 
-  static deriveAndAssignSpineAtlas(url: string, fileExtension: string | null, assetPath: SpineAssetPath) {
-    const ext = SpineLoader.getUrlExtension(url, fileExtension);
+  private static _deriveAndAssignSpineAtlas(url: string, fileExtension: string | null, assetPath: SpineAssetPath) {
+    const ext = SpineLoader._getUrlExtension(url, fileExtension);
     if (!ext) return;
     assetPath.skeletonPath = url;
     const extensionPattern: RegExp = /(\.(json|bin|skel))$/;
-    let baseUrl;
+    let baseUrl: string;
     if (extensionPattern.test(url)) {
       baseUrl = url.replace(extensionPattern, '');
     }
@@ -61,15 +87,15 @@ export class SpineLoader extends Loader<SpineResource> {
     }
   }
 
-  static normalizeFileExtensions(fileExtensions: string | string[], expectArray: boolean): string | string[] | null {
+  private static _normalizeFileExtensions(fileExtensions: string | string[], expectArray: boolean): string | string[] | null {
     if (expectArray) {
       return Array.isArray(fileExtensions) ? fileExtensions : [];
     } else {
-      return typeof fileExtensions === 'string' ? fileExtensions : null; 
+      return typeof fileExtensions === 'string' ? fileExtensions : null;
     }
   }
 
-  static getUrlExtension(url: string, fileExtension: string): string | null {
+  private static _getUrlExtension(url: string, fileExtension: string): string | null {
     if (fileExtension) {
       return fileExtension;
     }
@@ -81,16 +107,6 @@ export class SpineLoader extends Loader<SpineResource> {
     return null;
   }
 
-  static canReadString(bufferReader: BufferReader): boolean {
-    const currentPosition = bufferReader.position;
-    if (currentPosition + 2 > bufferReader.data.byteLength) {
-      return false;
-    }
-    const strByteLength = bufferReader["_dataView"].getUint16(currentPosition, true);
-    return currentPosition + 2 + strByteLength <= bufferReader.data.byteLength;
-  }
-
-  private _bufferReader: BufferReader;
   private _fileName = 'Spine Entity';
   private _decoder = new TextDecoder('utf-8');
   private _resourceManager: ResourceManager;
@@ -111,16 +127,16 @@ export class SpineLoader extends Loader<SpineResource> {
       this._isSingleUrl = !item.urls;
       let { fileExtensions } = item.params || {};
       if (this._isSingleUrl) {
-        const fileExtension = SpineLoader.normalizeFileExtensions(fileExtensions, false);
-        SpineLoader.deriveAndAssignSpineAtlas(item.url, fileExtension as string, spineAssetPath);
+        const fileExtension = SpineLoader._normalizeFileExtensions(fileExtensions, false);
+        SpineLoader._deriveAndAssignSpineAtlas(item.url, fileExtension as string, spineAssetPath);
       } else {
-        fileExtensions = SpineLoader.normalizeFileExtensions(fileExtensions, true);
+        fileExtensions = SpineLoader._normalizeFileExtensions(fileExtensions, true);
         const urls = item.urls;
         const urlsLen = urls.length;
         for (let i = 0; i < urlsLen; i += 1) {
           const url = urls[i];
           const extension = fileExtensions[i] || null;
-          SpineLoader.parseAndAssignSpineAsset(url, extension, spineAssetPath);
+          SpineLoader._parseAndAssignSpineAsset(url, extension, spineAssetPath);
         }
       }
 
@@ -132,7 +148,7 @@ export class SpineLoader extends Loader<SpineResource> {
 
       this._fileName = this._extractFileName(skeletonPath);
 
-      let skeletonRawData: ArrayBuffer | string
+      let skeletonRawData: ArrayBuffer | string;
       try {
         // @ts-ignore
         skeletonRawData = await resourceManager._request(skeletonPath, { type: 'arraybuffer' }) as ArrayBuffer;
@@ -141,56 +157,53 @@ export class SpineLoader extends Loader<SpineResource> {
         return;
       }
 
+      const decoder = this._decoder;
+      const skeletonString = decoder.decode(skeletonRawData);
+
+      let atlasRefId: string;
       let isEditorAsset = false;
 
-      try {
-        const decoder = this._decoder;
-        const jsonString = decoder.decode(skeletonRawData);
-        const parsedJson = JSON.parse(jsonString);
-        skeletonRawData = jsonString;
-        if (parsedJson.spine) {
+      if (skeletonString.startsWith('{')) {
+        if (SpineLoader._isEditorJson(skeletonString)) {
           isEditorAsset = true;
-          skeletonRawData = parsedJson.data;
+          const { data, atlas: { refId } } = JSON.parse(skeletonString);
+          skeletonRawData = data;
+          atlasRefId = refId;
+        } else {
+          skeletonRawData = skeletonString;
         }
-      } catch {
-        this._bufferReader = new BufferReader(new Uint8Array(skeletonRawData as ArrayBuffer));
-        if (SpineLoader.canReadString(this._bufferReader) && this._bufferReader.nextStr().startsWith('spine')) {
+      } else {
+        const reader = new BufferReader(new Uint8Array(skeletonRawData as ArrayBuffer));
+        if (SpineLoader._isEditorBinary(reader)) {
           isEditorAsset = true;
+          atlasRefId = reader.nextStr();
+          skeletonRawData = reader.nextImageData();
         }
       }
 
       let resource: SpineResource;
-      try {
-        if (isEditorAsset) {
-          resource = await this._handleEditorAsset(skeletonRawData);
-        } else {
-          resource = await this._handleOriginAsset(skeletonRawData, spineAssetPath);
-        }
-      } catch (err) {
-        reject(err);
-        return;
+      if (isEditorAsset) {
+        resource = await this._handleEditorAsset(skeletonRawData, atlasRefId, reject);
+      } else {
+        resource = await this._handleOriginAsset(skeletonRawData, spineAssetPath, reject);
       }
       resolve(resource);
     });
   }
 
-  private async _handleEditorAsset(skeletonRawData: ArrayBuffer | string): Promise<SpineResource> {
+  private async _handleEditorAsset(
+    skeletonRawData: ArrayBuffer | string,
+    atlasRefId: string,
+    reject: (reason?: any) => void
+  ): Promise<SpineResource> {
     const resourceManager = this._resourceManager;
-    let atlasRefId: string;
-    if (typeof skeletonRawData === 'string') {
-      const { atlas } = JSON.parse(skeletonRawData);
-      atlasRefId = atlas.refId;
-    } else {
-      const reader = this._bufferReader;
-      atlasRefId = reader.nextStr();
-      skeletonRawData = reader.nextImageData();
-    }
     let textureAtlas: TextureAtlas;
     try {
       // @ts-ignore
       textureAtlas = await resourceManager.getResourceByRef({ refId: atlasRefId });
     } catch (err) {
-      throw err;
+      reject(err);
+      return;
     }
     const skeletonData = createSkeletonData(skeletonRawData, textureAtlas);
     return new SpineResource(resourceManager.engine, skeletonData, this._fileName);
@@ -198,7 +211,8 @@ export class SpineLoader extends Loader<SpineResource> {
 
   private async _handleOriginAsset(
     skeletonRawData: ArrayBuffer | string,
-    spineAssetPath: SpineAssetPath
+    spineAssetPath: SpineAssetPath,
+    reject: (reason?: any) => void
   ): Promise<SpineResource> {
     const resourceManager = this._resourceManager;
     const { engine } = resourceManager;
@@ -207,9 +221,10 @@ export class SpineLoader extends Loader<SpineResource> {
     if (this._isSingleUrl) {
       const { atlasPath } = spineAssetPath;
       try {
-        textureAtlas = await loadTextureAtlas(atlasPath, engine);
+        textureAtlas = await loadTextureAtlas(atlasPath, engine, reject);
       } catch (err) {
-        throw err;
+        reject(err);
+        return;
       }
       skeletonData = createSkeletonData(skeletonRawData, textureAtlas);
     } else {
@@ -222,14 +237,15 @@ export class SpineLoader extends Loader<SpineResource> {
           [atlasText, textures] = await Promise.all([
             // @ts-ignore
             resourceManager._request(atlasPath, { type: 'text' }) as Promise<string>,
-            loadTexturesByPaths(imagePaths, imageExtensions, engine),
+            loadTexturesByPaths(imagePaths, imageExtensions, engine, reject),
           ]);
-          textureAtlas = createTextureAtlas(atlasText, textures);
+          textureAtlas = createTextureAtlasWithOriginAsset(atlasText, textures);
         } else {
-          textureAtlas = await loadTextureAtlas(atlasPath, engine);
+          textureAtlas = await loadTextureAtlas(atlasPath, engine, reject);
         }
       } catch (err) {
-        throw err;
+        reject(err);
+        return;
       }
       skeletonData = createSkeletonData(skeletonRawData, textureAtlas);
     }

@@ -1,25 +1,24 @@
-import { 
-  AssetPromise, 
-  Engine, 
-  request, 
-  Texture2D, 
-  AssetType,
-  TextureFilterMode,
-  TextureWrapMode,
-  BufferReader,
-} from "@galacean/engine";
-import { 
-  TextureAtlas, 
+import {
   AtlasAttachmentLoader,
-  SkeletonJson,
   SkeletonBinary,
   SkeletonData,
+  SkeletonJson,
   Texture,
+  TextureAtlas,
   TextureFilter,
   TextureWrap,
 } from "@esotericsoftware/spine-core";
-import { SpineResource } from "./SpineResource";
+import {
+  AssetPromise,
+  AssetType,
+  BufferReader,
+  Engine,
+  Texture2D,
+  TextureFilterMode,
+  TextureWrapMode,
+} from "@galacean/engine";
 import { SpineLoader } from "./SpineLoader";
+import { SpineResource } from "./SpineResource";
 
 /**
  * Creates a runtime Spine resource based on skeleton raw data and a Spine `TextureAtlas`.
@@ -31,25 +30,14 @@ import { SpineLoader } from "./SpineLoader";
  * @returns A `SpineResource` instance that represents the created Spine resource.
  */
 export function createSpineResource(engine: Engine, skeletonRawData: string | ArrayBuffer, textureAtlas: TextureAtlas, name?: string): SpineResource {
-  if (typeof skeletonRawData === 'string') {
-    try {
-      const skeletonObject = JSON.parse(skeletonRawData);
-      if (typeof skeletonObject == "object") {
-        const { data, spine } = skeletonObject;
-        if (data && spine) {
-          skeletonRawData = data;
-        }
-      }
-    } catch(err) {
-      throw new Error(`Invalid JSON skeleton data: ${err.message}`);
-    }
+  if (typeof skeletonRawData === 'string' && SpineLoader._isEditorJson(skeletonRawData)) {
+    const skeletonObject = JSON.parse(skeletonRawData);
+    skeletonRawData = skeletonObject.data;
   } else {
-    const reader = new BufferReader(new Uint8Array(skeletonRawData));
-    if (SpineLoader.canReadString(reader)) {
-      if (reader.nextStr().startsWith('spine')) {
-        reader.nextStr();
-        skeletonRawData = reader.nextImageData();
-      }
+    const reader = new BufferReader(new Uint8Array(skeletonRawData as ArrayBuffer));
+    if (SpineLoader._isEditorBinary(reader)) {
+      reader.nextStr();
+      skeletonRawData = reader.nextImageData();
     }
   }
   const skeletonData = createSkeletonData(skeletonRawData, textureAtlas);
@@ -64,12 +52,20 @@ export function createSpineResource(engine: Engine, skeletonRawData: string | Ar
  * @returns A `TextureAtlas` instance configured with the provided textures.
  */
 export function createTextureAtlas(atlasText: string, textures: Texture2D[]): TextureAtlas {
-  try {
-    const { data, textures } = JSON.parse(atlasText);
-    if (data && textures) {
-      atlasText = data;
-    }
-  } catch {}
+  if (atlasText.startsWith(SpineLoader._ATLAS_PREFIX)) {
+    const atlasObject = JSON.parse(atlasText);
+    atlasText = atlasObject.data;
+  }
+  const textureAtlas = new TextureAtlas(atlasText);
+  textureAtlas.pages.forEach((page, index) => {
+    const engineTexture = textures.find(item => item.name === page.name) || textures[index];
+    const texture = new AdaptiveTexture(new Image(), engineTexture);
+    page.setTexture(texture);
+  });
+  return textureAtlas;
+}
+
+export function createTextureAtlasWithOriginAsset(atlasText: string, textures: Texture2D[]) {
   const textureAtlas = new TextureAtlas(atlasText);
   textureAtlas.pages.forEach((page, index) => {
     const engineTexture = textures.find(item => item.name === page.name) || textures[index];
@@ -96,6 +92,7 @@ export async function loadTexturesByPaths(
   imagePaths: string[],
   imageExtensions: string[],
   engine: Engine,
+  reject: (reason?: any) => void
 ): Promise<Texture2D[]> {
   let textures: Texture2D[];
   const resourceManager = engine.resourceManager;
@@ -115,7 +112,8 @@ export async function loadTexturesByPaths(
   try {
     textures = await Promise.all(texturePromises);
   } catch (error) {
-    throw error;
+    reject(error);
+    return;
   }
   return textures;
 }
@@ -123,14 +121,17 @@ export async function loadTexturesByPaths(
 export async function loadTextureAtlas(
   atlasPath: string,
   engine: Engine,
+  reject: (reason?: any) => void
 ): Promise<TextureAtlas> {
   const baseUrl = getBaseUrl(atlasPath);
   let atlasText: string;
   let textures: Texture2D[];
   try {
-    atlasText = await request(atlasPath, { type: "text" });
+    // @ts-ignore
+    atlasText = await engine.resourceManager._request(atlasPath, { type: "text" });
   } catch (err) {
-    throw new Error(`Spine Atlas: ${atlasPath} load error: ${err}`); 
+    reject(new Error(`Spine Atlas: ${atlasPath} load error: ${err}`));
+    return;
   }
   let textureAtlas = new TextureAtlas(atlasText);
   const loadTexturePromises = [];
@@ -145,7 +146,8 @@ export async function loadTextureAtlas(
   try {
     textures = await Promise.all(loadTexturePromises);
   } catch (err) {
-    throw new Error(`Spine Texture: load error: ${err}`);
+    reject(new Error(`Spine Texture: load error: ${err}`));
+    return;
   }
   textureAtlas = createTextureAtlas(atlasText, textures);
   return textureAtlas;
@@ -185,16 +187,16 @@ export class AdaptiveTexture extends Texture {
     this.texture.wrapModeV = this._convertWrapMode(vWrap);
   }
 
-  dispose() {}
+  dispose() { }
 
   private _convertWrapMode(wrap: TextureWrap): TextureWrapMode {
     switch (wrap) {
       case TextureWrap.ClampToEdge:
-          return TextureWrapMode.Clamp;
+        return TextureWrapMode.Clamp;
       case TextureWrap.Repeat:
-          return TextureWrapMode.Repeat;
+        return TextureWrapMode.Repeat;
       case TextureWrap.MirroredRepeat:
-          return TextureWrapMode.Mirror;
+        return TextureWrapMode.Mirror;
       default:
         throw new Error("Unsupported texture wrap mode.");
     }

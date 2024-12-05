@@ -1,14 +1,17 @@
 import {
+  AssetType,
   Camera,
   Engine,
   Entity,
   KTX2TargetFormat,
   Logger,
+  Texture2D,
   Vector3,
-  WebGLEngine
+  WebGLEngine,
+  request
 } from "@galacean/engine";
 import * as dat from 'dat.gui';
-import { SpineAnimationRenderer } from "../src/index";
+import { SpineAnimationRenderer, TextureAtlas, createSpineResource, createTextureAtlas } from "../src/index";
 import { SpineResource } from "../src/loader/SpineResource";
 
 Logger.enable();
@@ -107,6 +110,44 @@ const demos = {
     url: "https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/yKbdfgijyLGzQDyQ/spineboy/spineboy.json",
     scene: 'changeResource',
   },
+  '编辑器-skel': {
+    project: "https://mdn.alipayobjects.com/oasis_be/afts/file/A*TO3OTa04yHIAAAAAAAAAAAAADkp5AQ/project.json",
+    url: "https://mdn.alipayobjects.com/oasis_be/afts/file/A*9WZCRr9S8SIAAAAAAAAAAAAADkp5AQ/13.skel",
+    scene: 'editor'
+  },
+  '编辑器-json': {
+    project: "https://mdn.alipayobjects.com/oasis_be/afts/file/A*NXsHQ4GBMKYAAAAAAAAAAAAADkp5AQ/project.json",
+    url: "https://mdn.alipayobjects.com/oasis_be/afts/file/A*APdDSLPM3MUAAAAAAAAAAAAADkp5AQ/raptor.json",
+    scene: 'editor',
+  },
+  '动态创建1': {
+    project: "https://mdn.alipayobjects.com/oasis_be/afts/file/A*XD0DSLEhCVMAAAAAAAAAAAAADkp5AQ/project.json",
+    skeleton: 'https://mdn.alipayobjects.com/oasis_be/afts/file/A*DiRNRq0_N6gAAAAAAAAAAAAADkp5AQ/spineboy-pro.skel',
+    atlas: 'https://mdn.alipayobjects.com/oasis_be/afts/file/A*5eGJT5CZR-EAAAAAAAAAAAAADkp5AQ/spineboy-pro.atlas',
+    type: 'arraybuffer',
+    scene: 'dynamic-editor',
+  },
+  '动态创建2': {
+    project: "https://mdn.alipayobjects.com/oasis_be/afts/file/A*NXsHQ4GBMKYAAAAAAAAAAAAADkp5AQ/project.json",
+    skeleton: 'https://mdn.alipayobjects.com/oasis_be/afts/file/A*APdDSLPM3MUAAAAAAAAAAAAADkp5AQ/raptor.json',
+    atlas: 'https://mdn.alipayobjects.com/oasis_be/afts/file/A*oWMrS5iikCQAAAAAAAAAAAAADkp5AQ/raptor.atlas',
+    type: 'text',
+    scene: 'dynamic-editor',
+  },
+  '动态创建3': {
+    skeleton: 'https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/jdjQ6mGxWknZ7TtQ/raptor/raptor.json',
+    atlas: 'https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/jdjQ6mGxWknZ7TtQ/raptor/raptor.atlas',
+    texture: 'https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/jdjQ6mGxWknZ7TtQ/raptor/raptor.png',
+    type: 'text',
+    scene: 'dynamic-origin',
+  },
+  '动态创建4': {
+    skeleton: 'https://mdn.alipayobjects.com/portal_h1wdez/afts/file/A*cVzySIX09aQAAAAAAAAAAAAAAQAAAQ?af_fileName=dr.skel',
+    atlas: 'https://mdn.alipayobjects.com/portal_h1wdez/afts/file/A*7LzLSJLjBK4AAAAAAAAAAAAAAQAAAQ?af_fileName=dr.atlas',
+    texture: 'https://mdn.alipayobjects.com/portal_h1wdez/afts/img/A*uySHT5k_PU0AAAAAAAAAAAAAAQAAAQ/original?a=.png',
+    type: 'arraybuffer',
+    scene: 'dynamic-origin',
+  },
   '本地上传文件': {
     url: "https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/kx5353rrNIDn4CsX/spineboy-pro/spineboy-pro.json",
     scene: 'upload',
@@ -123,7 +164,7 @@ WebGLEngine.create({
       KTX2TargetFormat.PVRTC,
     ],
   },
-}).then((engine) => {
+}).then(async (engine) => {
   engine.canvas.resizeByClientSize();
   engine.run();
 
@@ -154,14 +195,34 @@ WebGLEngine.create({
 
 async function loadSpine(root: Entity, engine: Engine, resource) {
   let spineResource: SpineResource | null = null;
-  const { scene } = resource;
-  try {
-    spineResource = (await engine.resourceManager.load({
-      ...resource,
-      type: 'spine'
-    })) as SpineResource;
-  } catch (err) {
-    console.error('spine asset load error: ', err);
+  const { scene, type } = resource;
+  if (scene === 'editor' || scene === 'dynamic-editor') {
+    const data = await request(resource.project, { type: 'json' });
+    // @ts-ignore
+    engine.resourceManager.initVirtualResources(data.files);
+  }
+  if (scene === 'dynamic-editor') {
+    const skeletonRawData = await request(resource.skeleton, { type }) as ArrayBuffer | string;
+    const textureAtlas = await engine.resourceManager.load({ url: resource.atlas }) as TextureAtlas;
+    spineResource = createSpineResource(engine, skeletonRawData, textureAtlas);
+  } else if (scene === 'dynamic-origin') {
+    const skeletonRawData = await request(resource.skeleton, { type }) as ArrayBuffer | string;
+    const atlasText = await request(resource.atlas, { type: 'text' }) as string;
+    const texture = await engine.resourceManager.load({
+      url: resource.texture,
+      type: AssetType.Texture2D,
+    }) as Texture2D;
+    const textureAtlas = createTextureAtlas(atlasText, [texture]);
+    spineResource = createSpineResource(engine, skeletonRawData, textureAtlas);
+  } else {
+    try {
+      spineResource = (await engine.resourceManager.load({
+        ...resource,
+        type: 'spine'
+      })) as SpineResource;
+    } catch (err) {
+      console.error('spine asset load error: ', err);
+    }
   }
   if (!spineResource) return;
   if (scene === 'upload') {
@@ -214,7 +275,6 @@ async function loadSpine(root: Entity, engine: Engine, resource) {
   if (scene === 'changeResource') {
     handleChangeResource(engine, spineAnimation);
   }
-
 }
 
 function handleChangeSkinScene(spineAnimation: SpineAnimationRenderer) {
@@ -247,7 +307,7 @@ async function handleChangeResource(engine: Engine, spineAnimation: SpineAnimati
     type: 'spine'
   })) as SpineResource;
   setTimeout(() => {
-    spineAnimation.defaultState.animationName = 'roar';
+    spineAnimation.defaultConfig.animationName = 'roar';
     spineAnimation.resource = newResource;
   }, 1000);
 }
