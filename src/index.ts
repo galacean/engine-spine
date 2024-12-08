@@ -5,7 +5,6 @@ import { SpineAnimationRenderer } from "./SpineAnimationRenderer";
 export { SpineAnimationRenderer } from "./SpineAnimationRenderer";
 export { SpineResource } from "./loader/SpineResource";
 export { createTextureAtlas } from "./loader/LoaderUtils";
-
 export * from "@esotericsoftware/spine-core";
 export const version = `__buildVersion`;
 
