@@ -13,8 +13,8 @@ export default defineConfig({
     }),
   ],
   server: {
-    host: "127.0.0.1",
-    port: "3000"
+    port: 5173,
+    https: false
   },
   resolve: {
     alias: [{ find: /^~/, replacement: "" }],

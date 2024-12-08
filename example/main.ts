@@ -40,12 +40,7 @@ const blobResource: any = {
 const baseDemo = 'spineBoy-单json';
 const demos = {
   'spineBoy-单json': {
-    // url: "https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/yKbdfgijyLGzQDyQ/spineboy/spineboy.json",
-    urls: [
-      "https://mdn.alipayobjects.com/portal_h1wdez/afts/file/A*CjbmT7ZjeCkAAAAAAAAAAAAAAQAAAQ?a=.skel",
-      "https://mdn.alipayobjects.com/portal_h1wdez/afts/file/A*fFalR5oDEa0AAAAAAAAAAAAAAQAAAQ?a=.atlas",
-      "https://mdn.alipayobjects.com/portal_h1wdez/afts/img/A*ovxcQpz0vBIAAAAAAAAAAAAAAQAAAQ/original?a=.png"
-    ],
+    url: "https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/yKbdfgijyLGzQDyQ/spineboy/spineboy.json",
   },
   'raptor-三文件json': {
     urls: [
@@ -143,11 +138,11 @@ WebGLEngine.create({
 
   const cameraEntity = root.createChild("camera_node");
   const camera = cameraEntity.addComponent(Camera);
-  cameraEntity.transform.position = new Vector3(0, 0, 4000);
-  camera.nearClipPlane = 0.01;
+  cameraEntity.transform.position = new Vector3(0, 0, 2000);
+  camera.nearClipPlane = 0.001;
   camera.farClipPlane = 20000;
 
-  cameraEntity.addComponent(OrbitControl);
+  // cameraEntity.addComponent(OrbitControl);
   // cameraEntity.addComponent(Stats);
 
   loadSpine(root, engine, demos[baseDemo]);
@@ -183,18 +178,15 @@ async function loadSpine(root: Entity, engine: Engine, resource) {
   const animationNames = spineResource.skeletonData.animations.map(item => item.name);
   const firstAnimation = animationNames[0];
 
-  const spineEntity = spineResource.instantiate();
-  spineEntity.transform.setPosition(-25 + Math.random() * 50, -550, 0);
-  const spineAnimation = spineEntity.getComponent(SpineAnimationRenderer) as SpineAnimationRenderer;
+  const spineEntity = new Entity(engine, 'spine-entity');
+  spineEntity.transform.setPosition(-25 + Math.random() * 50, -250, 0);
+  const spineAnimation = spineEntity.addComponent(SpineAnimationRenderer);
   if (scene === 'physic') {
     spineAnimation.premultipliedAlpha = true;
     spineEntity.transform.setScale(0.5, 0.5, 0.5);
   }
-
-  const viewport =  root.createChild();
-  viewport.transform.position.z = 1;
-  const tiles = viewport.createChild();
-  tiles.addChild(spineEntity);
+  spineAnimation.resource = spineResource;
+  root.addChild(spineEntity);
 
   // const clone = spineEntity.clone();
   // clone.name = 'test';
@@ -206,13 +198,13 @@ async function loadSpine(root: Entity, engine: Engine, resource) {
   // animation2!.defaultState.loop = true;
   // root.addChild(clone);
 
-  const outlineEntity = root.createChild('outline');
-  outline = outlineEntity.addComponent(BoundingBoxLine);
-  outline.attachToEntity(spineEntity);
-  outline.isActive = true;
-  setInterval(() => {
-    outline.updateVertices();
-  }, 67);
+  // const outlineEntity = root.createChild('outline');
+  // outline = outlineEntity.addComponent(BoundingBoxLine);
+  // outline.attachToEntity(spineEntity);
+  // outline.isActive = true;
+  // setInterval(() => {
+  //   outline.updateVertices();
+  // }, 67);
 
   spineAnimation.state.setAnimation(0, firstAnimation, true);
   animationController = gui.add({ animation: firstAnimation  }, 'animation', animationNames).onChange((animationName) => {

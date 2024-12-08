@@ -125,7 +125,7 @@ export class SpineLoader extends Loader<SpineResource> {
     const { engine } = resourceManager;
     if (type === 'skel') {
       atlasRefId = reader.nextStr();
-      skeletonRawData = reader.nextImageData() as any;
+      skeletonRawData = reader.nextImageData();
     } else {
       const decoder = new TextDecoder('utf-8');
       const text = decoder.decode(new Uint8Array(buffer));
