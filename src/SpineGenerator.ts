@@ -7,16 +7,9 @@ import {
   NumberArrayLike,
   RegionAttachment,
   Skeleton,
-  SkeletonClipping
+  SkeletonClipping,
 } from "@esotericsoftware/spine-core";
-import {
-  BoundingBox,
-  Engine,
-  Material,
-  SubPrimitive,
-  Texture2D,
-  Vector3,
-} from "@galacean/engine";
+import { Engine, Material, SubPrimitive, Texture2D } from "@galacean/engine";
 import { SpineAnimationRenderer } from "./SpineAnimationRenderer";
 import { AdaptiveTexture } from "./loader/LoaderUtils";
 import { setBlendMode } from "./util/BlendMode";
@@ -30,9 +23,6 @@ class SubRenderItem {
   slotName?: string;
 }
 
-const maxBoundsValue = Infinity;
-const minBoundsValue = -Infinity;
-
 export class SpineGenerator {
   static QUAD_TRIANGLES = [0, 1, 2, 2, 3, 0];
   static VERTEX_SIZE = 8; // 2 2 4 position without z, uv, color
@@ -44,46 +34,47 @@ export class SpineGenerator {
   static tempTexture: AdaptiveTexture | null = null;
   static subPrimitivePool = new ReturnablePool(SubPrimitive);
   static subRenderItemPool = new ClearablePool(SubRenderItem);
-  static bounds = new BoundingBox(
-    new Vector3(maxBoundsValue, maxBoundsValue, maxBoundsValue),
-    new Vector3(minBoundsValue, minBoundsValue, minBoundsValue),
-  );
 
   private _clipper: SkeletonClipping = new SkeletonClipping();
   private _subRenderItems: SubRenderItem[] = [];
   private _separateSlots = new Map();
   private _separateSlotTextureMap: Map<string, Texture2D> = new Map();
 
-  buildPrimitive(skeleton: Skeleton, renderer: SpineAnimationRenderer) {
+  buildPrimitive(
+    skeleton: Skeleton,
+    renderer: SpineAnimationRenderer,
+    shouldUpdateBounds: boolean
+  ) {
     const {
       _clipper,
       _separateSlots,
       _subRenderItems,
       _separateSlotTextureMap,
     } = this;
-    const { bounds } = SpineGenerator;
-
-    bounds.min.set(maxBoundsValue, maxBoundsValue, maxBoundsValue);
-    bounds.max.set(minBoundsValue, minBoundsValue, minBoundsValue);
-
     let verticesLength = 0;
     let indicesLength = 0;
     const drawOrder = skeleton.drawOrder;
     const maxSlotCount = drawOrder.length;
     const {
       engine,
-      _indices, 
+      _indices,
       _vertices,
+      _spineBounds,
       _vertexCount,
       _subPrimitives,
       zSpacing,
       premultipliedAlpha,
+      updateBoundsPerFrame,
     } = renderer;
+    if (updateBoundsPerFrame) {
+      _spineBounds.min.set(Infinity, Infinity, Infinity);
+      _spineBounds.max.set(-Infinity, -Infinity, -Infinity);
+    }
     let {
       tempVerts,
       tempTexture,
       tempBlendMode,
-      subRenderItemPool, 
+      subRenderItemPool,
       subPrimitivePool,
     } = SpineGenerator;
     _subRenderItems.length = 0;
@@ -117,21 +108,16 @@ export class SpineGenerator {
         continue;
       }
 
-      switch(attachment.constructor) {
+      switch (attachment.constructor) {
         case RegionAttachment:
           const regionAttachment = <RegionAttachment>attachment;
           attachmentColor = regionAttachment.color;
           numFloats = vertexSize * 4;
-          regionAttachment.computeWorldVertices(
-            slot,
-            tempVerts,
-            0,
-            vertexSize,
-          );
+          regionAttachment.computeWorldVertices(slot, tempVerts, 0, vertexSize);
           triangles = SpineGenerator.QUAD_TRIANGLES;
           uvs = regionAttachment.uvs;
           texture = regionAttachment.region.texture;
-        break;
+          break;
         case MeshAttachment:
           const meshAttachment = <MeshAttachment>attachment;
           attachmentColor = meshAttachment.color;
@@ -145,12 +131,12 @@ export class SpineGenerator {
             meshAttachment.worldVerticesLength,
             tempVerts,
             0,
-            vertexSize,
+            vertexSize
           );
           triangles = meshAttachment.triangles;
           uvs = meshAttachment.uvs;
           texture = meshAttachment.region.texture;
-        break;
+          break;
         case ClippingAttachment:
           let clip = <ClippingAttachment>attachment;
           _clipper.clipStart(slot, clip);
@@ -171,16 +157,16 @@ export class SpineGenerator {
         const slotColor = slot.color;
         const finalColor = SpineGenerator.tempColor;
         const finalAlpha = skeletonColor.a * slotColor.a * attachmentColor.a;
-       
+
         finalColor.r = skeletonColor.r * slotColor.r * attachmentColor.r;
-				finalColor.g = skeletonColor.g * slotColor.g * attachmentColor.g;
-				finalColor.b = skeletonColor.b * slotColor.b * attachmentColor.b;
-				finalColor.a = finalAlpha;
+        finalColor.g = skeletonColor.g * slotColor.g * attachmentColor.g;
+        finalColor.b = skeletonColor.b * slotColor.b * attachmentColor.b;
+        finalColor.a = finalAlpha;
 
         if (premultipliedAlpha) {
           finalColor.r *= finalAlpha;
-					finalColor.g *= finalAlpha;
-					finalColor.b *= finalAlpha;
+          finalColor.g *= finalAlpha;
+          finalColor.b *= finalAlpha;
         }
 
         if (isClipping) {
@@ -192,7 +178,7 @@ export class SpineGenerator {
             uvs,
             finalColor,
             dark,
-            false,
+            false
           );
           finalVertices = _clipper.clippedVertices;
           finalVerticesLength = finalVertices.length;
@@ -220,15 +206,15 @@ export class SpineGenerator {
         }
 
         if (finalVerticesLength == 0 || finalIndicesLength == 0) {
-					_clipper.clipEndWithSlot(slot);
-					continue;
-				}
+          _clipper.clipEndWithSlot(slot);
+          continue;
+        }
 
         let indexStart = verticesLength / SpineGenerator.VERTEX_STRIDE;
         let vertices = _vertices;
         let i = verticesLength;
         let j = 0;
-        for (; j < finalVerticesLength;) {
+        for (; j < finalVerticesLength; ) {
           let x = finalVertices[j++];
           let y = finalVertices[j++];
           vertices[i++] = x;
@@ -240,7 +226,7 @@ export class SpineGenerator {
           vertices[i++] = finalVertices[j++];
           vertices[i++] = finalVertices[j++];
           vertices[i++] = finalVertices[j++];
-          this._expandByPoint(x, y, z);
+          shouldUpdateBounds && this._expandByPoint(x, y, z, renderer);
         }
         verticesLength = i;
 
@@ -253,10 +239,9 @@ export class SpineGenerator {
         const slotData = slot.data;
         const slotName = slotData.name;
         blend = slotData.blendMode;
-        const blendModeChanged = tempBlendMode !== null &&
-        tempBlendMode !== slotData.blendMode;
-        const textureChanged = tempTexture !== null && 
-        tempTexture !== texture;
+        const blendModeChanged =
+          tempBlendMode !== null && tempBlendMode !== slotData.blendMode;
+        const textureChanged = tempTexture !== null && tempTexture !== texture;
         const slotNeedSeparate = _separateSlots.get(slotName);
 
         if (slotNeedSeparate || blendModeChanged || textureChanged) {
@@ -348,7 +333,12 @@ export class SpineGenerator {
       const key = `${subTexture.instanceId}_${blendMode}`;
       let material = SpineAnimationRenderer._materialCache.get(key);
       if (!material) {
-        material = this._createMaterialForTexture(subTexture, engine, blendMode, premultipliedAlpha);
+        material = this._createMaterialForTexture(
+          subTexture,
+          engine,
+          blendMode,
+          premultipliedAlpha
+        );
         SpineAnimationRenderer._materialCache.set(key, material);
       }
       renderer.setMaterial(i, material);
@@ -356,7 +346,7 @@ export class SpineGenerator {
 
     if (indicesLength > _vertexCount) {
       renderer._createAndBindBuffer(indicesLength);
-      this.buildPrimitive(skeleton, renderer);
+      this.buildPrimitive(skeleton, renderer, shouldUpdateBounds);
       return;
     }
 
@@ -372,15 +362,25 @@ export class SpineGenerator {
     this._separateSlotTextureMap.set(slotName, texture);
   }
 
-  private _createMaterialForTexture(texture: Texture2D, engine: Engine, blendMode: BlendMode, premultipliedAlpha: boolean): Material {
+  private _createMaterialForTexture(
+    texture: Texture2D,
+    engine: Engine,
+    blendMode: BlendMode,
+    premultipliedAlpha: boolean
+  ): Material {
     const material = SpineAnimationRenderer._getDefaultMaterial(engine);
     material.shaderData.setTexture("material_SpineTexture", texture);
     setBlendMode(material, blendMode, premultipliedAlpha);
     return material;
   }
 
-  private _expandByPoint(x: number, y: number, z: number) {
-    const { bounds: { min, max } } = SpineGenerator;
+  private _expandByPoint(
+    x: number,
+    y: number,
+    z: number,
+    renderer: SpineAnimationRenderer
+  ) {
+    const { min, max } = renderer._spineBounds;
     const newMinX = Math.min(min.x, x);
     const newMinY = Math.min(min.y, y);
     const newMinZ = Math.min(min.z, z);
@@ -390,5 +390,4 @@ export class SpineGenerator {
     min.set(newMinX, newMinY, newMinZ);
     max.set(newMaxX, newMaxY, newMaxZ);
   }
-
 }

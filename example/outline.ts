@@ -74,6 +74,7 @@ export default class BoundingBoxLine extends MeshRenderer {
 
     const rendererCount = renderers.length;
     if (rendererCount > 0) {
+      if (!renderers[0].bounds) return;
       const { min: baseMin, max: baseMax } = renderers[0].bounds;
       min.set(baseMin.x, baseMin.y, baseMin.z);
       max.set(baseMax.x, baseMax.y, baseMax.z);
