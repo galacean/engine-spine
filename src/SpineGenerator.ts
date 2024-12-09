@@ -59,7 +59,7 @@ export class SpineGenerator {
       engine,
       _indices,
       _vertices,
-      _spineBounds,
+      _localBounds,
       _vertexCount,
       _subPrimitives,
       zSpacing,
@@ -67,8 +67,8 @@ export class SpineGenerator {
       updateBoundsPerFrame,
     } = renderer;
     if (updateBoundsPerFrame) {
-      _spineBounds.min.set(Infinity, Infinity, Infinity);
-      _spineBounds.max.set(-Infinity, -Infinity, -Infinity);
+      _localBounds.min.set(Infinity, Infinity, Infinity);
+      _localBounds.max.set(-Infinity, -Infinity, -Infinity);
     }
     let {
       tempVerts,
@@ -380,7 +380,7 @@ export class SpineGenerator {
     z: number,
     renderer: SpineAnimationRenderer
   ) {
-    const { min, max } = renderer._spineBounds;
+    const { min, max } = renderer._localBounds;
     const newMinX = Math.min(min.x, x);
     const newMinY = Math.min(min.y, y);
     const newMinZ = Math.min(min.z, z);

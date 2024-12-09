@@ -96,7 +96,7 @@ export class SpineAnimationRenderer extends Renderer {
    * Otherwise, it is calculated only during animation initialization.
    */
   @assignmentClone
-  updateBoundsPerFrame = true;
+  updateBoundsPerFrame = false;
 
   /**
    * Default state for spine animation.
@@ -135,7 +135,7 @@ export class SpineAnimationRenderer extends Renderer {
   _resource: SpineResource;
   /** @internal */
   @ignoreClone
-  _spineBounds = new BoundingBox(
+  _localBounds = new BoundingBox(
     new Vector3(Infinity, Infinity, Infinity),
     new Vector3(-Infinity, -Infinity, -Infinity)
   );
@@ -190,32 +190,24 @@ export class SpineAnimationRenderer extends Renderer {
   override update(delta: number): void {
     const { _state: state, _skeleton: skeleton } = this;
     if (!state || !skeleton) return;
+    let shouldUpdateBounds = this.updateBoundsPerFrame;
     if (this._needsInitialize) {
-      this._initialize();
+      this._applyDefaultConfig();
+      shouldUpdateBounds = true;
       this._needsInitialize = false;
     }
     state.update(delta);
     state.apply(skeleton);
     skeleton.update(delta);
     skeleton.updateWorldTransform(Physics.update);
-    let shouldUpdateBounds = false;
-    if (this._isContainDirtyFlag(SpineAnimationUpdateFlags.InitialVolume)) {
-      shouldUpdateBounds = true;
-      this._setDirtyFlagFalse(SpineAnimationUpdateFlags.InitialVolume);
-    }
-    if (this._isContainDirtyFlag(SpineAnimationUpdateFlags.AnimationVolume)) {
-      shouldUpdateBounds = true;
-      if (!this.updateBoundsPerFrame) {
-        this._setDirtyFlagFalse(SpineAnimationUpdateFlags.AnimationVolume);
-      }
-    }
     SpineAnimationRenderer._spineGenerator.buildPrimitive(
       this._skeleton,
       this,
       shouldUpdateBounds
     );
     if (shouldUpdateBounds) {
-      this._updateBounds(this.bounds);
+      // @ts-ignore
+      this._updateBounds(this._bounds);
     }
   }
 
@@ -257,7 +249,7 @@ export class SpineAnimationRenderer extends Renderer {
   // @ts-ignore
   override _updateBounds(worldBounds: BoundingBox): void {
     BoundingBox.transform(
-      this._spineBounds,
+      this._localBounds,
       this.entity.transform.worldMatrix,
       worldBounds
     );
@@ -280,14 +272,6 @@ export class SpineAnimationRenderer extends Renderer {
     if (this._state !== state) {
       this._state = state;
       this._needsInitialize = !!state;
-      this._state.addListener({
-        start: () => {
-          this._onAnimationStart();
-        },
-        end: () => {
-          this._onAnimationEnd();
-        },
-      });
     }
   }
 
@@ -387,21 +371,6 @@ export class SpineAnimationRenderer extends Renderer {
     this._dirtyUpdateFlag &= ~type;
   }
 
-  private _initialize() {
-    this._applyDefaultConfig();
-    this._dirtyUpdateFlag |= SpineAnimationUpdateFlags.InitialVolume;
-  }
-
-  private _onAnimationStart(): void {
-    if (this.updateBoundsPerFrame) {
-      this._dirtyUpdateFlag |= SpineAnimationUpdateFlags.AnimationVolume;
-    }
-  }
-
-  private _onAnimationEnd(): void {
-    this._setDirtyFlagFalse(SpineAnimationUpdateFlags.AnimationVolume);
-  }
-
   private _clearMaterialCache(): void {
     this._materials.forEach((item) => {
       const texture = item.shaderData.getTexture("material_SpineTexture");
@@ -459,10 +428,8 @@ export class SpineAnimationRenderer extends Renderer {
  * @internal
  */
 export enum SpineAnimationUpdateFlags {
-  /** On Animation start play */
-  AnimationVolume = 0x2,
-  /** On skeleton data asset changed */
-  InitialVolume = 0x4,
+  /** On Animation change */
+  Animation = 0x2,
 }
 
 /**
