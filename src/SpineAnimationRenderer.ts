@@ -262,7 +262,6 @@ export class SpineAnimationRenderer extends Renderer {
     const state = new AnimationState(animationStateData);
     target._setSkeleton(skeleton);
     target._setState(state);
-    target._applyDefaultConfig();
   }
 
   /**
