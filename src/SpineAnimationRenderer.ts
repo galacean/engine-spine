@@ -205,10 +205,8 @@ export class SpineAnimationRenderer extends Renderer {
       this,
       shouldUpdateBounds
     );
-    if (shouldUpdateBounds) {
-      // @ts-ignore
-      this._updateBounds(this._bounds);
-    }
+    // @ts-ignore
+    shouldUpdateBounds && this._updateBounds(this._bounds);
   }
 
   /**
@@ -216,8 +214,12 @@ export class SpineAnimationRenderer extends Renderer {
    */
   // @ts-ignore
   override _render(context: any): void {
-    const { _primitive, _subPrimitives } = this;
-    const { _materials: materials, _engine: engine } = this;
+    const {
+      _primitive,
+      _subPrimitives,
+      _materials: materials,
+      _engine: engine,
+    } = this;
     // @ts-ignore
     const renderElement = engine._renderElementPool.get();
     // @ts-ignore
@@ -292,12 +294,9 @@ export class SpineAnimationRenderer extends Renderer {
    * @internal
    */
   override _onDestroy(): void {
-    const { _primitive, _subPrimitives } = this;
-    _subPrimitives.length = 0;
-    if (_primitive) {
-      _primitive.destroy();
-    }
     this._clearMaterialCache();
+    this._subPrimitives.length = 0;
+    this._primitive && this._primitive.destroy();
     this._resource && this._resource.destroy();
     this._primitive = null;
     this._resource = null;
@@ -372,12 +371,15 @@ export class SpineAnimationRenderer extends Renderer {
   }
 
   private _clearMaterialCache(): void {
-    this._materials.forEach((item) => {
-      const texture = item.shaderData.getTexture("material_SpineTexture");
-      const blendMode = getBlendMode(item);
+    const materialCache = SpineAnimationRenderer._materialCache;
+    const { _materials: materials } = this;
+    for (let i = 0, len = materials.length; i < len; i += 1) {
+      const material = materials[i];
+      const texture = material.shaderData.getTexture("material_SpineTexture");
+      const blendMode = getBlendMode(material);
       const key = `${texture.instanceId}_${blendMode}`;
-      SpineAnimationRenderer._materialCache.delete(key);
-    });
+      materialCache.delete(key);
+    }
   }
 
   private _applyDefaultConfig(): void {
