@@ -41,7 +41,6 @@ export class SpineGenerator {
   buildPrimitive(
     skeleton: Skeleton,
     renderer: SpineAnimationRenderer,
-    shouldUpdateBounds: boolean
   ) {
     const {
       _indices,
@@ -54,10 +53,8 @@ export class SpineGenerator {
       premultipliedAlpha,
     } = renderer;
 
-    if (renderer.updateBoundsPerFrame) {
-      _localBounds.min.set(Infinity, Infinity, Infinity);
-      _localBounds.max.set(-Infinity, -Infinity, -Infinity);
-    }
+    _localBounds.min.set(Infinity, Infinity, Infinity);
+    _localBounds.max.set(-Infinity, -Infinity, -Infinity);
 
     const {
       _clipper,
@@ -222,7 +219,7 @@ export class SpineGenerator {
           _vertices[i++] = finalVertices[j++];
           _vertices[i++] = finalVertices[j++];
           _vertices[i++] = finalVertices[j++];
-          shouldUpdateBounds && this._expandByPoint(x, y, z, renderer);
+          this._expandByPoint(x, y, z, renderer);
         }
         verticesLength = i;
 
@@ -332,7 +329,7 @@ export class SpineGenerator {
 
     if (indicesLength > _vertexCount) {
       renderer._createAndBindBuffer(indicesLength);
-      this.buildPrimitive(skeleton, renderer, shouldUpdateBounds);
+      this.buildPrimitive(skeleton, renderer);
       return;
     }
 

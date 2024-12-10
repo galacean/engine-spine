@@ -92,13 +92,6 @@ export class SpineAnimationRenderer extends Renderer {
   premultipliedAlpha = false;
 
   /**
-   * Updates the bounding box every frame when enabled.
-   * Otherwise, it is calculated only during animation initialization.
-   */
-  @assignmentClone
-  updateBoundsPerFrame = false;
-
-  /**
    * Default state for spine animation.
    * Contains the default animation name to be played, whether this animation should loop, the default skin name.
    */
@@ -190,23 +183,16 @@ export class SpineAnimationRenderer extends Renderer {
   override update(delta: number): void {
     const { _state: state, _skeleton: skeleton } = this;
     if (!state || !skeleton) return;
-    let shouldUpdateBounds = this.updateBoundsPerFrame;
     if (this._needsInitialize) {
       this._applyDefaultConfig();
-      shouldUpdateBounds = true;
       this._needsInitialize = false;
     }
     state.update(delta);
     state.apply(skeleton);
     skeleton.update(delta);
     skeleton.updateWorldTransform(Physics.update);
-    SpineAnimationRenderer._spineGenerator.buildPrimitive(
-      this._skeleton,
-      this,
-      shouldUpdateBounds
-    );
-    // @ts-ignore
-    shouldUpdateBounds && this._updateBounds(this._bounds);
+    SpineAnimationRenderer._spineGenerator.buildPrimitive(this._skeleton, this);
+    this._dirtyUpdateFlag |= RendererUpdateFlags.WorldVolume;
   }
 
   /**
@@ -297,7 +283,6 @@ export class SpineAnimationRenderer extends Renderer {
     this._clearMaterialCache();
     this._subPrimitives.length = 0;
     this._primitive && this._primitive.destroy();
-    this._resource && this._resource.destroy();
     this._primitive = null;
     this._resource = null;
     this._skeleton = null;
@@ -354,20 +339,6 @@ export class SpineAnimationRenderer extends Renderer {
    */
   _clearSubPrimitives(): void {
     this._subPrimitives.length = 0;
-  }
-
-  /**
-   * @internal
-   */
-  _isContainDirtyFlag(type: number): boolean {
-    return (this._dirtyUpdateFlag & type) != 0;
-  }
-
-  /**
-   * @internal
-   */
-  _setDirtyFlagFalse(type: number): void {
-    this._dirtyUpdateFlag &= ~type;
   }
 
   private _clearMaterialCache(): void {
