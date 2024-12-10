@@ -169,14 +169,13 @@ export class SpineGenerator {
         }
 
         if (isClipping) {
-          const dark = SpineGenerator.tempDark;
           _clipper.clipTriangles(
             tempVerts,
             triangles,
             triangles.length,
             uvs,
             finalColor,
-            dark,
+            SpineGenerator.tempDark,
             false
           );
           finalVertices = _clipper.clippedVertices;
@@ -304,24 +303,21 @@ export class SpineGenerator {
 
     const lastLen = _subPrimitives.length;
     const curLen = _subRenderItems.length;
-    if (curLen < lastLen) {
-      for (let i = curLen; i < lastLen; i++) {
-        const item = _subPrimitives[i];
-        subPrimitivePool.return(item);
-      }
+    for (let i = curLen; i < lastLen; i++) {
+      const item = _subPrimitives[i];
+      subPrimitivePool.return(item);
     }
 
     renderer._clearSubPrimitives();
+    const materialCache = SpineAnimationRenderer._materialCache;
     for (let i = 0, l = curLen; i < l; ++i) {
       const item = _subRenderItems[i];
       const { slotName, blendMode, texture } = item;
       renderer._addSubPrimitive(item.subPrimitive);
-      let subTexture = texture.texture;
-      if (_separateSlotTextureMap.has(slotName)) {
-        subTexture = _separateSlotTextureMap.get(slotName);
-      }
+      const subTexture =
+        _separateSlotTextureMap.get(slotName) || texture.texture;
       const key = `${subTexture.instanceId}_${blendMode}`;
-      let material = SpineAnimationRenderer._materialCache.get(key);
+      let material = materialCache.get(key);
       if (!material) {
         material = this._createMaterialForTexture(
           subTexture,
@@ -329,7 +325,7 @@ export class SpineGenerator {
           blendMode,
           premultipliedAlpha
         );
-        SpineAnimationRenderer._materialCache.set(key, material);
+        materialCache.set(key, material);
       }
       renderer.setMaterial(i, material);
     }
