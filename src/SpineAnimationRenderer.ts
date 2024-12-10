@@ -137,8 +137,6 @@ export class SpineAnimationRenderer extends Renderer {
   private _skeleton: Skeleton;
   @ignoreClone
   private _state: AnimationState;
-  @ignoreClone
-  private _needsInitialize = false;
 
   /**
    * The Spine.AnimationState object of this SpineAnimationRenderer.
@@ -183,10 +181,6 @@ export class SpineAnimationRenderer extends Renderer {
   override update(delta: number): void {
     const { _state: state, _skeleton: skeleton } = this;
     if (!state || !skeleton) return;
-    if (this._needsInitialize) {
-      this._applyDefaultConfig();
-      this._needsInitialize = false;
-    }
     state.update(delta);
     state.apply(skeleton);
     skeleton.update(delta);
@@ -247,20 +241,14 @@ export class SpineAnimationRenderer extends Renderer {
    * @internal
    */
   _setSkeleton(skeleton: Skeleton) {
-    if (this._skeleton !== skeleton) {
-      this._skeleton = skeleton;
-      this._needsInitialize = !!skeleton;
-    }
+    this._skeleton = skeleton;
   }
 
   /**
    * @internal
    */
   _setState(state: AnimationState) {
-    if (this._state !== state) {
-      this._state = state;
-      this._needsInitialize = !!state;
-    }
+    this._state = state;
   }
 
   /**
@@ -274,6 +262,7 @@ export class SpineAnimationRenderer extends Renderer {
     const state = new AnimationState(animationStateData);
     target._setSkeleton(skeleton);
     target._setState(state);
+    target._applyDefaultConfig();
   }
 
   /**
@@ -394,6 +383,7 @@ export class SpineAnimationRenderer extends Renderer {
     const state = new AnimationState(stateData);
     this._setSkeleton(skeleton);
     this._setState(state);
+    this._applyDefaultConfig();
   }
 }
 

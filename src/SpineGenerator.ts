@@ -9,7 +9,7 @@ import {
   Skeleton,
   SkeletonClipping,
 } from "@esotericsoftware/spine-core";
-import { Engine, Material, SubPrimitive, Texture2D } from "@galacean/engine";
+import { BoundingBox, Engine, Material, SubPrimitive, Texture2D } from "@galacean/engine";
 import { SpineAnimationRenderer } from "./SpineAnimationRenderer";
 import { AdaptiveTexture } from "./loader/LoaderUtils";
 import { setBlendMode } from "./util/BlendMode";
@@ -219,7 +219,7 @@ export class SpineGenerator {
           _vertices[i++] = finalVertices[j++];
           _vertices[i++] = finalVertices[j++];
           _vertices[i++] = finalVertices[j++];
-          this._expandByPoint(x, y, z, renderer);
+          this._expandBounds(x, y, z, _localBounds);
         }
         verticesLength = i;
 
@@ -388,13 +388,13 @@ export class SpineGenerator {
     return primitiveIndex;
   }
 
-  private _expandByPoint(
+  private _expandBounds(
     x: number,
     y: number,
     z: number,
-    renderer: SpineAnimationRenderer
+    localBounds: BoundingBox
   ) {
-    const { min, max } = renderer._localBounds;
+    const { min, max } = localBounds;
     min.set(Math.min(min.x, x), Math.min(min.y, y), Math.min(min.z, z));
     max.set(Math.max(max.x, x), Math.max(max.y, y), Math.max(max.z, z));
   }
