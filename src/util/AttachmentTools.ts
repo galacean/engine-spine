@@ -25,10 +25,8 @@ export function createAttachmentFromRegion(
   attachment.scaleX = 1;
   attachment.scaleY = 1;
   attachment.rotation = rotation;
-
   attachment.width = region.originalWidth * scale;
   attachment.height = region.originalHeight * scale;
-
   attachment.updateRegion();
   return attachment;
 }
@@ -61,7 +59,6 @@ export function cloneAttachmentWithRegion(
       }
       newAttachment.updateRegion();
       break;
-
     case MeshAttachment:
       const meshAttachment = attachment as MeshAttachment;
       newAttachment = (
