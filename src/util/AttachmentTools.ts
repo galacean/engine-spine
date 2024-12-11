@@ -26,10 +26,8 @@ export function createAttachmentFromRegion(
   attachment.scaleY = 1;
   attachment.rotation = rotation;
 
-  const originalWidth = region.originalWidth;
-  const originalHeight = region.originalHeight;
-  attachment.width = originalWidth * scale;
-  attachment.height = originalHeight * scale;
+  attachment.width = region.originalWidth * scale;
+  attachment.height = region.originalHeight * scale;
 
   attachment.updateRegion();
   return attachment;
