@@ -46,13 +46,13 @@ export class SpineMaterial extends Material {
       Shader.create(
         "galacean-spine-shader",
         SpineMaterial._spineVS,
-        SpineMaterial._spineFS
+        SpineMaterial._spineFS,
       );
     super(engine, shader);
     const renderState = this.renderState;
     const target = renderState.blendState.targetBlendState;
     target.enabled = true;
-    setBlendMode(this, BlendMode.Normal);
+    setBlendMode(this, BlendMode.Normal, false);
     renderState.depthState.writeEnabled = false;
     renderState.rasterState.cullMode = CullMode.Off;
     renderState.renderQueueType = RenderQueueType.Transparent;

@@ -3,7 +3,6 @@ import {
   AnimationStateData,
   Physics,
   Skeleton,
-  TrackEntry,
 } from "@esotericsoftware/spine-core";
 import {
   assignmentClone,
@@ -21,6 +20,7 @@ import {
   Primitive,
   Renderer,
   SubPrimitive,
+  Vector3,
   VertexBufferBinding,
   VertexElement,
   VertexElementFormat,
@@ -126,13 +126,17 @@ export class SpineAnimationRenderer extends Renderer {
   /** @internal */
   @ignoreClone
   _resource: SpineResource;
+  /** @internal */
+  @ignoreClone
+  _localBounds = new BoundingBox(
+    new Vector3(Infinity, Infinity, Infinity),
+    new Vector3(-Infinity, -Infinity, -Infinity),
+  );
 
   @ignoreClone
   private _skeleton: Skeleton;
   @ignoreClone
   private _state: AnimationState;
-  @ignoreClone
-  private _needsInitialize = false;
 
   /**
    * The Spine.AnimationState object of this SpineAnimationRenderer.
@@ -175,24 +179,14 @@ export class SpineAnimationRenderer extends Renderer {
    * @internal
    */
   override update(delta: number): void {
-    const { _state, _skeleton } = this;
-    if (_state && _skeleton) {
-      _state.update(delta);
-      _state.apply(_skeleton);
-      _skeleton.update(delta);
-      _skeleton.updateWorldTransform(Physics.update);
-      SpineAnimationRenderer._spineGenerator.buildPrimitive(
-        this._skeleton,
-        this,
-      );
-      if (this._isContainDirtyFlag(SpineAnimationUpdateFlags.InitialVolume)) {
-        this._onWorldVolumeChanged();
-        this._setDirtyFlagFalse(SpineAnimationUpdateFlags.InitialVolume);
-      }
-      if (this._isContainDirtyFlag(SpineAnimationUpdateFlags.AnimationVolume)) {
-        this._calculateGeneratorBounds(this.bounds);
-      }
-    }
+    const { _state: state, _skeleton: skeleton } = this;
+    if (!state || !skeleton) return;
+    state.update(delta);
+    state.apply(skeleton);
+    skeleton.update(delta);
+    skeleton.updateWorldTransform(Physics.update);
+    SpineAnimationRenderer._spineGenerator.buildPrimitive(this._skeleton, this);
+    this._dirtyUpdateFlag |= RendererUpdateFlags.WorldVolume;
   }
 
   /**
@@ -200,12 +194,12 @@ export class SpineAnimationRenderer extends Renderer {
    */
   // @ts-ignore
   override _render(context: any): void {
-    if (this._needsInitialize) {
-      this._initialize();
-      this._needsInitialize = false;
-    }
-    const { _primitive, _subPrimitives } = this;
-    const { _materials: materials, _engine: engine } = this;
+    const {
+      _primitive,
+      _subPrimitives,
+      _materials: materials,
+      _engine: engine,
+    } = this;
     // @ts-ignore
     const renderElement = engine._renderElementPool.get();
     // @ts-ignore
@@ -236,16 +230,8 @@ export class SpineAnimationRenderer extends Renderer {
    */
   // @ts-ignore
   override _updateBounds(worldBounds: BoundingBox): void {
-    this._calculateGeneratorBounds(worldBounds);
-  }
-
-  /**
-   * @internal
-   */
-  _calculateGeneratorBounds(worldBounds: BoundingBox): void {
-    const { bounds } = SpineGenerator;
     BoundingBox.transform(
-      bounds,
+      this._localBounds,
       this.entity.transform.worldMatrix,
       worldBounds,
     );
@@ -255,20 +241,14 @@ export class SpineAnimationRenderer extends Renderer {
    * @internal
    */
   _setSkeleton(skeleton: Skeleton) {
-    if (this._skeleton !== skeleton) {
-      this._skeleton = skeleton;
-      this._needsInitialize = !!skeleton;
-    }
+    this._skeleton = skeleton;
   }
 
   /**
    * @internal
    */
   _setState(state: AnimationState) {
-    if (this._state !== state) {
-      this._state = state;
-      this._needsInitialize = !!state;
-    }
+    this._state = state;
   }
 
   /**
@@ -288,12 +268,9 @@ export class SpineAnimationRenderer extends Renderer {
    * @internal
    */
   override _onDestroy(): void {
-    const { _primitive, _subPrimitives } = this;
-    _subPrimitives.length = 0;
-    if (_primitive) {
-      _primitive.destroy();
-    }
     this._clearMaterialCache();
+    this._subPrimitives.length = 0;
+    this._primitive && this._primitive.destroy();
     this._primitive = null;
     this._resource = null;
     this._skeleton = null;
@@ -352,58 +329,16 @@ export class SpineAnimationRenderer extends Renderer {
     this._subPrimitives.length = 0;
   }
 
-  /**
-   * @internal
-   */
-  _isContainDirtyFlag(type: number): boolean {
-    return (this._dirtyUpdateFlag & type) != 0;
-  }
-
-  /**
-   * @internal
-   */
-  _setDirtyFlagFalse(type: number): void {
-    this._dirtyUpdateFlag &= ~type;
-  }
-
-  /**
-   * @internal
-   */
-  _onWorldVolumeChanged(): void {
-    this._dirtyUpdateFlag |= RendererUpdateFlags.WorldVolume;
-  }
-
-  private _initialize() {
-    this._applyDefaultConfig();
-    this._dirtyUpdateFlag |= SpineAnimationUpdateFlags.InitialVolume;
-    this._state.addListener({
-      start: () => {
-        this._onAnimationStart();
-      },
-      complete: (entry: TrackEntry) => {
-        this._onAnimationComplete(entry);
-      },
-    });
-    this.update(0);
-  }
-
-  private _onAnimationStart(): void {
-    this._dirtyUpdateFlag |= SpineAnimationUpdateFlags.AnimationVolume;
-  }
-
-  private _onAnimationComplete(entry: TrackEntry): void {
-    if (!entry.loop) {
-      this._setDirtyFlagFalse(SpineAnimationUpdateFlags.AnimationVolume);
-    }
-  }
-
   private _clearMaterialCache(): void {
-    this._materials.forEach((item) => {
-      const texture = item.shaderData.getTexture("material_SpineTexture");
-      const blendMode = getBlendMode(item);
+    const materialCache = SpineAnimationRenderer._materialCache;
+    const { _materials: materials } = this;
+    for (let i = 0, len = materials.length; i < len; i += 1) {
+      const material = materials[i];
+      const texture = material.shaderData.getTexture("material_SpineTexture");
+      const blendMode = getBlendMode(material);
       const key = `${texture.instanceId}_${blendMode}`;
-      SpineAnimationRenderer._materialCache.delete(key);
-    });
+      materialCache.delete(key);
+    }
   }
 
   private _applyDefaultConfig(): void {
@@ -447,6 +382,7 @@ export class SpineAnimationRenderer extends Renderer {
     const state = new AnimationState(stateData);
     this._setSkeleton(skeleton);
     this._setState(state);
+    this._applyDefaultConfig();
   }
 }
 
@@ -454,12 +390,8 @@ export class SpineAnimationRenderer extends Renderer {
  * @internal
  */
 export enum SpineAnimationUpdateFlags {
-  /** On World Transform Changed */
-  TransformVolume = 0x1,
-  /** On Animation start play */
-  AnimationVolume = 0x2,
-  /** On skeleton data asset changed */
-  InitialVolume = 0x4,
+  /** On Animation change */
+  Animation = 0x2,
 }
 
 /**
