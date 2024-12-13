@@ -63,7 +63,14 @@
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.5.3",
-    "vite": "^5.3.4"
+    "vite": "^5.3.4",
+    "husky": "^8.0.3",
+    "lint-staged": "^10.5.4",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
+    "eslint": "^8.57.1",
+    "eslint-config-prettier": "^8.10.0",
+    "eslint-plugin-prettier": "^5.2.1"
   },
   "ci": {
     "type": "aci",
@@ -111,7 +118,8 @@
     "build:watch": "npm run b:types && cross-env BUILD_TYPE=ALL rollup -c --watch",
     "ci": "npm run lint && npm run test-cov",
     "lint": "eslint src --fix --ext .ts,.tsx",
-    "b:types": "tsc --emitDeclarationOnly"
+    "b:types": "tsc --emitDeclarationOnly",
+    "prepare": "husky install"
   },
   "types": "types/index.d.ts",
   "repository": "https://github.com/johanzhu/engine-spine.git"
