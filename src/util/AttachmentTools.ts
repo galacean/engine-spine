@@ -1,9 +1,4 @@
-import {
-  Attachment,
-  MeshAttachment,
-  RegionAttachment,
-  TextureAtlasRegion,
-} from "@esotericsoftware/spine-core";
+import { Attachment, MeshAttachment, RegionAttachment, TextureAtlasRegion } from "@esotericsoftware/spine-core";
 
 /**
  * Creates a new `RegionAttachment` from a specified texture atlas region.
@@ -61,11 +56,7 @@ export function cloneAttachmentWithRegion(
       break;
     case MeshAttachment:
       const meshAttachment = attachment as MeshAttachment;
-      newAttachment = (
-        cloneMeshAsLinked
-          ? meshAttachment.newLinkedMesh()
-          : meshAttachment.copy()
-      ) as MeshAttachment;
+      newAttachment = (cloneMeshAsLinked ? meshAttachment.newLinkedMesh() : meshAttachment.copy()) as MeshAttachment;
       newAttachment.region = atlasRegion;
       newAttachment.updateRegion();
       break;

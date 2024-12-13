@@ -1,23 +1,14 @@
-import {
-  AssetPromise,
-  Loader,
-  resourceLoader,
-  ResourceManager,
-  LoadItem,
-} from "@galacean/engine";
+import { AssetPromise, Loader, resourceLoader, ResourceManager, LoadItem } from "@galacean/engine";
 import { TextureAtlas } from "@esotericsoftware/spine-core";
 import { createTextureAtlas } from "./LoaderUtils";
 
 @resourceLoader("EditorSpineAtlas", ["atlas"])
 class EditorSpineAtlasLoader extends Loader<TextureAtlas> {
-  load(
-    item: LoadItem,
-    resourceManager: ResourceManager
-  ): AssetPromise<TextureAtlas> {
+  load(item: LoadItem, resourceManager: ResourceManager): AssetPromise<TextureAtlas> {
     return new AssetPromise(async (resolve) => {
       // @ts-ignore
       const text = await resourceManager._request<string>(item.url, {
-        type: "text",
+        type: "text"
       });
       const { data: atlasText, textures: textureRefs } = JSON.parse(text);
       const promises = textureRefs.map((refItem) =>
