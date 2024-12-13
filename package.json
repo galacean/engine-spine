@@ -121,6 +121,9 @@
     "b:types": "tsc --emitDeclarationOnly",
     "prepare": "husky install"
   },
+  "lint-staged": {
+    "*.{ts,tsx}": ["eslint --fix"]
+  },
   "types": "types/index.d.ts",
   "repository": "https://github.com/johanzhu/engine-spine.git"
 }

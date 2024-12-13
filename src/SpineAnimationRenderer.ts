@@ -348,7 +348,7 @@ export class SpineAnimationRenderer extends Renderer {
         this._onAnimationStart();
       },
       complete: (entry: TrackEntry) => {
-        this._onAnimationComplete( entry );
+        this._onAnimationComplete( entry  );
       },
     });
     this.update(0);
