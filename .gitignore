@@ -21,4 +21,3 @@ e2e/.dev/mpa
 .husky/post-commit
 .husky/pre-push
 .husky/post-merge
-pnpm-lock.yaml
