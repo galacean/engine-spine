@@ -1,9 +1,4 @@
-import {
-  AnimationState,
-  AnimationStateData,
-  Physics,
-  Skeleton,
-} from "@esotericsoftware/spine-core";
+import { AnimationState, AnimationStateData, Physics, Skeleton } from "@esotericsoftware/spine-core";
 import {
   assignmentClone,
   BoundingBox,
@@ -23,7 +18,7 @@ import {
   Vector3,
   VertexBufferBinding,
   VertexElement,
-  VertexElementFormat,
+  VertexElementFormat
 } from "@galacean/engine";
 import { SpineGenerator } from "./SpineGenerator";
 import { SpineMaterial } from "./SpineMaterial";
@@ -37,24 +32,9 @@ export class SpineAnimationRenderer extends Renderer {
   private static _defaultMaterial: Material;
   private static _spineGenerator = new SpineGenerator();
 
-  private static _positionVertexElement = new VertexElement(
-    "POSITION",
-    0,
-    VertexElementFormat.Vector3,
-    0,
-  );
-  private static _colorVertexElement = new VertexElement(
-    "COLOR_0",
-    12,
-    VertexElementFormat.Vector4,
-    0,
-  );
-  private static _uvVertexElement = new VertexElement(
-    "TEXCOORD_0",
-    28,
-    VertexElementFormat.Vector2,
-    0,
-  );
+  private static _positionVertexElement = new VertexElement("POSITION", 0, VertexElementFormat.Vector3, 0);
+  private static _colorVertexElement = new VertexElement("COLOR_0", 12, VertexElementFormat.Vector4, 0);
+  private static _uvVertexElement = new VertexElement("TEXCOORD_0", 28, VertexElementFormat.Vector2, 0);
 
   /** @internal */
   static _materialCache = new Map<string, Material>();
@@ -96,8 +76,7 @@ export class SpineAnimationRenderer extends Renderer {
    * Contains the default animation name to be played, whether this animation should loop, the default skin name.
    */
   @deepClone
-  readonly defaultConfig: SpineAnimationDefaultConfig =
-    new SpineAnimationDefaultConfig();
+  readonly defaultConfig: SpineAnimationDefaultConfig = new SpineAnimationDefaultConfig();
 
   /** @internal */
   @ignoreClone
@@ -130,7 +109,7 @@ export class SpineAnimationRenderer extends Renderer {
   @ignoreClone
   _localBounds = new BoundingBox(
     new Vector3(Infinity, Infinity, Infinity),
-    new Vector3(-Infinity, -Infinity, -Infinity),
+    new Vector3(-Infinity, -Infinity, -Infinity)
   );
 
   @ignoreClone
@@ -194,12 +173,7 @@ export class SpineAnimationRenderer extends Renderer {
    */
   // @ts-ignore
   override _render(context: any): void {
-    const {
-      _primitive,
-      _subPrimitives,
-      _materials: materials,
-      _engine: engine,
-    } = this;
+    const { _primitive, _subPrimitives, _materials: materials, _engine: engine } = this;
     // @ts-ignore
     const renderElement = engine._renderElementPool.get();
     // @ts-ignore
@@ -230,11 +204,7 @@ export class SpineAnimationRenderer extends Renderer {
    */
   // @ts-ignore
   override _updateBounds(worldBounds: BoundingBox): void {
-    BoundingBox.transform(
-      this._localBounds,
-      this.entity.transform.worldMatrix,
-      worldBounds,
-    );
+    BoundingBox.transform(this._localBounds, this.entity.transform.worldMatrix, worldBounds);
   }
 
   /**
@@ -284,34 +254,16 @@ export class SpineAnimationRenderer extends Renderer {
   _createAndBindBuffer(vertexCount: number): void {
     const { _engine, _primitive } = this;
     this._vertexCount = vertexCount;
-    this._vertices = new Float32Array(
-      vertexCount * SpineGenerator.VERTEX_STRIDE,
-    );
+    this._vertices = new Float32Array(vertexCount * SpineGenerator.VERTEX_STRIDE);
     this._indices = new Uint16Array(vertexCount);
     const vertexStride = SpineGenerator.VERTEX_STRIDE * 4;
-    const vertexBuffer = new Buffer(
-      _engine,
-      BufferBindFlag.VertexBuffer,
-      this._vertices,
-      BufferUsage.Dynamic,
-    );
-    const indexBuffer = new Buffer(
-      _engine,
-      BufferBindFlag.IndexBuffer,
-      this._indices,
-      BufferUsage.Dynamic,
-    );
+    const vertexBuffer = new Buffer(_engine, BufferBindFlag.VertexBuffer, this._vertices, BufferUsage.Dynamic);
+    const indexBuffer = new Buffer(_engine, BufferBindFlag.IndexBuffer, this._indices, BufferUsage.Dynamic);
     this._indexBuffer = indexBuffer;
     this._vertexBuffer = vertexBuffer;
-    const vertexBufferBinding = new VertexBufferBinding(
-      vertexBuffer,
-      vertexStride,
-    );
+    const vertexBufferBinding = new VertexBufferBinding(vertexBuffer, vertexStride);
     this._primitive.setVertexBufferBinding(0, vertexBufferBinding);
-    const indexBufferBinding = new IndexBufferBinding(
-      indexBuffer,
-      IndexFormat.UInt16,
-    );
+    const indexBufferBinding = new IndexBufferBinding(indexBuffer, IndexFormat.UInt16);
     _primitive.setIndexBufferBinding(indexBufferBinding);
   }
 
@@ -391,7 +343,7 @@ export class SpineAnimationRenderer extends Renderer {
  */
 export enum SpineAnimationUpdateFlags {
   /** On Animation change */
-  Animation = 0x2,
+  Animation = 0x2
 }
 
 /**
@@ -399,7 +351,7 @@ export enum SpineAnimationUpdateFlags {
  */
 export enum RendererUpdateFlags {
   /** Include world position and world bounds. */
-  WorldVolume = 0x1,
+  WorldVolume = 0x1
 }
 
 /**
@@ -425,6 +377,6 @@ export class SpineAnimationDefaultConfig {
     /**
      * The name of the default skin @defaultValue `default`
      */
-    public skinName: string = "default",
+    public skinName: string = "default"
   ) {}
 }
