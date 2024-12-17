@@ -91,8 +91,6 @@ export class SpineLoader extends Loader<SpineResource> {
         return;
       }
 
-      spineLoadContext.fileName = this._extractFileName(skeletonPath);
-
       resourceManager
         // @ts-ignore
         ._request(skeletonPath, { type: "arraybuffer" })
@@ -115,7 +113,7 @@ export class SpineLoader extends Loader<SpineResource> {
   ): Promise<SpineResource> {
     const { engine } = resourceManager;
     const { skeletonRawData, spineAssetPath } = spineLoadContext;
-    const { atlasPath, extraPaths } = spineAssetPath;
+    const { skeletonPath, atlasPath, extraPaths } = spineAssetPath;
 
     const atlasLoadPromise =
       extraPaths.length === 0
@@ -130,12 +128,7 @@ export class SpineLoader extends Loader<SpineResource> {
 
     return atlasLoadPromise.then((textureAtlas) => {
       const skeletonData = LoaderUtils.createSkeletonData(skeletonRawData, textureAtlas);
-      return new SpineResource(engine, skeletonData, spineLoadContext.fileName);
+      return new SpineResource(engine, skeletonData, skeletonPath);
     });
-  }
-
-  private _extractFileName(url: string): string {
-    const match = url.match(/\/([^\/]+?)(\.[^\/]*)?$/);
-    return match ? match[1] : "Spine Entity";
   }
 }

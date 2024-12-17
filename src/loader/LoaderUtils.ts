@@ -38,7 +38,7 @@ export class LoaderUtils {
     reject: (reason?: any) => void
   ): Promise<Texture2D[]> {
     const resourceManager = engine.resourceManager;
-    const texturePromises: AssetPromise<any>[] = imagePaths.map((imagePath, index) => {
+    const texturePromises: AssetPromise<Texture2D>[] = imagePaths.map((imagePath, index) => {
       const ext = imageExtensions[index];
       let imageLoaderType = AssetType.Texture2D;
       if (ext === "ktx") {
