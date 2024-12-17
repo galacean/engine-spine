@@ -23,6 +23,9 @@ class SubRenderItem {
   slotName?: string;
 }
 
+/**
+ * @internal
+ */
 export class SpineGenerator {
   static VERTEX_SIZE = 8;
   static VERTEX_STRIDE = 9;
