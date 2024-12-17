@@ -1,5 +1,5 @@
 import { CullMode, Engine, Material, RenderQueueType, Shader } from "@galacean/engine";
-import { setBlendMode } from "./util/BlendMode";
+import { setBlendMode } from "../util/BlendMode";
 import { BlendMode } from "@esotericsoftware/spine-core";
 
 export class SpineMaterial extends Material {

@@ -11,10 +11,10 @@ import {
 } from "@esotericsoftware/spine-core";
 import { BoundingBox, Engine, Material, SubPrimitive, Texture2D } from "@galacean/engine";
 import { SpineAnimationRenderer } from "./SpineAnimationRenderer";
-import { AdaptiveTexture } from "./loader/LoaderUtils";
-import { setBlendMode } from "./util/BlendMode";
-import { ClearablePool } from "./util/ClearablePool";
-import { ReturnablePool } from "./util/ReturnablePool";
+import { SpineTexture } from "../loader/SpineTexture";
+import { setBlendMode } from "../util/BlendMode";
+import { ClearablePool } from "../util/ClearablePool";
+import { ReturnablePool } from "../util/ReturnablePool";
 
 class SubRenderItem {
   subPrimitive: SubPrimitive;
@@ -23,6 +23,9 @@ class SubRenderItem {
   slotName?: string;
 }
 
+/**
+ * @internal
+ */
 export class SpineGenerator {
   static VERTEX_SIZE = 8;
   static VERTEX_STRIDE = 9;
@@ -61,9 +64,9 @@ export class SpineGenerator {
     let count = 0;
 
     let blend = BlendMode.Normal;
-    let texture = null;
+    let texture: SpineTexture = null;
     let tempBlendMode: BlendMode | null = null;
-    let tempTexture: AdaptiveTexture | null = null;
+    let tempTexture: SpineTexture | null = null;
 
     let primitiveIndex = 0;
 
@@ -225,7 +228,7 @@ export class SpineGenerator {
             // If separatedTexture exist, set texture params
             const separateTexture = _separateSlotTextureMap.get(slotName);
             if (separateTexture) {
-              const oldTexture = texture.texture;
+              const oldTexture = texture.getImage();
               separateTexture.filterMode = oldTexture.filterMode;
               separateTexture.wrapModeU = oldTexture.wrapModeU;
               separateTexture.wrapModeV = oldTexture.wrapModeV;
@@ -275,7 +278,7 @@ export class SpineGenerator {
       const item = _subRenderItems[i];
       const { slotName, blendMode, texture } = item;
       renderer._addSubPrimitive(item.subPrimitive);
-      const subTexture = _separateSlotTextureMap.get(slotName) || texture.texture;
+      const subTexture = _separateSlotTextureMap.get(slotName) || texture.getImage();
       const key = `${subTexture.instanceId}_${blendMode}`;
       let material = materialCache.get(key);
       if (!material) {
@@ -320,7 +323,7 @@ export class SpineGenerator {
     primitiveIndex: number,
     start: number,
     count: number,
-    texture: AdaptiveTexture,
+    texture: SpineTexture,
     blend: BlendMode,
     slotName?: string
   ): number {

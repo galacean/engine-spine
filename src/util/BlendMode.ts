@@ -1,7 +1,6 @@
 import { BlendMode } from "@esotericsoftware/spine-core";
 import { BlendFactor, BlendOperation, Material } from "@galacean/engine";
 
-
 const { SourceAlpha, One, DestinationColor, Zero, OneMinusSourceColor, OneMinusSourceAlpha } = BlendFactor;
 const { Add } = BlendOperation;
 

@@ -1,13 +1,20 @@
-import { AnimationState, AnimationStateData, MeshAttachment, RegionAttachment, Skeleton, SkeletonData } from "@esotericsoftware/spine-core";
+import {
+  AnimationState,
+  AnimationStateData,
+  MeshAttachment,
+  RegionAttachment,
+  Skeleton,
+  SkeletonData
+} from "@esotericsoftware/spine-core";
 import { Engine, Entity, ReferResource, Texture2D } from "@galacean/engine";
-import { SpineAnimationRenderer } from "../SpineAnimationRenderer";
+import { SpineAnimationRenderer } from "../renderer/SpineAnimationRenderer";
 
 /**
  * Represents a resource that manages Spine animation data, textures, and entity templates for the Galacean engine.
- * 
-*/
+ *
+ */
 export class SpineResource extends ReferResource {
-  /** The url of skeletonData. */
+  /** The url of spine resource. */
   readonly url: string;
 
   private _texturesInSpineAtlas: Texture2D[] = [];

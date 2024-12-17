@@ -7,8 +7,7 @@ import glslify from "rollup-plugin-glslify";
 import serve from "rollup-plugin-serve";
 import miniProgramPlugin from "./rollup.miniprogram.plugin";
 import replace from "@rollup/plugin-replace";
-import { swc, defineRollupSwcOption } from "rollup-plugin-swc3";
-import { terser } from "rollup-plugin-terser";
+import { swc, defineRollupSwcOption, minify } from "rollup-plugin-swc3";
 
 const { BUILD_TYPE, NODE_ENV } = process.env;
 
@@ -39,13 +38,12 @@ const commonPlugins = [
       jsc: {
         loose: true,
         externalHelpers: true,
-        target: "esnext",
+        target: "es5"
       },
-      sourceMaps: true,
+      sourceMaps: true
     })
   ),
   commonjs(),
-  terser(),
   NODE_ENV === "development"
     ? serve({
         contentBase: "packages",
@@ -72,7 +70,7 @@ function config({ location, pkgJson }) {
   return {
     umd: () => {
       let file = path.join(location, "dist", "browser.js");
-      const plugins = [...commonPlugins];
+      const plugins = [...commonPlugins, minify({ sourceMap: true })];
       return {
         input,
         external,

@@ -22,8 +22,8 @@ import {
 } from "@galacean/engine";
 import { SpineGenerator } from "./SpineGenerator";
 import { SpineMaterial } from "./SpineMaterial";
-import { SpineResource } from "./loader/SpineResource";
-import { getBlendMode } from "./util/BlendMode";
+import { SpineResource } from "../loader/SpineResource";
+import { getBlendMode } from "../util/BlendMode";
 
 /**
  * Spine animation renderer, capable of rendering spine animations and providing functions for animation and skeleton manipulation.
