@@ -6,44 +6,6 @@ import {
   TextureAtlas
 } from "@esotericsoftware/spine-core";
 import { AssetPromise, AssetType, Engine, Texture2D } from "@galacean/engine";
-import { SpineResource } from "./SpineResource";
-import { SpineTexture } from "./SpineTexture";
-
-/**
- * Creates a runtime Spine resource based on skeleton raw data and a Spine `TextureAtlas`.
- *
- * @param engine - The engine instance used to create the Spine resource.
- * @param skeletonRawData - The raw data of the skeleton, which can be a JSON string or binary data (`ArrayBuffer`).
- * @param textureAtlas - The `TextureAtlas` associated with the skeleton, used for texture mapping.
- * @param name - An optional name for the created Spine resource.
- * @returns A `SpineResource` instance that represents the created Spine resource.
- */
-export function createSpineResource(
-  engine: Engine,
-  skeletonRawData: string | ArrayBuffer,
-  textureAtlas: TextureAtlas,
-  name?: string
-): SpineResource {
-  const skeletonData = LoaderUtils._createSkeletonData(skeletonRawData, textureAtlas);
-  return new SpineResource(engine, skeletonData, name);
-}
-
-/**
- * Creates a `TextureAtlas` instance from atlas text and texture data.
- *
- * @param atlasText - The atlas text data in Spine format.
- * @param textures - An array of `Texture2D` objects representing the textures referenced in the atlas.
- * @returns A `TextureAtlas` instance configured with the provided textures.
- */
-export function createTextureAtlas(atlasText: string, textures: Texture2D[]): TextureAtlas {
-  const textureAtlas = new TextureAtlas(atlasText);
-  textureAtlas.pages.forEach((page, index) => {
-    const engineTexture = textures.find((item) => item.name === page.name) || textures[index];
-    const texture = new SpineTexture(engineTexture);
-    page.setTexture(texture);
-  });
-  return textureAtlas;
-}
 
 export class LoaderUtils {
   /**

@@ -11,13 +11,7 @@ import {
   request
 } from "@galacean/engine";
 import * as dat from "dat.gui";
-import {
-  SpineAnimationRenderer,
-  TextureAtlas,
-  createSpineResource,
-  createTextureAtlas,
-  AttachmentTools
-} from "../src/index";
+import { SpineAnimationRenderer, TextureAtlas } from "../src/index";
 import { SpineResource } from "../src/loader/SpineResource";
 
 Logger.enable();
@@ -206,7 +200,6 @@ async function loadSpine(root: Entity, engine: Engine, resource) {
   if (scene === "dynamic-editor") {
     const skeletonRawData = (await request(resource.skeleton, { type })) as ArrayBuffer | string;
     const textureAtlas = (await engine.resourceManager.load({ url: resource.atlas })) as TextureAtlas;
-    spineResource = createSpineResource(engine, skeletonRawData, textureAtlas);
   } else if (scene === "dynamic-origin") {
     const skeletonRawData = (await request(resource.skeleton, { type })) as ArrayBuffer | string;
     const atlasText = (await request(resource.atlas, { type: "text" })) as string;
@@ -215,7 +208,6 @@ async function loadSpine(root: Entity, engine: Engine, resource) {
       type: AssetType.Texture2D
     })) as Texture2D;
     const textureAtlas = createTextureAtlas(atlasText, [texture]);
-    spineResource = createSpineResource(engine, skeletonRawData, textureAtlas);
   } else {
     try {
       spineResource = (await engine.resourceManager.load({
