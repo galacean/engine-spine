@@ -1,6 +1,6 @@
 import { TextureAtlas } from "@esotericsoftware/spine-core";
 import { AssetPromise, Loader, LoadItem, resourceLoader, ResourceManager } from "@galacean/engine";
-import { createTextureAtlas, LoaderUtils } from "./LoaderUtils";
+import { LoaderUtils } from "./LoaderUtils";
 import { SpineLoader } from "./SpineLoader";
 
 interface SpineAtlasAsset {
@@ -86,7 +86,7 @@ class SpineAtlasLoader extends Loader<TextureAtlas> {
             LoaderUtils._loadTexturesByPaths(imagePaths, imageExtensions, engine, reject)
           ])
             .then(([atlasText, textures]) => {
-              const textureAtlas = createTextureAtlas(atlasText, textures);
+              const textureAtlas = LoaderUtils._createTextureAtlas(atlasText, textures);
               resolve(textureAtlas);
             })
             .catch((err) => {

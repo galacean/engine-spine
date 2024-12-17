@@ -6,11 +6,12 @@ import {
   TextureAtlas
 } from "@esotericsoftware/spine-core";
 import { AssetPromise, AssetType, Engine, Texture2D } from "@galacean/engine";
+import { SpineTexture } from "./SpineTexture";
 
+/**
+ * @internal
+ */
 export class LoaderUtils {
-  /**
-   * @internal
-   */
   static _createSkeletonData(skeletonRawData: string | ArrayBuffer, textureAtlas: TextureAtlas): SkeletonData {
     const atlasLoader = new AtlasAttachmentLoader(textureAtlas);
     if (typeof skeletonRawData === "string") {
@@ -20,9 +21,16 @@ export class LoaderUtils {
     }
   }
 
-  /**
-   * @internal
-   */
+  static _createTextureAtlas(atlasText: string, textures: Texture2D[]): TextureAtlas {
+    const textureAtlas = new TextureAtlas(atlasText);
+    textureAtlas.pages.forEach((page, index) => {
+      const engineTexture = textures.find((item) => item.name === page.name) || textures[index];
+      const texture = new SpineTexture(engineTexture);
+      page.setTexture(texture);
+    });
+    return textureAtlas;
+  }
+
   static _loadTexturesByPaths(
     imagePaths: string[],
     imageExtensions: string[],
@@ -49,9 +57,6 @@ export class LoaderUtils {
     });
   }
 
-  /**
-   * @internal
-   */
   static _loadTextureAtlas(atlasPath: string, engine: Engine, reject: (reason?: any) => void): Promise<TextureAtlas> {
     const baseUrl = LoaderUtils._getBaseUrl(atlasPath);
     const resourceManager = engine.resourceManager;
@@ -71,7 +76,7 @@ export class LoaderUtils {
             }) as Promise<Texture2D>;
           });
           return Promise.all(loadTexturePromises).then((textures) => {
-            return createTextureAtlas(atlasText, textures);
+            return LoaderUtils._createTextureAtlas(atlasText, textures);
           });
         })
         .catch((err) => {
@@ -81,9 +86,6 @@ export class LoaderUtils {
     );
   }
 
-  /**
-   * @internal
-   */
   static _getBaseUrl(url: string): string {
     const parsedUrl = new URL(url);
     const basePath = parsedUrl.origin + parsedUrl.pathname;

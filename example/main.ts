@@ -207,7 +207,6 @@ async function loadSpine(root: Entity, engine: Engine, resource) {
       url: resource.texture,
       type: AssetType.Texture2D
     })) as Texture2D;
-    const textureAtlas = createTextureAtlas(atlasText, [texture]);
   } else {
     try {
       spineResource = (await engine.resourceManager.load({
