@@ -6,7 +6,7 @@ import {
   TextureAtlas
 } from "@esotericsoftware/spine-core";
 import { AssetPromise, AssetType, Engine, Texture2D } from "@galacean/engine";
-import { AdaptiveTexture } from "./AdaptiveTexture";
+import { SpineTexture } from "./SpineTexture";
 import { SpineResource } from "./SpineResource";
 
 /**
@@ -39,7 +39,7 @@ export function createTextureAtlas(atlasText: string, textures: Texture2D[]): Te
   const textureAtlas = new TextureAtlas(atlasText);
   textureAtlas.pages.forEach((page, index) => {
     const engineTexture = textures.find((item) => item.name === page.name) || textures[index];
-    const texture = new AdaptiveTexture(new Image(), engineTexture);
+    const texture = new SpineTexture(engineTexture);
     page.setTexture(texture);
   });
   return textureAtlas;

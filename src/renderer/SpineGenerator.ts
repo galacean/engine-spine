@@ -11,7 +11,7 @@ import {
 } from "@esotericsoftware/spine-core";
 import { BoundingBox, Engine, Material, SubPrimitive, Texture2D } from "@galacean/engine";
 import { SpineAnimationRenderer } from "./SpineAnimationRenderer";
-import { AdaptiveTexture } from "../loader/AdaptiveTexture";
+import { SpineTexture } from "../loader/SpineTexture";
 import { setBlendMode } from "../util/BlendMode";
 import { ClearablePool } from "../util/ClearablePool";
 import { ReturnablePool } from "../util/ReturnablePool";
@@ -61,9 +61,9 @@ export class SpineGenerator {
     let count = 0;
 
     let blend = BlendMode.Normal;
-    let texture = null;
+    let texture: SpineTexture = null;
     let tempBlendMode: BlendMode | null = null;
-    let tempTexture: AdaptiveTexture | null = null;
+    let tempTexture: SpineTexture | null = null;
 
     let primitiveIndex = 0;
 
@@ -275,7 +275,7 @@ export class SpineGenerator {
       const item = _subRenderItems[i];
       const { slotName, blendMode, texture } = item;
       renderer._addSubPrimitive(item.subPrimitive);
-      const subTexture = _separateSlotTextureMap.get(slotName) || texture.texture;
+      const subTexture = _separateSlotTextureMap.get(slotName) || texture.getImage();
       const key = `${subTexture.instanceId}_${blendMode}`;
       let material = materialCache.get(key);
       if (!material) {
@@ -320,7 +320,7 @@ export class SpineGenerator {
     primitiveIndex: number,
     start: number,
     count: number,
-    texture: AdaptiveTexture,
+    texture: SpineTexture,
     blend: BlendMode,
     slotName?: string
   ): number {

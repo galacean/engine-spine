@@ -1,33 +1,33 @@
 import { Texture, TextureFilter, TextureWrap } from "@esotericsoftware/spine-core";
 import { Texture2D, TextureFilterMode, TextureWrapMode } from "@galacean/engine";
 
-/** @internal */
-export class AdaptiveTexture extends Texture {
-  texture: Texture2D;
-  constructor(image: HTMLImageElement | ImageBitmap, texture: Texture2D) {
+/**
+ * @internal
+ */
+export class SpineTexture extends Texture {
+  constructor(image: Texture2D) {
     super(image);
-    this.texture = texture;
-    this.texture.generateMipmaps();
+    image.generateMipmaps();
   }
 
   // rewrite getImage function, return galacean texture2D, then attachment can get size of texture
-  getImage(): any {
-    return this.texture;
+  getImage(): Texture2D {
+    return this._image;
   }
 
   setFilters(minFilter: TextureFilter, magFilter: TextureFilter) {
     if (minFilter === TextureFilter.Nearest) {
-      this.texture.filterMode = TextureFilterMode.Point;
+      this._image.filterMode = TextureFilterMode.Point;
     } else if (magFilter === TextureFilter.MipMapLinearLinear) {
-      this.texture.filterMode = TextureFilterMode.Trilinear;
+      this._image.filterMode = TextureFilterMode.Trilinear;
     } else {
-      this.texture.filterMode = TextureFilterMode.Bilinear;
+      this._image.filterMode = TextureFilterMode.Bilinear;
     }
   }
 
   setWraps(uWrap: TextureWrap, vWrap: TextureWrap) {
-    this.texture.wrapModeU = this._convertWrapMode(uWrap);
-    this.texture.wrapModeV = this._convertWrapMode(vWrap);
+    this._image.wrapModeU = this._convertWrapMode(uWrap);
+    this._image.wrapModeV = this._convertWrapMode(vWrap);
   }
 
   dispose() {}
