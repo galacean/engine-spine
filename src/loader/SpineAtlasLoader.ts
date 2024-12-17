@@ -1,7 +1,7 @@
 import { TextureAtlas } from "@esotericsoftware/spine-core";
 import { AssetPromise, Loader, LoadItem, resourceLoader, ResourceManager } from "@galacean/engine";
 import { LoaderUtils } from "./LoaderUtils";
-import { SpineLoader, SpineLoaderParams } from "./SpineLoader";
+import { SpineLoader } from "./SpineLoader";
 
 interface SpineAtlasAsset {
   atlasPath: string;
@@ -11,8 +11,8 @@ interface SpineAtlasAsset {
 
 @resourceLoader("SpineAtlas", ["atlas"])
 export class SpineAtlasLoader extends Loader<TextureAtlas> {
-  private static _groupAssetsByExtension(url: string, fileExtension: string | null, assetPath: SpineAtlasAsset) {
-    const ext = SpineLoader._getUrlExtension(url, fileExtension);
+  private static _groupAssetsByExtension(url: string, assetPath: SpineAtlasAsset) {
+    const ext = SpineLoader._getUrlExtension(url);
     if (!ext) return;
 
     if (ext === "atlas") {
@@ -24,8 +24,8 @@ export class SpineAtlasLoader extends Loader<TextureAtlas> {
     }
   }
 
-  private static _assignSpineAtlas(url: string, fileExtension: string | null, assetPath: SpineAtlasAsset) {
-    const ext = SpineLoader._getUrlExtension(url, fileExtension);
+  private static _assignSpineAtlas(url: string, assetPath: SpineAtlasAsset) {
+    const ext = SpineLoader._getUrlExtension(url);
     if (!ext) return;
     if (ext === "atlas") {
       assetPath.atlasPath = url;
@@ -41,21 +41,13 @@ export class SpineAtlasLoader extends Loader<TextureAtlas> {
         imageExtensions: []
       };
 
-      const params = <SpineLoaderParams>item.params || {};
-      let { fileExtensions } = params;
       if (!item.urls) {
-        SpineAtlasLoader._assignSpineAtlas(
-          item.url,
-          SpineLoader._normalizeFileExtensions(fileExtensions, false) as string,
-          spineAtlasAsset
-        );
+        SpineAtlasLoader._assignSpineAtlas(item.url, spineAtlasAsset);
       } else {
-        fileExtensions = SpineLoader._normalizeFileExtensions(fileExtensions, true);
         const urls = item.urls;
         for (let i = 0, len = urls.length; i < len; i += 1) {
           const url = urls[i];
-          const extension = fileExtensions[i] || null;
-          SpineAtlasLoader._groupAssetsByExtension(url, extension, spineAtlasAsset);
+          SpineAtlasLoader._groupAssetsByExtension(url, spineAtlasAsset);
         }
       }
 

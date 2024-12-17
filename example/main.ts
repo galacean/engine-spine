@@ -50,27 +50,17 @@ const demos = {
   },
   "三文件-无后缀bin": {
     urls: [
-      "https://mdn.alipayobjects.com/portal_h1wdez/afts/file/A*Go0FQ6FlurEAAAAAAAAAAAAAAQAAAQ",
-      "https://mdn.alipayobjects.com/portal_h1wdez/afts/file/A*AjmGS7wM-2UAAAAAAAAAAAAAAQAAAQ",
-      "https://mdn.alipayobjects.com/portal_h1wdez/afts/img/A*BXnORpJ85ywAAAAAAAAAAAAAAQAAAQ/original"
-    ],
-    params: {
-      fileExtensions: [
-        "bin", // skel
-        "atlas",
-        "png"
-      ]
-    }
+      "https://mdn.alipayobjects.com/portal_h1wdez/afts/file/A*Go0FQ6FlurEAAAAAAAAAAAAAAQAAAQ?a=.bin",
+      "https://mdn.alipayobjects.com/portal_h1wdez/afts/file/A*AjmGS7wM-2UAAAAAAAAAAAAAAQAAAQ?b=.atlas",
+      "https://mdn.alipayobjects.com/portal_h1wdez/afts/img/A*BXnORpJ85ywAAAAAAAAAAAAAAQAAAQ/original?c=.png"
+    ]
   },
   ktx2: {
     urls: [
-      "https://mdn.alipayobjects.com/portal_h1wdez/afts/file/A*Go0FQ6FlurEAAAAAAAAAAAAAAQAAAQ",
-      "https://mdn.alipayobjects.com/portal_h1wdez/afts/file/A*AjmGS7wM-2UAAAAAAAAAAAAAAQAAAQ",
+      "https://mdn.alipayobjects.com/portal_h1wdez/afts/file/A*Go0FQ6FlurEAAAAAAAAAAAAAAQAAAQ?a=.bin",
+      "https://mdn.alipayobjects.com/portal_h1wdez/afts/file/A*AjmGS7wM-2UAAAAAAAAAAAAAAQAAAQ?b=.atlas",
       "https://mdn.alipayobjects.com/oasis_be/afts/img/A*i5qRTKgPlYMAAAAAAAAAAAAADkp5AQ/original/DR.ktx2"
-    ],
-    params: {
-      fileExtensions: ["bin", "atlas"]
-    }
+    ]
   },
   皮肤切换: {
     urls: [

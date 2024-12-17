@@ -25,8 +25,8 @@ export class SpineLoader extends Loader<SpineResource> {
   private static _skeletonExtensions = ["skel", "json", "bin"];
   private static _decoder = new TextDecoder("utf-8");
 
-  private static _groupAssetsByExtension(url: string, fileExtension: string | null, assetPath: SpineAssetPath) {
-    const ext = SpineLoader._getUrlExtension(url, fileExtension);
+  private static _groupAssetsByExtension(url: string, assetPath: SpineAssetPath) {
+    const ext = SpineLoader._getUrlExtension(url);
     if (!ext) return;
 
     if (["skel", "json", "bin"].includes(ext)) {
@@ -38,8 +38,8 @@ export class SpineLoader extends Loader<SpineResource> {
     }
   }
 
-  private static _deriveAndAssignSpineAtlas(url: string, fileExtension: string | null, assetPath: SpineAssetPath) {
-    const ext = SpineLoader._getUrlExtension(url, fileExtension);
+  private static _deriveAndAssignSpineAtlas(url: string, assetPath: SpineAssetPath) {
+    const ext = SpineLoader._getUrlExtension(url);
     if (!ext) return;
     assetPath.skeletonPath = url;
     const extensionPattern: RegExp = /\.(json|bin|skel)$/;
@@ -53,18 +53,7 @@ export class SpineLoader extends Loader<SpineResource> {
     }
   }
 
-  static _normalizeFileExtensions(fileExtensions: string | string[], expectArray: boolean): string | string[] | null {
-    if (expectArray) {
-      return Array.isArray(fileExtensions) ? fileExtensions : [];
-    } else {
-      return typeof fileExtensions === "string" ? fileExtensions : null;
-    }
-  }
-
-  static _getUrlExtension(url: string, fileExtension: string): string | null {
-    if (fileExtension) {
-      return fileExtension;
-    }
+  static _getUrlExtension(url: string): string | null {
     const regex = /\.(\w+)(\?|$)/;
     const match = url.match(regex);
     return match ? match[1] : null;
@@ -82,21 +71,15 @@ export class SpineLoader extends Loader<SpineResource> {
         }
       };
       const { spineAssetPath } = spineLoadContext;
-      const params = <SpineLoaderParams>item.params || {};
-      let { fileExtensions } = params;
       if (!item.urls) {
-        fileExtensions = SpineLoader._normalizeFileExtensions(fileExtensions, false) as string;
-        SpineLoader._deriveAndAssignSpineAtlas(item.url, fileExtensions, spineAssetPath);
+        SpineLoader._deriveAndAssignSpineAtlas(item.url, spineAssetPath);
       } else {
-        fileExtensions = SpineLoader._normalizeFileExtensions(fileExtensions, true);
         const urls = item.urls;
         for (let i = 0, len = urls.length; i < len; i += 1) {
           const url = urls[i];
-          const extension = fileExtensions[i] || null;
-          SpineLoader._groupAssetsByExtension(url, extension, spineAssetPath);
+          SpineLoader._groupAssetsByExtension(url, spineAssetPath);
         }
       }
-      spineAssetPath.fileExtensions = fileExtensions;
 
       const { skeletonPath, atlasPath } = spineAssetPath;
       if (!skeletonPath || !atlasPath) {
@@ -133,24 +116,16 @@ export class SpineLoader extends Loader<SpineResource> {
     const { engine } = resourceManager;
     const { skeletonRawData, spineAssetPath } = spineLoadContext;
     const { atlasPath, extraPaths } = spineAssetPath;
-    let fileExtensions: string | string[] | null;
-    if (spineAssetPath.fileExtensions?.length) {
-      fileExtensions = (spineAssetPath.fileExtensions as string[]).filter(
-        (item) => !SpineLoader._skeletonExtensions.includes(item)
-      );
-    }
 
     const atlasLoadPromise =
       extraPaths.length === 0
         ? (resourceManager.load({
             url: atlasPath,
-            type: "SpineAtlas",
-            params: { fileExtensions }
+            type: "SpineAtlas"
           }) as Promise<TextureAtlas>)
         : (resourceManager.load({
             urls: [atlasPath].concat(extraPaths),
-            type: "SpineAtlas",
-            params: { fileExtensions }
+            type: "SpineAtlas"
           }) as Promise<TextureAtlas>);
 
     return atlasLoadPromise.then((textureAtlas) => {
