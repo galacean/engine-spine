@@ -7,7 +7,7 @@ import {
   SkeletonData
 } from "@esotericsoftware/spine-core";
 import { Engine, Entity, ReferResource, Texture2D } from "@galacean/engine";
-import { SpineAnimationRenderer } from "../SpineAnimationRenderer";
+import { SpineAnimationRenderer } from "../renderer/SpineAnimationRenderer";
 
 /**
  * Represents a resource that manages Spine animation data, textures, and entity templates for the Galacean engine.
