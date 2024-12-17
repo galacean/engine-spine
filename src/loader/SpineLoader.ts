@@ -1,6 +1,6 @@
 import { TextureAtlas } from "@esotericsoftware/spine-core";
 import { AssetPromise, Loader, LoadItem, resourceLoader, ResourceManager } from "@galacean/engine";
-import { _createSkeletonData } from "./LoaderUtils";
+import { LoaderUtils } from "./LoaderUtils";
 import { SpineResource } from "./SpineResource";
 
 type SpineAssetPath = {
@@ -155,7 +155,7 @@ export class SpineLoader extends Loader<SpineResource> {
           }) as Promise<TextureAtlas>);
 
     return atlasLoadPromise.then((textureAtlas) => {
-      const skeletonData = _createSkeletonData(skeletonRawData, textureAtlas);
+      const skeletonData = LoaderUtils._createSkeletonData(skeletonRawData, textureAtlas);
       return new SpineResource(engine, skeletonData, spineLoadContext.fileName);
     });
   }

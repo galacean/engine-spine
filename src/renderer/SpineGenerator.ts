@@ -225,7 +225,7 @@ export class SpineGenerator {
             // If separatedTexture exist, set texture params
             const separateTexture = _separateSlotTextureMap.get(slotName);
             if (separateTexture) {
-              const oldTexture = texture.texture;
+              const oldTexture = texture.getImage();
               separateTexture.filterMode = oldTexture.filterMode;
               separateTexture.wrapModeU = oldTexture.wrapModeU;
               separateTexture.wrapModeV = oldTexture.wrapModeV;
