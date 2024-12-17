@@ -14,7 +14,7 @@ import { SpineAnimationRenderer } from "../renderer/SpineAnimationRenderer";
  *
  */
 export class SpineResource extends ReferResource {
-  /** The url of skeletonData. */
+  /** The url of spine resource. */
   readonly url: string;
 
   private _texturesInSpineAtlas: Texture2D[] = [];
