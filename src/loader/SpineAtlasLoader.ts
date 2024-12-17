@@ -10,7 +10,7 @@ interface SpineAtlasAsset {
 }
 
 @resourceLoader("SpineAtlas", ["atlas"])
-class SpineAtlasLoader extends Loader<TextureAtlas> {
+export class SpineAtlasLoader extends Loader<TextureAtlas> {
   private static _groupAssetsByExtension(url: string, fileExtension: string | null, assetPath: SpineAtlasAsset) {
     const ext = SpineLoader._getUrlExtension(url, fileExtension);
     if (!ext) return;
@@ -68,7 +68,7 @@ class SpineAtlasLoader extends Loader<TextureAtlas> {
 
       if (!item.urls) {
         const atlasPath = item.url;
-        LoaderUtils._loadTextureAtlas(atlasPath, engine, reject)
+        LoaderUtils.loadTextureAtlas(atlasPath, engine, reject)
           .then((textureAtlas) => {
             resolve(textureAtlas);
           })
@@ -83,17 +83,17 @@ class SpineAtlasLoader extends Loader<TextureAtlas> {
             resourceManager._request(atlasPath, {
               type: "text"
             }) as Promise<string>,
-            LoaderUtils._loadTexturesByPaths(imagePaths, imageExtensions, engine, reject)
+            LoaderUtils.loadTexturesByPaths(imagePaths, imageExtensions, engine, reject)
           ])
             .then(([atlasText, textures]) => {
-              const textureAtlas = LoaderUtils._createTextureAtlas(atlasText, textures);
+              const textureAtlas = LoaderUtils.createTextureAtlas(atlasText, textures);
               resolve(textureAtlas);
             })
             .catch((err) => {
               reject(err);
             });
         } else {
-          LoaderUtils._loadTextureAtlas(atlasPath, engine, reject)
+          LoaderUtils.loadTextureAtlas(atlasPath, engine, reject)
             .then((textureAtlas) => {
               resolve(textureAtlas);
             })
@@ -105,5 +105,3 @@ class SpineAtlasLoader extends Loader<TextureAtlas> {
     });
   }
 }
-
-export { SpineAtlasLoader };

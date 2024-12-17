@@ -155,7 +155,7 @@ export class SpineLoader extends Loader<SpineResource> {
           }) as Promise<TextureAtlas>);
 
     return atlasLoadPromise.then((textureAtlas) => {
-      const skeletonData = LoaderUtils._createSkeletonData(skeletonRawData, textureAtlas);
+      const skeletonData = LoaderUtils.createSkeletonData(skeletonRawData, textureAtlas);
       return new SpineResource(engine, skeletonData, spineLoadContext.fileName);
     });
   }

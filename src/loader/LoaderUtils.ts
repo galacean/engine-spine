@@ -12,7 +12,7 @@ import { SpineTexture } from "./SpineTexture";
  * @internal
  */
 export class LoaderUtils {
-  static _createSkeletonData(skeletonRawData: string | ArrayBuffer, textureAtlas: TextureAtlas): SkeletonData {
+  static createSkeletonData(skeletonRawData: string | ArrayBuffer, textureAtlas: TextureAtlas): SkeletonData {
     const atlasLoader = new AtlasAttachmentLoader(textureAtlas);
     if (typeof skeletonRawData === "string") {
       return new SkeletonJson(atlasLoader).readSkeletonData(skeletonRawData);
@@ -21,7 +21,7 @@ export class LoaderUtils {
     }
   }
 
-  static _createTextureAtlas(atlasText: string, textures: Texture2D[]): TextureAtlas {
+  static createTextureAtlas(atlasText: string, textures: Texture2D[]): TextureAtlas {
     const textureAtlas = new TextureAtlas(atlasText);
     textureAtlas.pages.forEach((page, index) => {
       const engineTexture = textures.find((item) => item.name === page.name) || textures[index];
@@ -31,7 +31,7 @@ export class LoaderUtils {
     return textureAtlas;
   }
 
-  static _loadTexturesByPaths(
+  static loadTexturesByPaths(
     imagePaths: string[],
     imageExtensions: string[],
     engine: Engine,
@@ -57,8 +57,8 @@ export class LoaderUtils {
     });
   }
 
-  static _loadTextureAtlas(atlasPath: string, engine: Engine, reject: (reason?: any) => void): Promise<TextureAtlas> {
-    const baseUrl = LoaderUtils._getBaseUrl(atlasPath);
+  static loadTextureAtlas(atlasPath: string, engine: Engine, reject: (reason?: any) => void): Promise<TextureAtlas> {
+    const baseUrl = LoaderUtils.getBaseUrl(atlasPath);
     const resourceManager = engine.resourceManager;
     let atlasText: string;
     return (
@@ -76,7 +76,7 @@ export class LoaderUtils {
             }) as Promise<Texture2D>;
           });
           return Promise.all(loadTexturePromises).then((textures) => {
-            return LoaderUtils._createTextureAtlas(atlasText, textures);
+            return LoaderUtils.createTextureAtlas(atlasText, textures);
           });
         })
         .catch((err) => {
@@ -86,7 +86,7 @@ export class LoaderUtils {
     );
   }
 
-  static _getBaseUrl(url: string): string {
+  static getBaseUrl(url: string): string {
     const parsedUrl = new URL(url);
     const basePath = parsedUrl.origin + parsedUrl.pathname;
     return basePath.endsWith("/") ? basePath : basePath.substring(0, basePath.lastIndexOf("/") + 1);
