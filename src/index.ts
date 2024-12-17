@@ -10,7 +10,6 @@ for (let key in LoaderObject) {
 }
 
 export * from "@esotericsoftware/spine-core";
-export * from "./util/index";
 export * from "./loader/index";
 export * from "./renderer/index";
 
