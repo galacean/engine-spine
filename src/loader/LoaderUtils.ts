@@ -8,16 +8,7 @@ import {
   TextureFilter,
   TextureWrap
 } from "@esotericsoftware/spine-core";
-import {
-  AssetPromise,
-  AssetType,
-  BufferReader,
-  Engine,
-  Texture2D,
-  TextureFilterMode,
-  TextureWrapMode
-} from "@galacean/engine";
-import { SpineLoader } from "./SpineLoader";
+import { AssetPromise, AssetType, Engine, Texture2D, TextureFilterMode, TextureWrapMode } from "@galacean/engine";
 import { SpineResource } from "./SpineResource";
 
 /**
@@ -35,19 +26,6 @@ export function createSpineResource(
   textureAtlas: TextureAtlas,
   name?: string
 ): SpineResource {
-  if (
-    typeof skeletonRawData === "string" &&
-    skeletonRawData.startsWith(SpineLoader._JSON_PREFIX) // isEditorJson
-  ) {
-    const skeletonObject = JSON.parse(skeletonRawData);
-    skeletonRawData = skeletonObject.data;
-  } else {
-    const reader = new BufferReader(new Uint8Array(skeletonRawData as ArrayBuffer));
-    if (SpineLoader._isEditorBinary(reader)) {
-      reader.nextStr();
-      skeletonRawData = reader.nextImageData();
-    }
-  }
   const skeletonData = createSkeletonData(skeletonRawData, textureAtlas);
   return new SpineResource(engine, skeletonData, name);
 }
@@ -60,20 +38,6 @@ export function createSpineResource(
  * @returns A `TextureAtlas` instance configured with the provided textures.
  */
 export function createTextureAtlas(atlasText: string, textures: Texture2D[]): TextureAtlas {
-  if (atlasText.startsWith(SpineLoader._ATLAS_PREFIX)) {
-    const atlasObject = JSON.parse(atlasText);
-    atlasText = atlasObject.data;
-  }
-  const textureAtlas = new TextureAtlas(atlasText);
-  textureAtlas.pages.forEach((page, index) => {
-    const engineTexture = textures.find((item) => item.name === page.name) || textures[index];
-    const texture = new AdaptiveTexture(new Image(), engineTexture);
-    page.setTexture(texture);
-  });
-  return textureAtlas;
-}
-
-export function createTextureAtlasWithOriginAsset(atlasText: string, textures: Texture2D[]) {
   const textureAtlas = new TextureAtlas(atlasText);
   textureAtlas.pages.forEach((page, index) => {
     const engineTexture = textures.find((item) => item.name === page.name) || textures[index];
@@ -92,13 +56,12 @@ export function createSkeletonData(skeletonRawData: string | ArrayBuffer, textur
   }
 }
 
-export async function loadTexturesByPaths(
+export function loadTexturesByPaths(
   imagePaths: string[],
   imageExtensions: string[],
   engine: Engine,
   reject: (reason?: any) => void
 ): Promise<Texture2D[]> {
-  let textures: Texture2D[];
   const resourceManager = engine.resourceManager;
   const texturePromises: AssetPromise<any>[] = imagePaths.map((imagePath, index) => {
     const ext = imageExtensions[index];
@@ -113,52 +76,43 @@ export async function loadTexturesByPaths(
       type: imageLoaderType
     });
   });
-  try {
-    textures = await Promise.all(texturePromises);
-  } catch (error) {
+  return Promise.all(texturePromises).catch((error) => {
     reject(error);
-    return;
-  }
-  return textures;
+    return [];
+  });
 }
 
-export async function loadTextureAtlas(
+export function loadTextureAtlas(
   atlasPath: string,
   engine: Engine,
   reject: (reason?: any) => void
 ): Promise<TextureAtlas> {
   const baseUrl = getBaseUrl(atlasPath);
-  let atlasText: string;
-  let textures: Texture2D[];
-  try {
-    // @ts-ignore
-    atlasText = await engine.resourceManager._request(atlasPath, {
-      type: "text"
-    });
-  } catch (err) {
-    reject(new Error(`Spine Atlas: ${atlasPath} load error: ${err}`));
-    return;
-  }
-  let textureAtlas = new TextureAtlas(atlasText);
-  const loadTexturePromises = [];
   const resourceManager = engine.resourceManager;
-  for (let page of textureAtlas.pages) {
-    const textureUrl = baseUrl + page.name;
-    loadTexturePromises.push(
-      resourceManager.load({
-        url: textureUrl,
-        type: AssetType.Texture2D
+  let atlasText: string;
+  return (
+    resourceManager
+      // @ts-ignore
+      ._request(atlasPath, { type: "text" })
+      .then((text: string) => {
+        atlasText = text;
+        const textureAtlas = new TextureAtlas(atlasText);
+        const loadTexturePromises = textureAtlas.pages.map((page) => {
+          const textureUrl = baseUrl + page.name;
+          return resourceManager.load({
+            url: textureUrl,
+            type: AssetType.Texture2D
+          }) as Promise<Texture2D>;
+        });
+        return Promise.all(loadTexturePromises).then((textures) => {
+          return createTextureAtlas(atlasText, textures);
+        });
       })
-    );
-  }
-  try {
-    textures = await Promise.all(loadTexturePromises);
-  } catch (err) {
-    reject(new Error(`Spine Texture: load error: ${err}`));
-    return;
-  }
-  textureAtlas = createTextureAtlas(atlasText, textures);
-  return textureAtlas;
+      .catch((err) => {
+        reject(new Error(`Spine Atlas: ${atlasPath} load error: ${err}`));
+        return null;
+      })
+  );
 }
 
 export function getBaseUrl(url: string): string {
