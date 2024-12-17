@@ -11,7 +11,7 @@ import {
 } from "@esotericsoftware/spine-core";
 import { BoundingBox, Engine, Material, SubPrimitive, Texture2D } from "@galacean/engine";
 import { SpineAnimationRenderer } from "./SpineAnimationRenderer";
-import { AdaptiveTexture } from "../loader/LoaderUtils";
+import { AdaptiveTexture } from "../loader/AdaptiveTexture";
 import { setBlendMode } from "../util/BlendMode";
 import { ClearablePool } from "../util/ClearablePool";
 import { ReturnablePool } from "../util/ReturnablePool";

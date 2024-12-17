@@ -24,7 +24,7 @@ export function createSpineResource(
   textureAtlas: TextureAtlas,
   name?: string
 ): SpineResource {
-  const skeletonData = createSkeletonData(skeletonRawData, textureAtlas);
+  const skeletonData = _createSkeletonData(skeletonRawData, textureAtlas);
   return new SpineResource(engine, skeletonData, name);
 }
 
@@ -45,7 +45,8 @@ export function createTextureAtlas(atlasText: string, textures: Texture2D[]): Te
   return textureAtlas;
 }
 
-export function createSkeletonData(skeletonRawData: string | ArrayBuffer, textureAtlas: TextureAtlas): SkeletonData {
+/** @internal */
+export function _createSkeletonData(skeletonRawData: string | ArrayBuffer, textureAtlas: TextureAtlas): SkeletonData {
   const atlasLoader = new AtlasAttachmentLoader(textureAtlas);
   if (typeof skeletonRawData === "string") {
     return new SkeletonJson(atlasLoader).readSkeletonData(skeletonRawData);
@@ -54,7 +55,8 @@ export function createSkeletonData(skeletonRawData: string | ArrayBuffer, textur
   }
 }
 
-export function loadTexturesByPaths(
+/** @internal */
+export function _loadTexturesByPaths(
   imagePaths: string[],
   imageExtensions: string[],
   engine: Engine,
@@ -80,12 +82,13 @@ export function loadTexturesByPaths(
   });
 }
 
-export function loadTextureAtlas(
+/** @internal */
+export function _loadTextureAtlas(
   atlasPath: string,
   engine: Engine,
   reject: (reason?: any) => void
 ): Promise<TextureAtlas> {
-  const baseUrl = getBaseUrl(atlasPath);
+  const baseUrl = _getBaseUrl(atlasPath);
   const resourceManager = engine.resourceManager;
   let atlasText: string;
   return (
@@ -113,7 +116,8 @@ export function loadTextureAtlas(
   );
 }
 
-export function getBaseUrl(url: string): string {
+/** @internal */
+export function _getBaseUrl(url: string): string {
   const parsedUrl = new URL(url);
   const basePath = parsedUrl.origin + parsedUrl.pathname;
   return basePath.endsWith("/") ? basePath : basePath.substring(0, basePath.lastIndexOf("/") + 1);

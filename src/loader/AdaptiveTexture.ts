@@ -1,6 +1,7 @@
 import { Texture, TextureFilter, TextureWrap } from "@esotericsoftware/spine-core";
 import { Texture2D, TextureFilterMode, TextureWrapMode } from "@galacean/engine";
 
+/** @internal */
 export class AdaptiveTexture extends Texture {
   texture: Texture2D;
   constructor(image: HTMLImageElement | ImageBitmap, texture: Texture2D) {

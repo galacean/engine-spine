@@ -1,6 +1,6 @@
 import { TextureAtlas } from "@esotericsoftware/spine-core";
-import { AssetPromise, Loader, LoadItem, resourceLoader, ResourceManager, Texture2D } from "@galacean/engine";
-import { createTextureAtlas, loadTextureAtlas, loadTexturesByPaths } from "./LoaderUtils";
+import { AssetPromise, Loader, LoadItem, resourceLoader, ResourceManager } from "@galacean/engine";
+import { _loadTextureAtlas, _loadTexturesByPaths, createTextureAtlas } from "./LoaderUtils";
 import { SpineLoader } from "./SpineLoader";
 
 interface SpineAtlasAsset {
@@ -68,7 +68,7 @@ class SpineAtlasLoader extends Loader<TextureAtlas> {
 
       if (!item.urls) {
         const atlasPath = item.url;
-        loadTextureAtlas(atlasPath, engine, reject)
+        _loadTextureAtlas(atlasPath, engine, reject)
           .then((textureAtlas) => {
             resolve(textureAtlas);
           })
@@ -83,7 +83,7 @@ class SpineAtlasLoader extends Loader<TextureAtlas> {
             resourceManager._request(atlasPath, {
               type: "text"
             }) as Promise<string>,
-            loadTexturesByPaths(imagePaths, imageExtensions, engine, reject)
+            _loadTexturesByPaths(imagePaths, imageExtensions, engine, reject)
           ])
             .then(([atlasText, textures]) => {
               const textureAtlas = createTextureAtlas(atlasText, textures);
@@ -93,7 +93,7 @@ class SpineAtlasLoader extends Loader<TextureAtlas> {
               reject(err);
             });
         } else {
-          loadTextureAtlas(atlasPath, engine, reject)
+          _loadTextureAtlas(atlasPath, engine, reject)
             .then((textureAtlas) => {
               resolve(textureAtlas);
             })
