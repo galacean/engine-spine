@@ -10,7 +10,7 @@ for (let key in LoaderObject) {
 }
 
 export * from "@esotericsoftware/spine-core";
-export { AttachmentTools } from "./util/AttachmentTools";
+export * from "./util/index";
 export * from "./loader/index";
 export * from "./renderer/index";
 
