@@ -20,7 +20,7 @@ export type SpineLoaderParams = {
   fileExtensions?: string | string[];
 };
 
-@resourceLoader("spine", ["json", "bin", "skel"])
+@resourceLoader("Spine", ["json", "bin", "skel"])
 export class SpineLoader extends Loader<SpineResource> {
   private static _skeletonExtensions = ["skel", "json", "bin"];
   private static _decoder = new TextDecoder("utf-8");
@@ -132,3 +132,6 @@ export class SpineLoader extends Loader<SpineResource> {
     });
   }
 }
+
+@resourceLoader("spine", ["json", "bin", "skel"])
+export class DeprecatedSpineLoader extends SpineLoader {}
