@@ -16,11 +16,9 @@ type SpineLoadContext = {
   skeletonRawData: string | ArrayBuffer;
 };
 
-type SpineLoaderParams = {
+export type SpineLoaderParams = {
   fileExtensions?: string | string[];
 };
-
-type SpineLoadItem = LoadItem & { params?: SpineLoaderParams };
 
 @resourceLoader("spine", ["json", "bin", "skel"])
 export class SpineLoader extends Loader<SpineResource> {
@@ -72,7 +70,7 @@ export class SpineLoader extends Loader<SpineResource> {
     return match ? match[1] : null;
   }
 
-  load(item: SpineLoadItem, resourceManager: ResourceManager): AssetPromise<SpineResource> {
+  load(item: LoadItem, resourceManager: ResourceManager): AssetPromise<SpineResource> {
     return new AssetPromise((resolve, reject) => {
       const spineLoadContext: SpineLoadContext = {
         fileName: "",
@@ -84,7 +82,8 @@ export class SpineLoader extends Loader<SpineResource> {
         }
       };
       const { spineAssetPath } = spineLoadContext;
-      let { fileExtensions } = item.params || {};
+      const params = <SpineLoaderParams>item.params || {};
+      let { fileExtensions } = params;
       if (!item.urls) {
         fileExtensions = SpineLoader._normalizeFileExtensions(fileExtensions, false) as string;
         SpineLoader._deriveAndAssignSpineAtlas(item.url, fileExtensions, spineAssetPath);

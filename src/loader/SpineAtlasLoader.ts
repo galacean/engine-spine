@@ -1,7 +1,7 @@
 import { TextureAtlas } from "@esotericsoftware/spine-core";
 import { AssetPromise, Loader, LoadItem, resourceLoader, ResourceManager } from "@galacean/engine";
 import { LoaderUtils } from "./LoaderUtils";
-import { SpineLoader } from "./SpineLoader";
+import { SpineLoader, SpineLoaderParams } from "./SpineLoader";
 
 interface SpineAtlasAsset {
   atlasPath: string;
@@ -41,7 +41,8 @@ export class SpineAtlasLoader extends Loader<TextureAtlas> {
         imageExtensions: []
       };
 
-      let { fileExtensions } = item.params || {};
+      const params = <SpineLoaderParams>item.params || {};
+      let { fileExtensions } = params;
       if (!item.urls) {
         SpineAtlasLoader._assignSpineAtlas(
           item.url,
