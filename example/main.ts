@@ -50,14 +50,14 @@ const demos = {
   },
   "三文件-无后缀bin": {
     urls: [
-      "https://mdn.alipayobjects.com/portal_h1wdez/afts/file/A*Go0FQ6FlurEAAAAAAAAAAAAAAQAAAQ?a=.bin",
+      "https://mdn.alipayobjects.com/portal_h1wdez/afts/file/A*Go0FQ6FlurEAAAAAAAAAAAAAAQAAAQ?a=.skel",
       "https://mdn.alipayobjects.com/portal_h1wdez/afts/file/A*AjmGS7wM-2UAAAAAAAAAAAAAAQAAAQ?b=.atlas",
       "https://mdn.alipayobjects.com/portal_h1wdez/afts/img/A*BXnORpJ85ywAAAAAAAAAAAAAAQAAAQ/original?c=.png"
     ]
   },
   ktx2: {
     urls: [
-      "https://mdn.alipayobjects.com/portal_h1wdez/afts/file/A*Go0FQ6FlurEAAAAAAAAAAAAAAQAAAQ?a=.bin",
+      "https://mdn.alipayobjects.com/portal_h1wdez/afts/file/A*Go0FQ6FlurEAAAAAAAAAAAAAAQAAAQ?a=.skel",
       "https://mdn.alipayobjects.com/portal_h1wdez/afts/file/A*AjmGS7wM-2UAAAAAAAAAAAAAAQAAAQ?b=.atlas",
       "https://mdn.alipayobjects.com/oasis_be/afts/img/A*i5qRTKgPlYMAAAAAAAAAAAAADkp5AQ/original/DR.ktx2"
     ]
@@ -103,8 +103,8 @@ const demos = {
     scene: "editor"
   },
   "编辑器-json": {
-    project: "https://mdn.alipayobjects.com/oasis_be/afts/file/A*NXsHQ4GBMKYAAAAAAAAAAAAADkp5AQ/project.json",
-    url: "https://mdn.alipayobjects.com/oasis_be/afts/file/A*APdDSLPM3MUAAAAAAAAAAAAADkp5AQ/raptor.json",
+    project: "https://mdn.alipayobjects.com/portal_h1wdez/afts/file/A*P46bTL2_GNUAAAAAAAAAAAAAAQAAAQ",
+    url: "/yuyouyou.json",
     scene: "editor"
   },
   动态创建1: {
@@ -207,6 +207,7 @@ async function loadSpine(root: Entity, engine: Engine, resource) {
       console.error("spine asset load error: ", err);
     }
   }
+
   if (!spineResource) return;
   if (scene === "upload") {
     console.log(blobResource);
