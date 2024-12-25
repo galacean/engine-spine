@@ -70,7 +70,6 @@ export class SpineAtlasLoader extends Loader<TextureAtlas> {
         }
       }
 
-      console.log(spineAtlasAsset);
       const { atlasPath } = spineAtlasAsset;
       if (!atlasPath) {
         reject(
