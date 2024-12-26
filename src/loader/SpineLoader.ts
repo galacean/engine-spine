@@ -20,7 +20,7 @@ export type SpineLoaderParams = {
   fileExtensions?: string | string[];
 };
 
-@resourceLoader("Spine", ["json", "skel"])
+@resourceLoader("Spine", ["json", "bin", "skel"])
 export class SpineLoader extends Loader<SpineResource> {
   private static _decoder = new TextDecoder("utf-8");
 
@@ -28,7 +28,7 @@ export class SpineLoader extends Loader<SpineResource> {
     const ext = SpineLoader._getUrlExtension(url);
     if (!ext) return;
 
-    if (["skel", "json"].includes(ext)) {
+    if (["skel", "json", "bin"].includes(ext)) {
       assetPath.skeletonPath = url;
     } else if (ext === "atlas") {
       assetPath.atlasPath = url;
@@ -43,7 +43,7 @@ export class SpineLoader extends Loader<SpineResource> {
     assetPath.skeletonPath = url;
 
     // @ts-ignore
-    const skeletonDependency = resourceManager._dependencyMap[url];
+    const skeletonDependency = resourceManager?._dependencyMap?.[url];
     if (skeletonDependency) {
       assetPath.atlasPath = skeletonDependency.atlas;
     } else {

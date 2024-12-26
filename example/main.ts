@@ -26,8 +26,6 @@ const gui = new dat.GUI({ name: "My GUI" });
 
 let animationController; // 动画切换
 let skinController; // 皮肤切换
-let slotHackController1, slotHackController2, slotHackController3; // 小人换装切换
-let attachmentController; // 小鸡部件替换
 let outline; // 包围盒
 const blobResource: any = {
   urls: [],
@@ -36,7 +34,7 @@ const blobResource: any = {
   }
 };
 
-const baseDemo = "spineBoy-单json";
+const baseDemo = "编辑器-json";
 const demos = {
   "spineBoy-单json": {
     url: "https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/yKbdfgijyLGzQDyQ/spineboy/spineboy.json"
@@ -50,14 +48,14 @@ const demos = {
   },
   "三文件-无后缀bin": {
     urls: [
-      "https://mdn.alipayobjects.com/portal_h1wdez/afts/file/A*Go0FQ6FlurEAAAAAAAAAAAAAAQAAAQ?a=.skel",
+      "https://mdn.alipayobjects.com/portal_h1wdez/afts/file/A*Go0FQ6FlurEAAAAAAAAAAAAAAQAAAQ?a=.bin",
       "https://mdn.alipayobjects.com/portal_h1wdez/afts/file/A*AjmGS7wM-2UAAAAAAAAAAAAAAQAAAQ?b=.atlas",
       "https://mdn.alipayobjects.com/portal_h1wdez/afts/img/A*BXnORpJ85ywAAAAAAAAAAAAAAQAAAQ/original?c=.png"
     ]
   },
   ktx2: {
     urls: [
-      "https://mdn.alipayobjects.com/portal_h1wdez/afts/file/A*Go0FQ6FlurEAAAAAAAAAAAAAAQAAAQ?a=.skel",
+      "https://mdn.alipayobjects.com/portal_h1wdez/afts/file/A*Go0FQ6FlurEAAAAAAAAAAAAAAQAAAQ?a=.bin",
       "https://mdn.alipayobjects.com/portal_h1wdez/afts/file/A*AjmGS7wM-2UAAAAAAAAAAAAAAQAAAQ?b=.atlas",
       "https://mdn.alipayobjects.com/oasis_be/afts/img/A*i5qRTKgPlYMAAAAAAAAAAAAADkp5AQ/original/DR.ktx2"
     ]
@@ -103,7 +101,7 @@ const demos = {
     scene: "editor"
   },
   "编辑器-json": {
-    project: "https://mdn.alipayobjects.com/portal_h1wdez/afts/file/A*P46bTL2_GNUAAAAAAAAAAAAAAQAAAQ",
+    project: "https://mdn.alipayobjects.com/portal_h1wdez/afts/file/A*bfv_S41ORTkAAAAAAAAAAAAAAQAAAQ",
     url: "/yuyouyou.json",
     scene: "editor"
   },

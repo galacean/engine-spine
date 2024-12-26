@@ -35,10 +35,10 @@ export class SpineAtlasLoader extends Loader<TextureAtlas> {
     if (ext === "atlas") {
       assetPath.atlasPath = url;
       // @ts-ignore
-      const dependencyMap = resourceManager._dependencyMap;
+      const dependencyMap = resourceManager?._dependencyMap;
       // @ts-ignore
       const virtualPathMap = resourceManager._virtualPathMap;
-      const atlasDependency = dependencyMap[url];
+      const atlasDependency = dependencyMap?.[url];
       if (atlasDependency) {
         for (let key in atlasDependency) {
           const imageVirtualPath = atlasDependency[key];
