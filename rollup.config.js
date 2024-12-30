@@ -39,7 +39,7 @@ const commonPlugins = [
       jsc: {
         loose: true,
         externalHelpers: true,
-        target: "esnext",
+        target: "es5",
       },
       sourceMaps: true,
     })
