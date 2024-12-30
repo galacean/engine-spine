@@ -38,11 +38,11 @@ export class LoaderUtils {
     reject: (reason?: any) => void
   ): Promise<Texture2D[]> {
     const resourceManager = engine.resourceManager;
+    // @ts-ignore
+    const virtualPathMap = resourceManager._virtualPathMap;
     const texturePromises: AssetPromise<Texture2D>[] = imagePaths.map((imagePath, index) => {
       const ext = imageExtensions[index];
       let imageLoaderType = AssetType.Texture2D;
-      // @ts-ignore
-      const virtualPathMap = resourceManager._virtualPathMap;
       const virtualElement = virtualPathMap[imagePath];
       if (virtualElement) {
         imageLoaderType = virtualElement.type;
