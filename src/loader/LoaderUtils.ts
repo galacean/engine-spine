@@ -25,7 +25,6 @@ export class LoaderUtils {
     const textureAtlas = new TextureAtlas(atlasText);
     textureAtlas.pages.forEach((page, index) => {
       const engineTexture = textures.find((item) => item.name === page.name) || textures[index];
-      console.log(engineTexture);
       const texture = new SpineTexture(engineTexture);
       page.setTexture(texture);
     });
@@ -42,7 +41,12 @@ export class LoaderUtils {
     const texturePromises: AssetPromise<Texture2D>[] = imagePaths.map((imagePath, index) => {
       const ext = imageExtensions[index];
       let imageLoaderType = AssetType.Texture2D;
-      if (ext === "ktx") {
+      // @ts-ignore
+      const virtualPathMap = resourceManager._virtualPathMap;
+      const virtualElement = virtualPathMap[imagePath];
+      if (virtualElement) {
+        imageLoaderType = virtualElement.type;
+      } else if (ext === "ktx") {
         imageLoaderType = AssetType.KTX;
       } else if (ext === "ktx2") {
         imageLoaderType = AssetType.KTX2;

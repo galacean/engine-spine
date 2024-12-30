@@ -20,13 +20,6 @@ export class SpineAtlasLoader extends Loader<TextureAtlas> {
     }
     if (["png", "jpg", "webp", "jpeg", "ktx", "ktx2", "bin"].includes(ext)) {
       assetPath.imagePaths.push(url);
-      // @ts-ignore
-      const virtualPathMap = resourceManager._virtualPathMap;
-      const imagePath = virtualPathMap[url];
-      if (imagePath) {
-        ext = SpineLoader._getUrlExtension(imagePath);
-      }
-      assetPath.imageExtensions.push(ext);
     }
   }
 
@@ -36,16 +29,11 @@ export class SpineAtlasLoader extends Loader<TextureAtlas> {
       assetPath.atlasPath = url;
       // @ts-ignore
       const dependencyMap = resourceManager?._dependencyMap;
-      // @ts-ignore
-      const virtualPathMap = resourceManager._virtualPathMap;
       const atlasDependency = dependencyMap?.[url];
       if (atlasDependency) {
         for (let key in atlasDependency) {
           const imageVirtualPath = atlasDependency[key];
           assetPath.imagePaths.push(imageVirtualPath);
-          const imagePath = virtualPathMap[imageVirtualPath];
-          const ext = SpineLoader._getUrlExtension(imagePath);
-          assetPath.imageExtensions.push(ext);
         }
       }
     }
