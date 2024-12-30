@@ -25,6 +25,7 @@ export class LoaderUtils {
     const textureAtlas = new TextureAtlas(atlasText);
     textureAtlas.pages.forEach((page, index) => {
       const engineTexture = textures.find((item) => item.name === page.name) || textures[index];
+      console.log(engineTexture);
       const texture = new SpineTexture(engineTexture);
       page.setTexture(texture);
     });
