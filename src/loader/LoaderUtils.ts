@@ -50,9 +50,6 @@ export class LoaderUtils {
         imageLoaderType = AssetType.KTX;
       } else if (ext === "ktx2") {
         imageLoaderType = AssetType.KTX2;
-      } else if (ext === "bin") {
-        // @ts-ignore
-        imageLoaderType = "EditorTexture2D";
       }
       return resourceManager.load({
         url: imagePath,

@@ -18,7 +18,7 @@ export class SpineAtlasLoader extends Loader<TextureAtlas> {
     if (ext === "atlas") {
       assetPath.atlasPath = url;
     }
-    if (["png", "jpg", "webp", "jpeg", "ktx", "ktx2", "bin"].includes(ext)) {
+    if (["png", "jpg", "webp", "jpeg", "ktx", "ktx2"].includes(ext)) {
       assetPath.imagePaths.push(url);
     }
   }
