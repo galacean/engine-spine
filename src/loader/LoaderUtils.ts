@@ -105,10 +105,21 @@ export function createAdaptiveTexture(texture: Texture2D) {
 }
 
 export function getBaseUrl(url: string): string {
-  const parsedUrl = new URL(url);
-  const basePath = parsedUrl.origin + parsedUrl.pathname;
-  return basePath.endsWith('/') ? basePath : basePath.substring(0, basePath.lastIndexOf('/') + 1);
+  try {
+    const parsedUrl = new URL(url);
+    const basePath = parsedUrl.origin + parsedUrl.pathname;
+    return basePath.endsWith('/')
+      ? basePath
+      : basePath.substring(0, basePath.lastIndexOf('/') + 1);
+  } catch (err) {
+    const lastSlashIndex = url.lastIndexOf('/');
+    if (lastSlashIndex === -1) {
+      return '';
+    }
+    return url.substring(0, lastSlashIndex + 1);
+  }
 }
+
 
 export class AdaptiveTexture extends Texture {
   texture: Texture2D;
