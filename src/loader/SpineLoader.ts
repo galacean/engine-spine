@@ -43,7 +43,7 @@ export class SpineLoader extends Loader<SpineResource> {
     assetPath.skeletonPath = url;
 
     // @ts-ignore
-    const skeletonDependency = resourceManager?._dependencyMap?.[url];
+    const skeletonDependency = resourceManager?._virtualPathResourceMap?.[url]?.dependentAssetMap;
     if (skeletonDependency) {
       assetPath.atlasPath = skeletonDependency.atlas;
     } else {
