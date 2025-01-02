@@ -105,20 +105,22 @@ export function createAdaptiveTexture(texture: Texture2D) {
 }
 
 export function getBaseUrl(url: string): string {
-  try {
-    const parsedUrl = new URL(url);
-    const basePath = parsedUrl.origin + parsedUrl.pathname;
-    return basePath.endsWith('/')
-      ? basePath
-      : basePath.substring(0, basePath.lastIndexOf('/') + 1);
-  } catch (err) {
+  const isLocalPath = !/^(http|https|ftp):\/\/.*/i.test(url)
+  if (isLocalPath) {
     const lastSlashIndex = url.lastIndexOf('/');
     if (lastSlashIndex === -1) {
       return '';
     }
     return url.substring(0, lastSlashIndex + 1);
+  } else {
+    const parsedUrl = new URL(url);
+    const basePath = parsedUrl.origin + parsedUrl.pathname;
+    return basePath.endsWith('/')
+      ? basePath
+      : basePath.substring(0, basePath.lastIndexOf('/') + 1);
   }
 }
+    
 
 
 export class AdaptiveTexture extends Texture {
