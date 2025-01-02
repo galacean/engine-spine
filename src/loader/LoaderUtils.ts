@@ -38,10 +38,15 @@ export class LoaderUtils {
     reject: (reason?: any) => void
   ): Promise<Texture2D[]> {
     const resourceManager = engine.resourceManager;
+    // @ts-ignore
+    const virtualPathResourceMap = resourceManager._virtualPathResourceMap;
     const texturePromises: AssetPromise<Texture2D>[] = imagePaths.map((imagePath, index) => {
       const ext = imageExtensions[index];
       let imageLoaderType = AssetType.Texture2D;
-      if (ext === "ktx") {
+      const virtualElement = virtualPathResourceMap[imagePath];
+      if (virtualElement) {
+        imageLoaderType = virtualElement.type;
+      } else if (ext === "ktx") {
         imageLoaderType = AssetType.KTX;
       } else if (ext === "ktx2") {
         imageLoaderType = AssetType.KTX2;

@@ -11,8 +11,8 @@ interface SpineAtlasAsset {
 
 @resourceLoader("SpineAtlas", ["atlas"])
 export class SpineAtlasLoader extends Loader<TextureAtlas> {
-  private static _groupAssetsByExtension(url: string, assetPath: SpineAtlasAsset) {
-    const ext = SpineLoader._getUrlExtension(url);
+  private static _groupAssetsByExtension(url: string, assetPath: SpineAtlasAsset, resourceManager: ResourceManager) {
+    let ext = SpineLoader._getUrlExtension(url);
     if (!ext) return;
 
     if (ext === "atlas") {
@@ -20,15 +20,21 @@ export class SpineAtlasLoader extends Loader<TextureAtlas> {
     }
     if (["png", "jpg", "webp", "jpeg", "ktx", "ktx2"].includes(ext)) {
       assetPath.imagePaths.push(url);
-      assetPath.imageExtensions.push(ext);
     }
   }
 
-  private static _assignSpineAtlas(url: string, assetPath: SpineAtlasAsset) {
+  private static _assignAssetPathsFromUrl(url: string, assetPath: SpineAtlasAsset, resourceManager: ResourceManager) {
     const ext = SpineLoader._getUrlExtension(url);
-    if (!ext) return;
     if (ext === "atlas") {
       assetPath.atlasPath = url;
+      // @ts-ignore
+      const atlasDependency = resourceManager?._virtualPathResourceMap?.[url]?.dependentAssetMap;
+      if (atlasDependency) {
+        for (let key in atlasDependency) {
+          const imageVirtualPath = atlasDependency[key];
+          assetPath.imagePaths.push(imageVirtualPath);
+        }
+      }
     }
   }
 
@@ -42,12 +48,12 @@ export class SpineAtlasLoader extends Loader<TextureAtlas> {
       };
 
       if (!item.urls) {
-        SpineAtlasLoader._assignSpineAtlas(item.url, spineAtlasAsset);
+        SpineAtlasLoader._assignAssetPathsFromUrl(item.url, spineAtlasAsset, resourceManager);
       } else {
         const urls = item.urls;
         for (let i = 0, len = urls.length; i < len; i += 1) {
           const url = urls[i];
-          SpineAtlasLoader._groupAssetsByExtension(url, spineAtlasAsset);
+          SpineAtlasLoader._groupAssetsByExtension(url, spineAtlasAsset, resourceManager);
         }
       }
 
@@ -59,7 +65,8 @@ export class SpineAtlasLoader extends Loader<TextureAtlas> {
         return;
       }
 
-      if (!item.urls) {
+      const imagePaths = spineAtlasAsset.imagePaths;
+      if (imagePaths.length === 0) {
         const atlasPath = item.url;
         LoaderUtils.loadTextureAtlas(atlasPath, engine, reject)
           .then((textureAtlas) => {
