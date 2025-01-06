@@ -34,13 +34,10 @@ const blobResource: any = {
   }
 };
 
-const baseDemo = "spineBoy-单json";
+const baseDemo = "编辑器";
 const demos = {
   "spineBoy-单json": {
     url: "https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/yKbdfgijyLGzQDyQ/spineboy/spineboy.json"
-  },
-  "spineBoy-local": {
-    urls: ["/spineboy.json", "/spineboy.atlas"]
   },
   "raptor-三文件json": {
     urls: [
@@ -126,7 +123,7 @@ WebGLEngine.create({
 
   const cameraEntity = root.createChild("camera_node");
   const camera = cameraEntity.addComponent(Camera);
-  cameraEntity.transform.position = new Vector3(0, 0, 20);
+  cameraEntity.transform.position = new Vector3(0, 0, 2000);
   camera.nearClipPlane = 0.001;
   camera.farClipPlane = 20000;
 
@@ -173,7 +170,7 @@ async function loadSpine(root: Entity, engine: Engine, resource) {
   const firstAnimation = animationNames[0];
 
   const spineEntity = new Entity(engine, "spine-entity");
-  spineEntity.transform.setPosition(0, -2.5, 0);
+  spineEntity.transform.setPosition(-25 + Math.random() * 50, -250, 0);
   const spineAnimation = spineEntity.addComponent(SpineAnimationRenderer);
   if (scene === "physic") {
     spineAnimation.premultipliedAlpha = true;
