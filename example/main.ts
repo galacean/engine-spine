@@ -39,9 +39,6 @@ const demos = {
   "spineBoy-单json": {
     url: "https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/yKbdfgijyLGzQDyQ/spineboy/spineboy.json"
   },
-  "spineBoy-local": {
-    urls: ["/spineboy.json", "/spineboy.atlas"]
-  },
   "raptor-三文件json": {
     urls: [
       "https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/jdjQ6mGxWknZ7TtQ/raptor/raptor.json",
