@@ -279,7 +279,7 @@ export class SpineGenerator {
       const { slotName, blendMode, texture } = item;
       renderer._addSubPrimitive(item.subPrimitive);
       const subTexture = _separateSlotTextureMap.get(slotName) || texture.getImage();
-      const key = `${subTexture.instanceId}_${blendMode}`;
+      const key = `${subTexture.instanceId}_${blendMode}_${premultipliedAlpha}`;
       let material = materialCache.get(key);
       if (!material) {
         material = this._createMaterialForTexture(subTexture, engine, blendMode, premultipliedAlpha);
