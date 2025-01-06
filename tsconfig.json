@@ -9,7 +9,9 @@
 		"sourceMap": true,
 		"incremental": true,
 		"declarationDir": "types",
-		"skipLibCheck": true
+		"emitDeclarationOnly": true,
+		"skipLibCheck": true,
+		"outDir": "types"
 	},
 	"include": ["src/**/*", "test/**/*"],
 }
