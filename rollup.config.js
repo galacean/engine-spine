@@ -34,7 +34,7 @@ const commonPlugins = [
   swc(
     defineRollupSwcOption({
       include: /\.[mc]?[jt]sx?$/,
-      exclude: '!node_modules/**/!(@esotericsoftware/spine-core)/**',
+      exclude: /node_modules/,
       jsc: {
         loose: true,
         externalHelpers: true,
