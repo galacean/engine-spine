@@ -41,6 +41,9 @@ const demos = {
   "spineBoy-单json": {
     url: "https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/yKbdfgijyLGzQDyQ/spineboy/spineboy.json"
   },
+  "spineBoy-local": {
+    urls: ["/spineboy.json", "/spineboy.atlas"]
+  },
   "raptor-三文件json": {
     urls: [
       "https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/jdjQ6mGxWknZ7TtQ/raptor/raptor.json",
@@ -97,46 +100,10 @@ const demos = {
     url: "https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/yKbdfgijyLGzQDyQ/spineboy/spineboy.json",
     scene: "changeResource"
   },
-  "编辑器-skel": {
-    project: "https://mdn.alipayobjects.com/oasis_be/afts/file/A*TO3OTa04yHIAAAAAAAAAAAAADkp5AQ/project.json",
-    url: "https://mdn.alipayobjects.com/oasis_be/afts/file/A*9WZCRr9S8SIAAAAAAAAAAAAADkp5AQ/13.skel",
+  编辑器: {
+    project: "https://mdn.alipayobjects.com/portal_h1wdez/afts/file/A*pPKPSpov008AAAAAAAAAAAAAAQAAAQ",
+    url: "/yuyouyou.json",
     scene: "editor"
-  },
-  "编辑器-json": {
-    project: "https://mdn.alipayobjects.com/oasis_be/afts/file/A*NXsHQ4GBMKYAAAAAAAAAAAAADkp5AQ/project.json",
-    url: "https://mdn.alipayobjects.com/oasis_be/afts/file/A*APdDSLPM3MUAAAAAAAAAAAAADkp5AQ/raptor.json",
-    scene: "editor"
-  },
-  动态创建1: {
-    project: "https://mdn.alipayobjects.com/oasis_be/afts/file/A*XD0DSLEhCVMAAAAAAAAAAAAADkp5AQ/project.json",
-    skeleton: "https://mdn.alipayobjects.com/oasis_be/afts/file/A*DiRNRq0_N6gAAAAAAAAAAAAADkp5AQ/spineboy-pro.skel",
-    atlas: "https://mdn.alipayobjects.com/oasis_be/afts/file/A*5eGJT5CZR-EAAAAAAAAAAAAADkp5AQ/spineboy-pro.atlas",
-    type: "arraybuffer",
-    scene: "dynamic-editor"
-  },
-  动态创建2: {
-    project: "https://mdn.alipayobjects.com/oasis_be/afts/file/A*NXsHQ4GBMKYAAAAAAAAAAAAADkp5AQ/project.json",
-    skeleton: "https://mdn.alipayobjects.com/oasis_be/afts/file/A*APdDSLPM3MUAAAAAAAAAAAAADkp5AQ/raptor.json",
-    atlas: "https://mdn.alipayobjects.com/oasis_be/afts/file/A*oWMrS5iikCQAAAAAAAAAAAAADkp5AQ/raptor.atlas",
-    type: "text",
-    scene: "dynamic-editor"
-  },
-  动态创建3: {
-    skeleton:
-      "https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/jdjQ6mGxWknZ7TtQ/raptor/raptor.json",
-    atlas: "https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/jdjQ6mGxWknZ7TtQ/raptor/raptor.atlas",
-    texture: "https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/jdjQ6mGxWknZ7TtQ/raptor/raptor.png",
-    type: "text",
-    scene: "dynamic-origin"
-  },
-  动态创建4: {
-    skeleton:
-      "https://mdn.alipayobjects.com/portal_h1wdez/afts/file/A*cVzySIX09aQAAAAAAAAAAAAAAQAAAQ?af_fileName=dr.skel",
-    atlas:
-      "https://mdn.alipayobjects.com/portal_h1wdez/afts/file/A*7LzLSJLjBK4AAAAAAAAAAAAAAQAAAQ?af_fileName=dr.atlas",
-    texture: "https://mdn.alipayobjects.com/portal_h1wdez/afts/img/A*uySHT5k_PU0AAAAAAAAAAAAAAQAAAQ/original?a=.png",
-    type: "arraybuffer",
-    scene: "dynamic-origin"
   },
   本地上传文件: {
     url: "https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/kx5353rrNIDn4CsX/spineboy-pro/spineboy-pro.json",

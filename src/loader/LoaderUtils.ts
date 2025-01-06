@@ -38,10 +38,15 @@ export class LoaderUtils {
     reject: (reason?: any) => void
   ): Promise<Texture2D[]> {
     const resourceManager = engine.resourceManager;
+    // @ts-ignore
+    const virtualPathResourceMap = resourceManager._virtualPathResourceMap;
     const texturePromises: AssetPromise<Texture2D>[] = imagePaths.map((imagePath, index) => {
       const ext = imageExtensions[index];
       let imageLoaderType = AssetType.Texture2D;
-      if (ext === "ktx") {
+      const virtualElement = virtualPathResourceMap[imagePath];
+      if (virtualElement) {
+        imageLoaderType = virtualElement.type;
+      } else if (ext === "ktx") {
         imageLoaderType = AssetType.KTX;
       } else if (ext === "ktx2") {
         imageLoaderType = AssetType.KTX2;
@@ -87,8 +92,17 @@ export class LoaderUtils {
   }
 
   static getBaseUrl(url: string): string {
-    const parsedUrl = new URL(url);
-    const basePath = parsedUrl.origin + parsedUrl.pathname;
-    return basePath.endsWith("/") ? basePath : basePath.substring(0, basePath.lastIndexOf("/") + 1);
+    const isLocalPath = !/^(http|https|ftp):\/\/.*/i.test(url);
+    if (isLocalPath) {
+      const lastSlashIndex = url.lastIndexOf("/");
+      if (lastSlashIndex === -1) {
+        return "";
+      }
+      return url.substring(0, lastSlashIndex + 1);
+    } else {
+      const parsedUrl = new URL(url);
+      const basePath = parsedUrl.origin + parsedUrl.pathname;
+      return basePath.endsWith("/") ? basePath : basePath.substring(0, basePath.lastIndexOf("/") + 1);
+    }
   }
 }

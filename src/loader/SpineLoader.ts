@@ -22,7 +22,6 @@ export type SpineLoaderParams = {
 
 @resourceLoader("Spine", ["json", "bin", "skel"])
 export class SpineLoader extends Loader<SpineResource> {
-  private static _skeletonExtensions = ["skel", "json", "bin"];
   private static _decoder = new TextDecoder("utf-8");
 
   private static _groupAssetsByExtension(url: string, assetPath: SpineAssetPath) {
@@ -38,18 +37,25 @@ export class SpineLoader extends Loader<SpineResource> {
     }
   }
 
-  private static _deriveAndAssignSpineAtlas(url: string, assetPath: SpineAssetPath) {
+  private static _assignAssetPathsFromUrl(url: string, assetPath: SpineAssetPath, resourceManager: ResourceManager) {
     const ext = SpineLoader._getUrlExtension(url);
     if (!ext) return;
     assetPath.skeletonPath = url;
-    const extensionPattern: RegExp = /\.(json|bin|skel)$/;
-    let baseUrl: string;
-    if (extensionPattern.test(url)) {
-      baseUrl = url.replace(extensionPattern, "");
-    }
-    if (baseUrl) {
-      const atlasUrl = baseUrl + ".atlas";
-      assetPath.atlasPath = atlasUrl;
+
+    // @ts-ignore
+    const skeletonDependency = resourceManager?._virtualPathResourceMap?.[url]?.dependentAssetMap;
+    if (skeletonDependency) {
+      assetPath.atlasPath = skeletonDependency.atlas;
+    } else {
+      const extensionPattern: RegExp = /\.(json|bin|skel)$/;
+      let baseUrl: string;
+      if (extensionPattern.test(url)) {
+        baseUrl = url.replace(extensionPattern, "");
+      }
+      if (baseUrl) {
+        const atlasUrl = baseUrl + ".atlas";
+        assetPath.atlasPath = atlasUrl;
+      }
     }
   }
 
@@ -72,7 +78,7 @@ export class SpineLoader extends Loader<SpineResource> {
       };
       const { spineAssetPath } = spineLoadContext;
       if (!item.urls) {
-        SpineLoader._deriveAndAssignSpineAtlas(item.url, spineAssetPath);
+        SpineLoader._assignAssetPathsFromUrl(item.url, spineAssetPath, resourceManager);
       } else {
         const urls = item.urls;
         for (let i = 0, len = urls.length; i < len; i += 1) {
