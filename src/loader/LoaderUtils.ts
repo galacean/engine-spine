@@ -12,20 +12,12 @@ import { SpineTexture } from "./SpineTexture";
  * @internal
  */
 export class LoaderUtils {
-  static createSkeletonData(
-    skeletonRawData: string | ArrayBuffer,
-    textureAtlas: TextureAtlas,
-    skeletonDataScale = 0.01
-  ): SkeletonData {
+  static createSkeletonData(skeletonRawData: string | ArrayBuffer, textureAtlas: TextureAtlas): SkeletonData {
     const atlasLoader = new AtlasAttachmentLoader(textureAtlas);
     if (typeof skeletonRawData === "string") {
-      const skeletonJson = new SkeletonJson(atlasLoader);
-      skeletonJson.scale = skeletonDataScale;
-      return skeletonJson.readSkeletonData(skeletonRawData);
+      return new SkeletonJson(atlasLoader).readSkeletonData(skeletonRawData);
     } else {
-      const skeletonBinary = new SkeletonBinary(atlasLoader);
-      skeletonBinary.scale = skeletonDataScale;
-      return skeletonBinary.readSkeletonData(new Uint8Array(skeletonRawData as ArrayBuffer));
+      return new SkeletonBinary(atlasLoader).readSkeletonData(new Uint8Array(skeletonRawData as ArrayBuffer));
     }
   }
 
