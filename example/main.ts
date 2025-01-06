@@ -26,8 +26,6 @@ const gui = new dat.GUI({ name: "My GUI" });
 
 let animationController; // 动画切换
 let skinController; // 皮肤切换
-let slotHackController1, slotHackController2, slotHackController3; // 小人换装切换
-let attachmentController; // 小鸡部件替换
 let outline; // 包围盒
 const blobResource: any = {
   urls: [],
@@ -36,7 +34,7 @@ const blobResource: any = {
   }
 };
 
-const baseDemo = "spineBoy-单json";
+const baseDemo = "编辑器";
 const demos = {
   "spineBoy-单json": {
     url: "https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/yKbdfgijyLGzQDyQ/spineboy/spineboy.json"
@@ -148,32 +146,21 @@ WebGLEngine.create({
 
 async function loadSpine(root: Entity, engine: Engine, resource) {
   let spineResource: SpineResource | null = null;
-  const { scene, type } = resource;
-  if (scene === "editor" || scene === "dynamic-editor") {
+  const { scene } = resource;
+  if (scene === "editor") {
     const data = await request(resource.project, { type: "json" });
     // @ts-ignore
     engine.resourceManager.initVirtualResources(data.files);
   }
-  if (scene === "dynamic-editor") {
-    const skeletonRawData = (await request(resource.skeleton, { type })) as ArrayBuffer | string;
-    const textureAtlas = (await engine.resourceManager.load({ url: resource.atlas })) as TextureAtlas;
-  } else if (scene === "dynamic-origin") {
-    const skeletonRawData = (await request(resource.skeleton, { type })) as ArrayBuffer | string;
-    const atlasText = (await request(resource.atlas, { type: "text" })) as string;
-    const texture = (await engine.resourceManager.load({
-      url: resource.texture,
-      type: AssetType.Texture2D
-    })) as Texture2D;
-  } else {
-    try {
-      spineResource = (await engine.resourceManager.load({
-        ...resource,
-        type: "spine"
-      })) as SpineResource;
-    } catch (err) {
-      console.error("spine asset load error: ", err);
-    }
+  try {
+    spineResource = (await engine.resourceManager.load({
+      ...resource,
+      type: "spine"
+    })) as SpineResource;
+  } catch (err) {
+    console.error("spine asset load error: ", err);
   }
+
   if (!spineResource) return;
   if (scene === "upload") {
     console.log(blobResource);
