@@ -15,7 +15,7 @@ export class LoaderUtils {
   static createSkeletonData(
     skeletonRawData: string | ArrayBuffer,
     textureAtlas: TextureAtlas,
-    skeletonDataScale = 1
+    skeletonDataScale = 0.01
   ): SkeletonData {
     const atlasLoader = new AtlasAttachmentLoader(textureAtlas);
     if (typeof skeletonRawData === "string") {
