@@ -92,8 +92,17 @@ export class LoaderUtils {
   }
 
   static getBaseUrl(url: string): string {
-    const parsedUrl = new URL(url);
-    const basePath = parsedUrl.origin + parsedUrl.pathname;
-    return basePath.endsWith("/") ? basePath : basePath.substring(0, basePath.lastIndexOf("/") + 1);
+    const isLocalPath = !/^(http|https|ftp):\/\/.*/i.test(url);
+    if (isLocalPath) {
+      const lastSlashIndex = url.lastIndexOf("/");
+      if (lastSlashIndex === -1) {
+        return "";
+      }
+      return url.substring(0, lastSlashIndex + 1);
+    } else {
+      const parsedUrl = new URL(url);
+      const basePath = parsedUrl.origin + parsedUrl.pathname;
+      return basePath.endsWith("/") ? basePath : basePath.substring(0, basePath.lastIndexOf("/") + 1);
+    }
   }
 }
