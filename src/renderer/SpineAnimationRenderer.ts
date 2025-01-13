@@ -60,7 +60,7 @@ export class SpineAnimationRenderer extends Renderer {
    * The spacing between z layers.
    */
   @assignmentClone
-  zSpacing = 0.01;
+  zSpacing = 0.001;
 
   /**
    * Whether to use premultiplied alpha mode for rendering.
