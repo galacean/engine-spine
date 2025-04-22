@@ -6,33 +6,33 @@ settings:
 
 dependencies:
   '@esotericsoftware/spine-core':
-    specifier: ~4.2.1
+    specifier: ~4.2.66
     version: 4.2.68
 
 devDependencies:
   '@babel/core':
-    specifier: ^7.22.5
+    specifier: ^7.26.0
     version: 7.26.0
   '@babel/plugin-proposal-class-properties':
-    specifier: ^7.12.1
+    specifier: ^7.18.6
     version: 7.18.6(@babel/core@7.26.0)
   '@babel/plugin-proposal-decorators':
-    specifier: ^7.12.1
+    specifier: ^7.25.9
     version: 7.25.9(@babel/core@7.26.0)
   '@babel/plugin-proposal-optional-chaining':
-    specifier: ^7.12.1
+    specifier: ^7.21.0
     version: 7.21.0(@babel/core@7.26.0)
   '@babel/plugin-transform-class-properties':
-    specifier: ^7.24.7
+    specifier: ^7.25.9
     version: 7.25.9(@babel/core@7.26.0)
   '@babel/plugin-transform-object-assign':
-    specifier: ^7.12.1
+    specifier: ^7.25.9
     version: 7.25.9(@babel/core@7.26.0)
   '@babel/preset-env':
-    specifier: ^7.24.8
+    specifier: ^7.26.0
     version: 7.26.0(@babel/core@7.26.0)
   '@babel/preset-typescript':
-    specifier: ^7.24.7
+    specifier: ^7.26.0
     version: 7.26.0(@babel/core@7.26.0)
   '@commitlint/cli':
     specifier: ^11.0.0
@@ -41,43 +41,43 @@ devDependencies:
     specifier: ^11.0.0
     version: 11.0.0
   '@galacean/engine':
-    specifier: ^1.3.0-alpha.3
-    version: 1.3.24
+    specifier: ^1.4.0
+    version: 1.4.14
   '@galacean/engine-toolkit':
     specifier: beta
-    version: 1.3.0-beta.3(@galacean/engine@1.3.24)
+    version: 1.3.0-beta.3(@galacean/engine@1.4.14)
   '@rollup/plugin-babel':
-    specifier: ^5.2.1
+    specifier: ^5.3.1
     version: 5.3.1(@babel/core@7.26.0)(rollup@2.79.2)
   '@rollup/plugin-commonjs':
     specifier: ^16.0.0
     version: 16.0.0(rollup@2.79.2)
   '@rollup/plugin-inject':
-    specifier: ^4.0.2
+    specifier: ^4.0.4
     version: 4.0.4(rollup@2.79.2)
   '@rollup/plugin-node-resolve':
     specifier: ^10.0.0
     version: 10.0.0(rollup@2.79.2)
   '@rollup/plugin-replace':
-    specifier: ^2.3.4
+    specifier: ^2.4.2
     version: 2.4.2(rollup@2.79.2)
   '@rollup/plugin-terser':
-    specifier: ^0.4.3
+    specifier: ^0.4.4
     version: 0.4.4(rollup@2.79.2)
   '@swc/core':
-    specifier: ^1.3.32
+    specifier: ^1.9.3
     version: 1.10.1(@swc/helpers@0.5.15)
   '@swc/helpers':
-    specifier: ^0.5
+    specifier: ^0.5.15
     version: 0.5.15
   '@types/chai':
-    specifier: ^4.3.16
+    specifier: ^4.3.20
     version: 4.3.20
   '@types/jest':
-    specifier: ^29.5.12
+    specifier: ^29.5.14
     version: 29.5.14
   '@types/node':
-    specifier: ^20.14.10
+    specifier: ^20.17.9
     version: 20.17.10
   '@typescript-eslint/eslint-plugin':
     specifier: ^6.21.0
@@ -86,7 +86,7 @@ devDependencies:
     specifier: ^6.21.0
     version: 6.21.0(eslint@8.57.1)(typescript@5.7.2)
   '@vitejs/plugin-basic-ssl':
-    specifier: ^1.1.0
+    specifier: ^1.2.0
     version: 1.2.0(vite@5.4.11)
   babel-core:
     specifier: ^6.26.3
@@ -95,16 +95,16 @@ devDependencies:
     specifier: ^29.7.0
     version: 29.7.0(@babel/core@7.26.0)
   chai:
-    specifier: ^4.3.6
+    specifier: ^4.5.0
     version: 4.5.0
   chai-spies:
-    specifier: ^1.0.0
+    specifier: ^1.1.0
     version: 1.1.0(chai@4.5.0)
   cross-env:
     specifier: ^5.2.1
     version: 5.2.1
   cypress:
-    specifier: ^13.13.0
+    specifier: ^13.16.0
     version: 13.16.1
   cypress-recurse:
     specifier: ^1.35.3
@@ -137,10 +137,10 @@ devDependencies:
     specifier: ^10.5.4
     version: 10.5.4
   nock:
-    specifier: ^13.5.4
+    specifier: ^13.5.6
     version: 13.5.6
   odiff-bin:
-    specifier: ^3.0.1
+    specifier: ^3.2.0
     version: 3.2.0
   react:
     specifier: ^16.14.0
@@ -152,20 +152,20 @@ devDependencies:
     specifier: ^0.14.1
     version: 0.14.1
   rollup:
-    specifier: ^2.32.0
+    specifier: ^2.79.2
     version: 2.79.2
   rollup-plugin-glslify:
-    specifier: ^1.2.0
+    specifier: ^1.3.1
     version: 1.3.1
   rollup-plugin-modify:
     specifier: ^3.0.0
     version: 3.0.0
   rollup-plugin-serve:
-    specifier: ^1.1.0
+    specifier: ^1.1.1
     version: 1.1.1
   rollup-plugin-swc3:
-    specifier: ^0.8.0
-    version: 0.8.2(@swc/core@1.10.1)(rollup@2.79.2)
+    specifier: ^0.12.1
+    version: 0.12.1(@swc/core@1.10.1)(rollup@2.79.2)
   rollup-plugin-terser:
     specifier: ^7.0.2
     version: 7.0.2(rollup@2.79.2)
@@ -173,13 +173,13 @@ devDependencies:
     specifier: ^1.3.3
     version: 1.3.3
   sass:
-    specifier: ^1.77.8
+    specifier: ^1.81.1
     version: 1.83.0
   sinon:
-    specifier: ^18.0.0
+    specifier: ^18.0.1
     version: 18.0.1
   ts-jest:
-    specifier: ^29.2.2
+    specifier: ^29.2.5
     version: 29.2.5(@babel/core@7.26.0)(babel-jest@29.7.0)(jest@29.7.0)(typescript@5.7.2)
   ts-node:
     specifier: ^10.9.2
@@ -1679,6 +1679,10 @@ packages:
       - supports-color
     dev: true
 
+  /@dual-bundle/import-meta-resolve@4.1.0:
+    resolution: {integrity: sha512-+nxncfwHM5SgAtrVzgpzJOI1ol0PkumhVo469KCf9lUi21IGcY90G98VuHm9VRrUypmAzawAHO9bs6hqeADaVg==}
+    dev: true
+
   /@esbuild/aix-ppc64@0.21.5:
     resolution: {integrity: sha512-1SDgH6ZSPTlggy1yI6+Dbkiz8xzpHJEVAlF/AM1tHPLsf5STom9rwtjE4hKAF20FfXXNTFqEYXyJNWh1GiZedQ==}
     engines: {node: '>=12'}
@@ -1927,162 +1931,162 @@ packages:
     resolution: {integrity: sha512-rIla8LE4YwE1Z1q/KfpQN8YC/gtnXr8KNdTNrv6dpM6GpXXj7jblzzCpirFS2Ev3AAbvNa1J2Enn1HQmO9SLcg==}
     dev: false
 
-  /@fastify/deepmerge@1.3.0:
-    resolution: {integrity: sha512-J8TOSBq3SoZbDhM9+R/u77hP93gz/rajSA+K2kGyijPpORPWUXHUpTaleoj+92As0S9uPRP7Oi8IqMf0u+ro6A==}
+  /@fastify/deepmerge@2.0.2:
+    resolution: {integrity: sha512-3wuLdX5iiiYeZWP6bQrjqhrcvBIf0NHbQH1Ur1WbHvoiuTYUEItgygea3zs8aHpiitn0lOB8gX20u1qO+FDm7Q==}
     dev: true
 
-  /@galacean/engine-core@1.3.24:
-    resolution: {integrity: sha512-ltTVhEFRyAHIYQXMubWuJp+G+aE9+Xhiuc6n/SJzAVGePf6KWYKJGFMMCRQgUBimM1btFnITwS38nvtQH6g7kA==}
+  /@galacean/engine-core@1.4.14:
+    resolution: {integrity: sha512-9q0obww6PeeWKCm3xCMIowVfkicIAM42ojGP6K/InBO7M+iXgHG21WnWpD4dm6KNB3tRaUJwYJfEkbo2Hg2iTg==}
     dependencies:
-      '@galacean/engine-math': 1.3.24
+      '@galacean/engine-math': 1.4.14
     dev: true
 
-  /@galacean/engine-loader@1.3.24:
-    resolution: {integrity: sha512-8fRrsTQYfD0hFwGh11Yika4htK0ATRJW7+h3H3Rhn/PQjhjw1VFepgZzrnv77QZEy0FfD3rGxUAGd8aZ4FfYpg==}
+  /@galacean/engine-loader@1.4.14:
+    resolution: {integrity: sha512-sCigGApg53AlP9+A9lXVQ5cnKOSe6LuOeKPjOqVubZEFRxQcVFdesRIane35IJUzQVX5k6qrL8maK0NtmEXe9A==}
     dependencies:
-      '@galacean/engine-core': 1.3.24
-      '@galacean/engine-math': 1.3.24
-      '@galacean/engine-rhi-webgl': 1.3.24
+      '@galacean/engine-core': 1.4.14
+      '@galacean/engine-math': 1.4.14
+      '@galacean/engine-rhi-webgl': 1.4.14
     dev: true
 
-  /@galacean/engine-math@1.3.24:
-    resolution: {integrity: sha512-1/W63m6kYE4fNiN1ty8F/RA+5OhEcN/pde8cfcoW/JI8+CKJi2tqwFROZXwbuUi5wIm7FCyQggltCC0ubbmXJg==}
+  /@galacean/engine-math@1.4.14:
+    resolution: {integrity: sha512-+fNi9TK668gSUoL1fXxqWBHHzvlNSkEENQcK10TKwcn8uiIIaOw2S7P7TekqcJLff2Sdwxl/Wk16FV4gAcVLlQ==}
     dev: true
 
-  /@galacean/engine-rhi-webgl@1.3.24:
-    resolution: {integrity: sha512-NvK7xWOM1aNE8dh8l1n6ill8zL4NEtYDKoE7mW5AJOgZ9Hp6srzsGH15uV4cSGHIq77RQkIWewzrFUfsqZp0dQ==}
+  /@galacean/engine-rhi-webgl@1.4.14:
+    resolution: {integrity: sha512-r0e8ajU9pRyTNQ+ZQlgGm7wpWAv1QjZPXYAKPim3OPddNz5mmpuUBXgO8m+BhVmcemhhEvPFmqC3WhaofmIIeA==}
     dependencies:
-      '@galacean/engine-core': 1.3.24
-      '@galacean/engine-math': 1.3.24
+      '@galacean/engine-core': 1.4.14
+      '@galacean/engine-math': 1.4.14
     dev: true
 
-  /@galacean/engine-toolkit-auxiliary-lines@1.3.0-beta.3(@galacean/engine@1.3.24):
+  /@galacean/engine-toolkit-auxiliary-lines@1.3.0-beta.3(@galacean/engine@1.4.14):
     resolution: {integrity: sha512-ZIEn2Pxw0a4TXICRd5f+xs3J+DFuOSWiz57Ml8Z3zRCsLtCv9bBApSxLpJo144YiY5us128fDoFxLI5YmvWOTA==}
     peerDependencies:
       '@galacean/engine': ^1.3.0-beta.6
     dependencies:
-      '@galacean/engine': 1.3.24
-      '@galacean/engine-toolkit-custom-material': 1.3.0-beta.3(@galacean/engine@1.3.24)
+      '@galacean/engine': 1.4.14
+      '@galacean/engine-toolkit-custom-material': 1.3.0-beta.3(@galacean/engine@1.4.14)
     dev: true
 
-  /@galacean/engine-toolkit-controls@1.3.0-beta.3(@galacean/engine@1.3.24):
+  /@galacean/engine-toolkit-controls@1.3.0-beta.3(@galacean/engine@1.4.14):
     resolution: {integrity: sha512-pouxHjy1x4mC4qveTHmZbHgVO8xs10C3lpXK4Jyo12+Q9tpcJxa3rOPHGT7SifJDg9B6HSKL6eKQ+LrTyb4Kpw==}
     peerDependencies:
       '@galacean/engine': ^1.3.0-beta.6
     dependencies:
-      '@galacean/engine': 1.3.24
+      '@galacean/engine': 1.4.14
     dev: true
 
-  /@galacean/engine-toolkit-custom-material@1.3.0-beta.3(@galacean/engine@1.3.24):
+  /@galacean/engine-toolkit-custom-material@1.3.0-beta.3(@galacean/engine@1.4.14):
     resolution: {integrity: sha512-18SEhuN0Fn/+0YJ62rylDCJbDowJ7cWfUoxxnSe6J/eT0vU0SzP1XhZ6CDYSj0fArV1VPvSJUSTj2hzavJvMMg==}
     peerDependencies:
       '@galacean/engine': ^1.3.0-beta.6
     dependencies:
-      '@galacean/engine': 1.3.24
+      '@galacean/engine': 1.4.14
     dev: true
 
-  /@galacean/engine-toolkit-framebuffer-picker@1.3.0-beta.3(@galacean/engine@1.3.24):
+  /@galacean/engine-toolkit-framebuffer-picker@1.3.0-beta.3(@galacean/engine@1.4.14):
     resolution: {integrity: sha512-zhwc1HrzAY3gNiVOY/hvIajZuonn3zyJce5F+FIxsTdhvPqoOyDKskaP2S/33l39gjAVQe0atJn+Lq6Jia6+Sw==}
     peerDependencies:
       '@galacean/engine': ^1.3.0-beta.6
     dependencies:
-      '@galacean/engine': 1.3.24
+      '@galacean/engine': 1.4.14
     dev: true
 
-  /@galacean/engine-toolkit-geometry-sketch@1.3.0-beta.3(@galacean/engine@1.3.24):
+  /@galacean/engine-toolkit-geometry-sketch@1.3.0-beta.3(@galacean/engine@1.4.14):
     resolution: {integrity: sha512-Hb4Xx3fWef7jhgfc1A6VbGyUInphGSoiBPr5Skh84mxiFqJxbFSNAiEknHmG3imPu96lsNECPMSNYxKHrZIJ+Q==}
     peerDependencies:
       '@galacean/engine': ^1.3.0-beta.6
     dependencies:
-      '@galacean/engine': 1.3.24
+      '@galacean/engine': 1.4.14
     dev: true
 
-  /@galacean/engine-toolkit-gizmo@1.3.0-beta.3(@galacean/engine@1.3.24):
+  /@galacean/engine-toolkit-gizmo@1.3.0-beta.3(@galacean/engine@1.4.14):
     resolution: {integrity: sha512-zOvCbE5az/Z3yv7gKbUi168SCGu1XPf9lUewFsVfoEyTVRzNym234nMy0tYk+TjL5pp57uelFJP3ZI4ZK4snFQ==}
     peerDependencies:
       '@galacean/engine': ^1.3.0-beta.6
     dependencies:
-      '@galacean/engine': 1.3.24
-      '@galacean/engine-toolkit-custom-material': 1.3.0-beta.3(@galacean/engine@1.3.24)
-      '@galacean/engine-toolkit-framebuffer-picker': 1.3.0-beta.3(@galacean/engine@1.3.24)
+      '@galacean/engine': 1.4.14
+      '@galacean/engine-toolkit-custom-material': 1.3.0-beta.3(@galacean/engine@1.4.14)
+      '@galacean/engine-toolkit-framebuffer-picker': 1.3.0-beta.3(@galacean/engine@1.4.14)
     dev: true
 
-  /@galacean/engine-toolkit-lines@1.3.0-beta.3(@galacean/engine@1.3.24):
+  /@galacean/engine-toolkit-lines@1.3.0-beta.3(@galacean/engine@1.4.14):
     resolution: {integrity: sha512-j5RzvD9nEi7ouKo3IrWgGAfpsPXl5wffpgi1oCzNjBmSV55MwWAPDhvDe8cT9jw2wR3RXESL1XXslXmtFwg57A==}
     peerDependencies:
       '@galacean/engine': ^1.3.0-beta.6
     dependencies:
-      '@galacean/engine': 1.3.24
+      '@galacean/engine': 1.4.14
     dev: true
 
-  /@galacean/engine-toolkit-navigation-gizmo@1.3.0-beta.3(@galacean/engine@1.3.24):
+  /@galacean/engine-toolkit-navigation-gizmo@1.3.0-beta.3(@galacean/engine@1.4.14):
     resolution: {integrity: sha512-C6ANWiybCWWFpaeodgJTdj5WuIxzAVWDVs+5yOYyjqRy5A7VzG3exwYv1tDJXPEgVk0ihqU0tCL5VxXIW0PQUg==}
     peerDependencies:
       '@galacean/engine': ^1.3.0-beta.6
     dependencies:
-      '@galacean/engine': 1.3.24
-      '@galacean/engine-toolkit-controls': 1.3.0-beta.3(@galacean/engine@1.3.24)
-      '@galacean/engine-toolkit-custom-material': 1.3.0-beta.3(@galacean/engine@1.3.24)
+      '@galacean/engine': 1.4.14
+      '@galacean/engine-toolkit-controls': 1.3.0-beta.3(@galacean/engine@1.4.14)
+      '@galacean/engine-toolkit-custom-material': 1.3.0-beta.3(@galacean/engine@1.4.14)
     dev: true
 
-  /@galacean/engine-toolkit-outline@1.3.0-beta.3(@galacean/engine@1.3.24):
+  /@galacean/engine-toolkit-outline@1.3.0-beta.3(@galacean/engine@1.4.14):
     resolution: {integrity: sha512-eH9DTXu9a8AUAQbqT0hcmN8kEqtVZrUkrrsdyQr3P7ystGFN8lKLukhWsbI4yfqdwUl5Xs3PMCOhrSyvGx+yZg==}
     peerDependencies:
       '@galacean/engine': ^1.3.0-beta.6
     dependencies:
-      '@galacean/engine': 1.3.24
+      '@galacean/engine': 1.4.14
     dev: true
 
-  /@galacean/engine-toolkit-shader-lab@1.3.0-beta.3(@galacean/engine@1.3.24):
+  /@galacean/engine-toolkit-shader-lab@1.3.0-beta.3(@galacean/engine@1.4.14):
     resolution: {integrity: sha512-d8JomTPNIoBnnhXkU6cKB2TfH+Dx2ZGBVomst+Ncokgm2LyneiQh6zWt9qBLzk8aZ2JndJNdIXJ6Zk/burgyUQ==}
     peerDependencies:
       '@galacean/engine': ^1.3.0-beta.6
     dependencies:
-      '@galacean/engine': 1.3.24
+      '@galacean/engine': 1.4.14
     dev: true
 
-  /@galacean/engine-toolkit-skeleton-viewer@1.3.0-beta.3(@galacean/engine@1.3.24):
+  /@galacean/engine-toolkit-skeleton-viewer@1.3.0-beta.3(@galacean/engine@1.4.14):
     resolution: {integrity: sha512-+o1zMZizOx1/CyLmn2Q9xGF+8QWzKa+MQVkBcqMCFeWqYD1kzop2gVz78T2KfXXXW1pX9y8svXKpBnrxfoFQdA==}
     peerDependencies:
       '@galacean/engine': ^1.3.0-beta.6
     dependencies:
-      '@galacean/engine': 1.3.24
+      '@galacean/engine': 1.4.14
     dev: true
 
-  /@galacean/engine-toolkit-stats@1.3.0-beta.3(@galacean/engine@1.3.24):
+  /@galacean/engine-toolkit-stats@1.3.0-beta.3(@galacean/engine@1.4.14):
     resolution: {integrity: sha512-/vv/yqcvbJZK74YnhHWnxfjT/bFA6Q4A7exZNTP6w07cDkZUlhkMRDsDRCipoxD8PAWUTHnQ3wmsdhoRZDeevg==}
     peerDependencies:
       '@galacean/engine': ^1.3.0-beta.6
     dependencies:
-      '@galacean/engine': 1.3.24
+      '@galacean/engine': 1.4.14
     dev: true
 
-  /@galacean/engine-toolkit@1.3.0-beta.3(@galacean/engine@1.3.24):
+  /@galacean/engine-toolkit@1.3.0-beta.3(@galacean/engine@1.4.14):
     resolution: {integrity: sha512-Bed92cVRNMut4a4i7fomX85gMSR8/MlJk3/ttGNjwCI5PMBxejDIrJ9evZn0K2LgF/1laCctksNF0G126UT1QQ==}
     dependencies:
-      '@galacean/engine-toolkit-auxiliary-lines': 1.3.0-beta.3(@galacean/engine@1.3.24)
-      '@galacean/engine-toolkit-controls': 1.3.0-beta.3(@galacean/engine@1.3.24)
-      '@galacean/engine-toolkit-custom-material': 1.3.0-beta.3(@galacean/engine@1.3.24)
-      '@galacean/engine-toolkit-framebuffer-picker': 1.3.0-beta.3(@galacean/engine@1.3.24)
-      '@galacean/engine-toolkit-geometry-sketch': 1.3.0-beta.3(@galacean/engine@1.3.24)
-      '@galacean/engine-toolkit-gizmo': 1.3.0-beta.3(@galacean/engine@1.3.24)
-      '@galacean/engine-toolkit-lines': 1.3.0-beta.3(@galacean/engine@1.3.24)
-      '@galacean/engine-toolkit-navigation-gizmo': 1.3.0-beta.3(@galacean/engine@1.3.24)
-      '@galacean/engine-toolkit-outline': 1.3.0-beta.3(@galacean/engine@1.3.24)
-      '@galacean/engine-toolkit-shader-lab': 1.3.0-beta.3(@galacean/engine@1.3.24)
-      '@galacean/engine-toolkit-skeleton-viewer': 1.3.0-beta.3(@galacean/engine@1.3.24)
-      '@galacean/engine-toolkit-stats': 1.3.0-beta.3(@galacean/engine@1.3.24)
+      '@galacean/engine-toolkit-auxiliary-lines': 1.3.0-beta.3(@galacean/engine@1.4.14)
+      '@galacean/engine-toolkit-controls': 1.3.0-beta.3(@galacean/engine@1.4.14)
+      '@galacean/engine-toolkit-custom-material': 1.3.0-beta.3(@galacean/engine@1.4.14)
+      '@galacean/engine-toolkit-framebuffer-picker': 1.3.0-beta.3(@galacean/engine@1.4.14)
+      '@galacean/engine-toolkit-geometry-sketch': 1.3.0-beta.3(@galacean/engine@1.4.14)
+      '@galacean/engine-toolkit-gizmo': 1.3.0-beta.3(@galacean/engine@1.4.14)
+      '@galacean/engine-toolkit-lines': 1.3.0-beta.3(@galacean/engine@1.4.14)
+      '@galacean/engine-toolkit-navigation-gizmo': 1.3.0-beta.3(@galacean/engine@1.4.14)
+      '@galacean/engine-toolkit-outline': 1.3.0-beta.3(@galacean/engine@1.4.14)
+      '@galacean/engine-toolkit-shader-lab': 1.3.0-beta.3(@galacean/engine@1.4.14)
+      '@galacean/engine-toolkit-skeleton-viewer': 1.3.0-beta.3(@galacean/engine@1.4.14)
+      '@galacean/engine-toolkit-stats': 1.3.0-beta.3(@galacean/engine@1.4.14)
     transitivePeerDependencies:
       - '@galacean/engine'
     dev: true
 
-  /@galacean/engine@1.3.24:
-    resolution: {integrity: sha512-xE/1yFrZLq6P/GICwmUqMrmCo2Kuw04UwZv76tbEM6AiutcpujXrQNdzsVfXcF2lhIu27jFj84Z+6QIukYMbRA==}
+  /@galacean/engine@1.4.14:
+    resolution: {integrity: sha512-ZI1N3uONHaN2UJieF2oXj0LTmRkLoffPp8j4k0BSc4xUzhhdvRBBJGdM+6DgXWwK9/souN/Y5ES6F3y+KKqL4A==}
     dependencies:
-      '@galacean/engine-core': 1.3.24
-      '@galacean/engine-loader': 1.3.24
-      '@galacean/engine-math': 1.3.24
-      '@galacean/engine-rhi-webgl': 1.3.24
+      '@galacean/engine-core': 1.4.14
+      '@galacean/engine-loader': 1.4.14
+      '@galacean/engine-math': 1.4.14
+      '@galacean/engine-rhi-webgl': 1.4.14
     dev: true
 
   /@humanwhocodes/config-array@0.13.0:
@@ -2648,12 +2652,19 @@ packages:
       rollup: 2.79.2
     dev: true
 
-  /@rollup/pluginutils@4.2.1:
-    resolution: {integrity: sha512-iKnFXr7NkdZAIHiIWE+BX5ULi/ucVFYWD6TbAV+rZctiRTY2PL6tsIKhoIOaoskiWAkgu+VsbXgUVDNLHf+InQ==}
-    engines: {node: '>= 8.0.0'}
+  /@rollup/pluginutils@5.1.4(rollup@2.79.2):
+    resolution: {integrity: sha512-USm05zrsFxYLPdWWq+K3STlWiT/3ELn3RcV5hJMghpeAIhxfsUIg6mt12CBJBInWMV4VneoV7SfGv8xIwo2qNQ==}
+    engines: {node: '>=14.0.0'}
+    peerDependencies:
+      rollup: ^1.20.0||^2.0.0||^3.0.0||^4.0.0
+    peerDependenciesMeta:
+      rollup:
+        optional: true
     dependencies:
+      '@types/estree': 1.0.6
       estree-walker: 2.0.2
-      picomatch: 2.3.1
+      picomatch: 4.0.2
+      rollup: 2.79.2
     dev: true
 
   /@rollup/rollup-android-arm-eabi@4.28.1:
@@ -6375,6 +6386,7 @@ packages:
 
   /lodash.get@4.4.2:
     resolution: {integrity: sha512-z+Uw/vLuy6gQe8cfaFWD7p0wVv8fJl3mbzXh33RS+0oW2wvUqiRXiQ69gLWSLpgB5/6sU+r6BlQR0MBILadqTQ==}
+    deprecated: This package is deprecated. Use the optional chaining (?.) operator instead.
     dev: true
 
   /lodash.memoize@4.1.2:
@@ -6447,6 +6459,12 @@ packages:
     resolution: {integrity: sha512-RmF0AsMzgt25qzqqLc1+MbHmhdx0ojF2Fvs4XnOqz2ZOBXzzkEwc/dJQZCYHAn7v1jbVOjAZfK8msRn4BxO4VQ==}
     dependencies:
       sourcemap-codec: 1.4.8
+    dev: true
+
+  /magic-string@0.30.17:
+    resolution: {integrity: sha512-sNPKHvyjVf7gyjwS4xGTaW/mCnF8wnjtifKBEhxfZ7E/S8tQ0rssrwGNn6q8JH/ohItJfSQp9mBtQYuTlH5QnA==}
+    dependencies:
+      '@jridgewell/sourcemap-codec': 1.5.0
     dev: true
 
   /make-dir@4.0.0:
@@ -6882,6 +6900,11 @@ packages:
     engines: {node: '>=8.6'}
     dev: true
 
+  /picomatch@4.0.2:
+    resolution: {integrity: sha512-M7BAV6Rlcy5u+m6oPhAPFgJTzAioX/6B0DxyvDlo9l8+T3nLKbrczg2WLUyzd45L8RqfUMyGPzekbMvX2Ldkwg==}
+    engines: {node: '>=12'}
+    dev: true
+
   /pify@2.3.0:
     resolution: {integrity: sha512-udgsAY+fTnvv7kI7aaxbqwWNb0AHiB0qBO89PZKPkoTmGOgdbrHDKD+0B2X4uTfJ/FT1R09r9gTsjUjNJotuog==}
     engines: {node: '>=0.10.0'}
@@ -7299,18 +7322,20 @@ packages:
       opener: 1.5.2
     dev: true
 
-  /rollup-plugin-swc3@0.8.2(@swc/core@1.10.1)(rollup@2.79.2):
-    resolution: {integrity: sha512-8C8rw7Iw3s+RvIooDu0IaXGQDijYFiDpKMuwQPxv3onwa/ysojz3BzG8Lr2AbhX6Hd/2UT2wkerFFwOWQ3ytOQ==}
-    engines: {node: '>=12'}
+  /rollup-plugin-swc3@0.12.1(@swc/core@1.10.1)(rollup@2.79.2):
+    resolution: {integrity: sha512-iNV1T432XvyejZ19/41C2gLbXxEOiiJynPPAFF0WzwwFT5FHx7SstAp0yjJRLyrbZjfIhoWJVl3hX3c3Stv/GQ==}
+    engines: {node: '>=16'}
     peerDependencies:
       '@swc/core': '>=1.2.165'
-      rollup: ^2.0.0 || ^3.0.0
+      rollup: ^2.0.0 || ^3.0.0 || ^4.0.0
     dependencies:
-      '@fastify/deepmerge': 1.3.0
-      '@rollup/pluginutils': 4.2.1
+      '@dual-bundle/import-meta-resolve': 4.1.0
+      '@fastify/deepmerge': 2.0.2
+      '@rollup/pluginutils': 5.1.4(rollup@2.79.2)
       '@swc/core': 1.10.1(@swc/helpers@0.5.15)
       get-tsconfig: 4.8.1
       rollup: 2.79.2
+      rollup-preserve-directives: 1.1.3(rollup@2.79.2)
     dev: true
 
   /rollup-plugin-terser@7.0.2(rollup@2.79.2):
@@ -7338,6 +7363,15 @@ packages:
     resolution: {integrity: sha512-EEp9NhnUkwY8aif6bxgovPHMoMoNr2FulJziTndpt5H9RdwC47GSGuII9XxpSdzVGM0GWrNPHV6ie1LTNJPaLQ==}
     dependencies:
       estree-walker: 0.6.1
+    dev: true
+
+  /rollup-preserve-directives@1.1.3(rollup@2.79.2):
+    resolution: {integrity: sha512-oXqxd6ZzkoQej8Qt0k+S/yvO2+S4CEVEVv2g85oL15o0cjAKTKEuo2MzyA8FcsBBXbtytBzBMFAbhvQg4YyPUQ==}
+    peerDependencies:
+      rollup: ^2.0.0 || ^3.0.0 || ^4.0.0
+    dependencies:
+      magic-string: 0.30.17
+      rollup: 2.79.2
     dev: true
 
   /rollup@2.79.2:

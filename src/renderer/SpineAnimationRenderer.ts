@@ -21,40 +21,21 @@ import {
   VertexElementFormat
 } from "@galacean/engine";
 import { SpineGenerator } from "./SpineGenerator";
-import { SpineMaterial } from "./SpineMaterial";
 import { SpineResource } from "../loader/SpineResource";
-import { getBlendMode } from "../util/BlendMode";
+import { SpineMaterialManager } from "./SpineMaterialManager";
 
 /**
  * Spine animation renderer, capable of rendering spine animations and providing functions for animation and skeleton manipulation.
  */
 export class SpineAnimationRenderer extends Renderer {
-  private static _defaultMaterial: Material;
   private static _spineGenerator = new SpineGenerator();
-
   private static _positionVertexElement = new VertexElement("POSITION", 0, VertexElementFormat.Vector3, 0);
-  private static _colorVertexElement = new VertexElement("COLOR_0", 12, VertexElementFormat.Vector4, 0);
+  private static _lightColorVertexElement = new VertexElement("COLOR_0", 12, VertexElementFormat.Vector4, 0);
   private static _uvVertexElement = new VertexElement("TEXCOORD_0", 28, VertexElementFormat.Vector2, 0);
+  private static _darkColorVertexElement = new VertexElement("COLOR_1", 36, VertexElementFormat.Vector4, 0);
 
   /** @internal */
-  static _materialCache = new Map<string, Material>();
-
-  /** @internal */
-  static _getDefaultMaterial(engine: Engine): Material {
-    let defaultMaterial = this._defaultMaterial;
-    if (defaultMaterial) {
-      if (defaultMaterial.engine === engine) {
-        return defaultMaterial.clone();
-      } else {
-        defaultMaterial.destroy(true);
-        defaultMaterial = null;
-      }
-    }
-    defaultMaterial = new SpineMaterial(engine);
-    defaultMaterial.isGCIgnored = true;
-    this._defaultMaterial = defaultMaterial;
-    return defaultMaterial.clone();
-  }
+  readonly _spineMaterialManager: SpineMaterialManager;
 
   /**
    * The spacing between z layers in world units.
@@ -70,6 +51,13 @@ export class SpineAnimationRenderer extends Renderer {
    */
   @assignmentClone
   premultipliedAlpha = false;
+
+  /**
+   * Whether to support two color tint in shaders (tintBlack feature from Spine).
+   * When enabled, allows use of dark color for two-color tint.
+   */
+  @assignmentClone
+  tintBlack = false;
 
   /**
    * Default state for spine animation.
@@ -141,9 +129,11 @@ export class SpineAnimationRenderer extends Renderer {
     super(entity);
     const primitive = new Primitive(this._engine);
     this._primitive = primitive;
+    this._spineMaterialManager = new SpineMaterialManager(this._engine, this);
     primitive.addVertexElement(SpineAnimationRenderer._positionVertexElement);
-    primitive.addVertexElement(SpineAnimationRenderer._colorVertexElement);
+    primitive.addVertexElement(SpineAnimationRenderer._lightColorVertexElement);
     primitive.addVertexElement(SpineAnimationRenderer._uvVertexElement);
+    primitive.addVertexElement(SpineAnimationRenderer._darkColorVertexElement);
   }
 
   /**
@@ -238,7 +228,7 @@ export class SpineAnimationRenderer extends Renderer {
    * @internal
    */
   override _onDestroy(): void {
-    this._clearMaterialCache();
+    this._spineMaterialManager.clearRendererCache();
     this._subPrimitives.length = 0;
     this._primitive && this._primitive.destroy();
     this._primitive = null;
@@ -254,9 +244,11 @@ export class SpineAnimationRenderer extends Renderer {
   _createAndBindBuffer(vertexCount: number): void {
     const { _engine, _primitive } = this;
     this._vertexCount = vertexCount;
-    this._vertices = new Float32Array(vertexCount * SpineGenerator.VERTEX_STRIDE);
+    const { VertexStrideWithTint, VertexStrideWithoutTint } = SpineGenerator;
+    const stride = this.tintBlack ? VertexStrideWithTint : VertexStrideWithoutTint;
+    this._vertices = new Float32Array(vertexCount * stride);
     this._indices = new Uint16Array(vertexCount);
-    const vertexStride = SpineGenerator.VERTEX_STRIDE * 4;
+    const vertexStride = stride << 2;
     const vertexBuffer = new Buffer(_engine, BufferBindFlag.VertexBuffer, this._vertices, BufferUsage.Dynamic);
     const indexBuffer = new Buffer(_engine, BufferBindFlag.IndexBuffer, this._indices, BufferUsage.Dynamic);
     this._indexBuffer = indexBuffer;
@@ -279,18 +271,6 @@ export class SpineAnimationRenderer extends Renderer {
    */
   _clearSubPrimitives(): void {
     this._subPrimitives.length = 0;
-  }
-
-  private _clearMaterialCache(): void {
-    const materialCache = SpineAnimationRenderer._materialCache;
-    const { _materials: materials } = this;
-    for (let i = 0, len = materials.length; i < len; i += 1) {
-      const material = materials[i];
-      const texture = material.shaderData.getTexture("material_SpineTexture");
-      const blendMode = getBlendMode(material);
-      const key = `${texture.instanceId}_${blendMode}`;
-      materialCache.delete(key);
-    }
   }
 
   private _applyDefaultConfig(): void {
