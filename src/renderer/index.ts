@@ -1,2 +1,2 @@
 export { SpineAnimationRenderer } from "./SpineAnimationRenderer";
-export { SpineMaterial } from "./SpineMaterialManager";
+export { SpineMaterial } from "./SpineMaterial";

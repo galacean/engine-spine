@@ -41,17 +41,8 @@ export class SpineGenerator {
   private _separateSlotTextureMap: Map<string, Texture2D> = new Map();
 
   buildPrimitive(skeleton: Skeleton, renderer: SpineAnimationRenderer) {
-    const {
-      _indices,
-      _vertices,
-      _localBounds,
-      _vertexCount,
-      _subPrimitives,
-      _spineMaterialManager,
-      zSpacing,
-      premultipliedAlpha,
-      tintBlack
-    } = renderer;
+    const { _indices, _vertices, _localBounds, _vertexCount, _subPrimitives, zSpacing, premultipliedAlpha, tintBlack } =
+      renderer;
 
     _localBounds.min.set(Infinity, Infinity, Infinity);
     _localBounds.max.set(-Infinity, -Infinity, -Infinity);
@@ -327,7 +318,7 @@ export class SpineGenerator {
       const { slotName, blendMode, texture } = item;
       renderer._addSubPrimitive(item.subPrimitive);
       const subTexture = _separateSlotTextureMap.get(slotName) || texture.getImage();
-      const material = _spineMaterialManager.get(subTexture, blendMode);
+      const material = renderer._getMaterial(subTexture, blendMode);
       renderer.setMaterial(i, material);
     }
 

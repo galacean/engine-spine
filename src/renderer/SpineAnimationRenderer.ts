@@ -1,4 +1,4 @@
-import { AnimationState, AnimationStateData, Physics, Skeleton } from "@esotericsoftware/spine-core";
+import { AnimationState, AnimationStateData, Physics, Skeleton, BlendMode } from "@esotericsoftware/spine-core";
 import {
   assignmentClone,
   BoundingBox,
@@ -15,6 +15,7 @@ import {
   Primitive,
   Renderer,
   SubPrimitive,
+  Texture2D,
   Vector3,
   VertexBufferBinding,
   VertexElement,
@@ -22,7 +23,7 @@ import {
 } from "@galacean/engine";
 import { SpineGenerator } from "./SpineGenerator";
 import { SpineResource } from "../loader/SpineResource";
-import { SpineMaterialManager } from "./SpineMaterialManager";
+import { SpineMaterial } from "./SpineMaterial";
 
 /**
  * Spine animation renderer, capable of rendering spine animations and providing functions for animation and skeleton manipulation.
@@ -35,7 +36,7 @@ export class SpineAnimationRenderer extends Renderer {
   private static _darkColorVertexElement = new VertexElement("COLOR_1", 36, VertexElementFormat.Vector4, 0);
 
   /** @internal */
-  readonly _spineMaterialManager: SpineMaterialManager;
+  static _materialCache = new Map<string, SpineMaterial>();
 
   /**
    * The spacing between z layers in world units.
@@ -129,7 +130,6 @@ export class SpineAnimationRenderer extends Renderer {
     super(entity);
     const primitive = new Primitive(this._engine);
     this._primitive = primitive;
-    this._spineMaterialManager = new SpineMaterialManager(this._engine, this);
     primitive.addVertexElement(SpineAnimationRenderer._positionVertexElement);
     primitive.addVertexElement(SpineAnimationRenderer._lightColorVertexElement);
     primitive.addVertexElement(SpineAnimationRenderer._uvVertexElement);
@@ -228,7 +228,7 @@ export class SpineAnimationRenderer extends Renderer {
    * @internal
    */
   override _onDestroy(): void {
-    this._spineMaterialManager.clearRendererCache();
+    this._clearMaterialCache();
     this._subPrimitives.length = 0;
     this._primitive && this._primitive.destroy();
     this._primitive = null;
@@ -271,6 +271,42 @@ export class SpineAnimationRenderer extends Renderer {
    */
   _clearSubPrimitives(): void {
     this._subPrimitives.length = 0;
+  }
+
+  /**
+   * @internal
+   */
+  _getMaterial(texture: Texture2D, blendMode: BlendMode): Material {
+    const engine = this._engine;
+    const premultipliedAlpha = this.premultipliedAlpha;
+    const tintBlack = this.tintBlack;
+
+    const key = `${texture.instanceId}_${blendMode}_${premultipliedAlpha ? 1 : 0}`;
+    let cached = SpineAnimationRenderer._materialCache[key] as SpineMaterial;
+    if (!cached) {
+      cached = new SpineMaterial(engine);
+      SpineAnimationRenderer._materialCache.set(key, cached);
+    }
+    cached._setBlendMode(blendMode, premultipliedAlpha);
+    cached.shaderData.setTexture("material_SpineTexture", texture);
+    if (tintBlack) {
+      cached.shaderData.enableMacro("TWO_COLORED");
+    } else {
+      cached.shaderData.disableMacro("TWO_COLORED");
+    }
+    return cached;
+  }
+
+  private _clearMaterialCache(): void {
+    const materialCache = SpineAnimationRenderer._materialCache;
+    const { _materials: materials } = this;
+    for (let i = 0, len = materials.length; i < len; i += 1) {
+      const material = materials[i] as SpineMaterial;
+      const texture = material.shaderData.getTexture("material_SpineTexture");
+      const blendMode = material._getBlendMode();
+      const key = `${texture.instanceId}_${blendMode}`;
+      materialCache.delete(key);
+    }
   }
 
   private _applyDefaultConfig(): void {
