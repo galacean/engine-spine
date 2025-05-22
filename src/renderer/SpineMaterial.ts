@@ -32,7 +32,7 @@ export class SpineMaterial extends Material {
     void main()
     {
       vec4 baseColor = texture2DSRGB(material_SpineTexture, v_uv);
-      gl_FragColor = baseColor * v_color;
+      gl_FragColor = baseColor * sRGBToLinear(v_color);
     }
    `;
   constructor(engine: Engine) {
