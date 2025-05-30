@@ -5,6 +5,7 @@
   "main": "dist/main.js",
   "browser": "dist/browser.js",
   "module": "dist/module.js",
+  "packageManager": "pnpm@9.3.0",
   "dependencies": {
     "@esotericsoftware/spine-core": "~4.2.66"
   },
