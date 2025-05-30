@@ -37,13 +37,15 @@ jobs:
           cache: pnpm
 
       - name: Build
-        run: pnpm b:all
+        run: pnpm build
 
       - name: Release current monorepo
         uses: galacean/publish@main
         with:
           specific_tag: ${{ inputs.specific_tag }}
           publish: false
+          packages: |
+            ./
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
           NPM_CONFIG_PROVENANCE: true
