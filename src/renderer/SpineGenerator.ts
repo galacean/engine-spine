@@ -27,7 +27,7 @@ class SubRenderItem {
  */
 export class SpineGenerator {
   static VertexStrideWithoutTint = 9;
-  static VertexStrideWithTint = 13;
+  static VertexStrideWithTint = 12;
   static tempDark = new Color();
   static tempColor = new Color();
   static tempVerts = new Array(8);
@@ -164,7 +164,6 @@ export class SpineGenerator {
           } else {
             darkColor.setFromColor(slotDarkColor);
           }
-          darkColor.a = premultipliedAlpha ? 1 : 0;
         }
 
         if (isClipping) {
@@ -175,27 +174,17 @@ export class SpineGenerator {
           finalIndicesLength = finalIndices.length;
         } else {
           const { r, g, b, a } = finalColor;
-          if (!tintBlack) {
-            for (let v = 2, u = 0, n = numFloats; v < n; v += vertexSize, u += 2) {
-              tempVerts[v] = r;
-              tempVerts[v + 1] = g;
-              tempVerts[v + 2] = b;
-              tempVerts[v + 3] = a;
-              tempVerts[v + 4] = uvs[u];
-              tempVerts[v + 5] = uvs[u + 1];
-            }
-          } else {
-            for (let v = 2, u = 0, n = numFloats; v < n; v += vertexSize, u += 2) {
-              tempVerts[v] = r;
-              tempVerts[v + 1] = g;
-              tempVerts[v + 2] = b;
-              tempVerts[v + 3] = a;
-              tempVerts[v + 4] = uvs[u];
-              tempVerts[v + 5] = uvs[u + 1];
+          for (let v = 2, u = 0, n = numFloats; v < n; v += vertexSize, u += 2) {
+            tempVerts[v] = r;
+            tempVerts[v + 1] = g;
+            tempVerts[v + 2] = b;
+            tempVerts[v + 3] = a;
+            tempVerts[v + 4] = uvs[u];
+            tempVerts[v + 5] = uvs[u + 1];
+            if (tintBlack) {
               tempVerts[v + 6] = darkColor.r;
               tempVerts[v + 7] = darkColor.g;
               tempVerts[v + 8] = darkColor.b;
-              tempVerts[v + 9] = darkColor.a;
             }
           }
           finalVertices = tempVerts;
@@ -229,7 +218,6 @@ export class SpineGenerator {
             _vertices[i++] = finalVertices[j++]; // darkR
             _vertices[i++] = finalVertices[j++]; // darkG
             _vertices[i++] = finalVertices[j++]; // darkB
-            _vertices[i++] = finalVertices[j++]; // darkA
           }
           this._expandBounds(x, y, z, _localBounds);
         }

@@ -6,7 +6,6 @@ import {
   BufferBindFlag,
   BufferUsage,
   deepClone,
-  Engine,
   Entity,
   ignoreClone,
   IndexBufferBinding,
@@ -33,7 +32,7 @@ export class SpineAnimationRenderer extends Renderer {
   private static _positionVertexElement = new VertexElement("POSITION", 0, VertexElementFormat.Vector3, 0);
   private static _lightColorVertexElement = new VertexElement("COLOR_0", 12, VertexElementFormat.Vector4, 0);
   private static _uvVertexElement = new VertexElement("TEXCOORD_0", 28, VertexElementFormat.Vector2, 0);
-  private static _darkColorVertexElement = new VertexElement("COLOR_1", 36, VertexElementFormat.Vector4, 0);
+  private static _darkColorVertexElement = new VertexElement("COLOR_1", 36, VertexElementFormat.Vector3, 0);
 
   /** @internal */
   static _materialCache = new Map<string, SpineMaterial>();

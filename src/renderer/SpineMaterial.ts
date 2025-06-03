@@ -17,8 +17,8 @@ export class SpineMaterial extends Material {
     varying vec4 v_light;
 
     #ifdef TWO_COLORED
-      attribute vec4 COLOR_1;
-      varying vec4 v_dark;
+      attribute vec3 COLOR_1;
+      varying vec3 v_dark;
     #endif
     
     void main()
@@ -27,6 +27,7 @@ export class SpineMaterial extends Material {
     
       v_uv = TEXCOORD_0;
       v_light = COLOR_0;
+
       #ifdef TWO_COLORED
         v_dark = COLOR_1;
       #endif
@@ -35,20 +36,25 @@ export class SpineMaterial extends Material {
 
   private static _spineFS = `
     uniform sampler2D material_SpineTexture;
+    uniform bool spine_PremultipliedAlpha;
 
     varying vec2 v_uv;
     varying vec4 v_light;
 
     #ifdef TWO_COLORED
-      varying vec4 v_dark;
+      varying vec3 v_dark;
     #endif
     
     void main()
     {
       vec4 texColor = texture2D(material_SpineTexture, v_uv);
       #ifdef TWO_COLORED
+        vec3 dark_nonpremult = (texColor.a - texColor.rgb) * v_dark.rgb;
+        vec3 dark_premult = (1.0 - texColor.rgb) * v_dark.rgb;
+        vec3 dark = mix(dark_nonpremult, dark_premult, float(spine_PremultipliedAlpha));
+        vec3 light = texColor.rgb * v_light.rgb;
+        gl_FragColor.rgb = dark + light;
         gl_FragColor.a = texColor.a * v_light.a;
-	      gl_FragColor.rgb = ((texColor.a - 1.0) * v_dark.a + 1.0 - texColor.rgb) * v_dark.rgb + texColor.rgb * v_light.rgb;
       #else
         gl_FragColor = texColor * v_light;
       #endif
