@@ -287,12 +287,9 @@ export class SpineAnimationRenderer extends Renderer {
       SpineAnimationRenderer._materialCache.set(key, cached);
     }
     cached._setBlendMode(blendMode, premultipliedAlpha);
-    cached.shaderData.setTexture("material_SpineTexture", texture);
-    if (tintBlack) {
-      cached.shaderData.enableMacro("TWO_COLORED");
-    } else {
-      cached.shaderData.disableMacro("TWO_COLORED");
-    }
+    cached.texture = texture;
+    cached.tintBlack = tintBlack;
+    cached.premultipliedAlpha = premultipliedAlpha;
     return cached;
   }
 

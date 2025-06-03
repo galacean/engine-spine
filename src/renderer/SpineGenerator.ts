@@ -313,8 +313,10 @@ export class SpineGenerator {
       return;
     }
 
-    renderer._vertexBuffer.setData(_vertices);
-    renderer._indexBuffer.setData(_indices);
+    if (renderer._vertexBuffer) {
+      renderer._vertexBuffer.setData(_vertices);
+      renderer._indexBuffer.setData(_indices);
+    }
   }
 
   private _createRenderItem(

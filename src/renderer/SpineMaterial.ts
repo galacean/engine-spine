@@ -1,7 +1,16 @@
-import { CullMode, Engine, Material, RenderQueueType, Shader, BlendFactor, BlendOperation } from "@galacean/engine";
+import {
+  CullMode,
+  Engine,
+  Material,
+  RenderQueueType,
+  Shader,
+  BlendFactor,
+  BlendOperation,
+  Texture2D
+} from "@galacean/engine";
 import { BlendMode } from "@esotericsoftware/spine-core";
 
-const { SourceAlpha, One, DestinationColor, Zero, OneMinusSourceColor, OneMinusSourceAlpha } = BlendFactor;
+const { SourceAlpha, One, DestinationColor, OneMinusSourceColor, OneMinusSourceAlpha } = BlendFactor;
 const { Add } = BlendOperation;
 
 export class SpineMaterial extends Material {
@@ -35,8 +44,9 @@ export class SpineMaterial extends Material {
   `;
 
   private static _spineFS = `
+    #include <common>
     uniform sampler2D material_SpineTexture;
-    uniform bool spine_PremultipliedAlpha;
+    uniform float spine_PremultipliedAlpha;
 
     varying vec2 v_uv;
     varying vec4 v_light;
@@ -48,18 +58,50 @@ export class SpineMaterial extends Material {
     void main()
     {
       vec4 texColor = texture2D(material_SpineTexture, v_uv);
+      vec4 lightColor = sRGBToLinear(v_light);
       #ifdef TWO_COLORED
-        vec3 dark_nonpremult = (texColor.a - texColor.rgb) * v_dark.rgb;
-        vec3 dark_premult = (1.0 - texColor.rgb) * v_dark.rgb;
-        vec3 dark = mix(dark_nonpremult, dark_premult, float(spine_PremultipliedAlpha));
-        vec3 light = texColor.rgb * v_light.rgb;
+        vec4 darkColor = sRGBToLinear(vec4(v_dark, 1.0));
+        vec3 dark_nonpremult = (texColor.a - texColor.rgb) * darkColor.rgb;
+        vec3 dark_premult = (1.0 - texColor.rgb) * darkColor.rgb;
+        vec3 dark = mix(dark_nonpremult, dark_premult, spine_PremultipliedAlpha);
+        vec3 light = texColor.rgb * lightColor.rgb;
         gl_FragColor.rgb = dark + light;
         gl_FragColor.a = texColor.a * v_light.a;
       #else
-        gl_FragColor = texColor * v_light;
+        gl_FragColor = texColor * lightColor;
       #endif
     }
   `;
+
+  /**
+   * @internal
+   */
+  set tintBlack(enabled: boolean) {
+    if (enabled) {
+      this.shaderData.enableMacro("TWO_COLORED");
+    } else {
+      this.shaderData.disableMacro("TWO_COLORED");
+    }
+  }
+
+  /**
+   * @internal
+   */
+  set premultipliedAlpha(enabled: boolean) {
+    if (enabled) {
+      this.shaderData.setFloat("spine_PremultipliedAlpha", 1);
+    } else {
+      this.shaderData.setFloat("spine_PremultipliedAlpha", 0);
+    }
+  }
+
+  /**
+   * @internal
+   */
+  set texture(value: Texture2D) {
+    this.shaderData.setTexture("material_SpineTexture", value);
+  }
+
   constructor(engine: Engine) {
     const shader =
       Shader.find("galacean-spine-shader") ||
