@@ -153,15 +153,16 @@ export class SpineGenerator {
         }
 
         let darkColor = SpineGenerator.tempDark;
-        if (!slot.darkColor) {
+        const slotDarkColor = slot.darkColor;
+        if (!slotDarkColor) {
           darkColor.set(0, 0, 0, 1);
         } else {
           if (premultipliedAlpha) {
-            darkColor.r = slot.darkColor.r * finalColor.a;
-            darkColor.g = slot.darkColor.g * finalColor.a;
-            darkColor.b = slot.darkColor.b * finalColor.a;
+            darkColor.r = slotDarkColor.r * finalColor.a;
+            darkColor.g = slotDarkColor.g * finalColor.a;
+            darkColor.b = slotDarkColor.b * finalColor.a;
           } else {
-            darkColor.setFromColor(slot.darkColor);
+            darkColor.setFromColor(slotDarkColor);
           }
           darkColor.a = premultipliedAlpha ? 1 : 0;
         }
@@ -183,10 +184,6 @@ export class SpineGenerator {
               tempVerts[v + 4] = uvs[u];
               tempVerts[v + 5] = uvs[u + 1];
             }
-            finalVertices = tempVerts;
-            finalVerticesLength = numFloats;
-            finalIndices = triangles;
-            finalIndicesLength = triangles.length;
           } else {
             for (let v = 2, u = 0, n = numFloats; v < n; v += vertexSize, u += 2) {
               tempVerts[v] = r;
@@ -200,11 +197,11 @@ export class SpineGenerator {
               tempVerts[v + 8] = darkColor.b;
               tempVerts[v + 9] = darkColor.a;
             }
-            finalVertices = tempVerts;
-            finalVerticesLength = numFloats;
-            finalIndices = triangles;
-            finalIndicesLength = triangles.length;
           }
+          finalVertices = tempVerts;
+          finalVerticesLength = numFloats;
+          finalIndices = triangles;
+          finalIndicesLength = triangles.length;
         }
 
         if (finalVerticesLength == 0 || finalIndicesLength == 0) {

@@ -299,12 +299,13 @@ export class SpineAnimationRenderer extends Renderer {
 
   private _clearMaterialCache(): void {
     const materialCache = SpineAnimationRenderer._materialCache;
+    const premultipliedAlpha = this.premultipliedAlpha;
     const { _materials: materials } = this;
     for (let i = 0, len = materials.length; i < len; i += 1) {
       const material = materials[i] as SpineMaterial;
       const texture = material.shaderData.getTexture("material_SpineTexture");
       const blendMode = material._getBlendMode();
-      const key = `${texture.instanceId}_${blendMode}`;
+      const key = `${texture.instanceId}_${blendMode}_${premultipliedAlpha ? 1 : 0}`;
       materialCache.delete(key);
     }
   }
