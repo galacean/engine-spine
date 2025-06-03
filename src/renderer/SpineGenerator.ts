@@ -325,6 +325,14 @@ export class SpineGenerator {
     }
   }
 
+  addSeparateSlot(slotName: string) {
+    this._separateSlots.set(slotName, slotName);
+  }
+
+  addSeparateSlotTexture(slotName: string, texture: Texture2D) {
+    this._separateSlotTextureMap.set(slotName, texture);
+  }
+
   private _createRenderItem(
     subPrimitives: SubPrimitive[],
     primitiveIndex: number,
