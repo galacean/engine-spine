@@ -88,7 +88,11 @@ export class SpineGenerator {
       const isClipping = _clipper.isClipping();
       let numFloats = 0;
       let attachmentColor: Color = null;
-      let vertexSize = tintBlack ? 12 : 8;
+
+      // vertexSize is our per-vertex float count.
+      // For non-tintBlack, we subtract 1 because we add z but don't have darkA.
+      // For tintBlack, adding z and omitting darkA cancel out, so we use the full stride.
+      let vertexSize = tintBlack ? VertexStrideWithTint : VertexStrideWithoutTint - 1;
       let clippedVertexSize = isClipping ? 2 : vertexSize;
 
       switch (attachment.constructor) {
@@ -185,6 +189,7 @@ export class SpineGenerator {
               tempVerts[v + 6] = darkColor.r;
               tempVerts[v + 7] = darkColor.g;
               tempVerts[v + 8] = darkColor.b;
+              tempVerts[v + 9] = darkColor.a;
             }
           }
           finalVertices = tempVerts;
@@ -218,6 +223,7 @@ export class SpineGenerator {
             _vertices[i++] = finalVertices[j++]; // darkR
             _vertices[i++] = finalVertices[j++]; // darkG
             _vertices[i++] = finalVertices[j++]; // darkB
+            j++; // darkA
           }
           this._expandBounds(x, y, z, _localBounds);
         }

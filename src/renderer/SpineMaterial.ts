@@ -61,12 +61,12 @@ export class SpineMaterial extends Material {
       vec4 lightColor = sRGBToLinear(v_light);
       #ifdef TWO_COLORED
         vec4 darkColor = sRGBToLinear(vec4(v_dark, 1.0));
-        vec3 dark_nonpremult = (texColor.a - texColor.rgb) * darkColor.rgb;
-        vec3 dark_premult = (1.0 - texColor.rgb) * darkColor.rgb;
+        vec3 dark_premult = (texColor.a - texColor.rgb) * darkColor.rgb;
+        vec3 dark_nonpremult = (1.0 - texColor.rgb) * darkColor.rgb;
         vec3 dark = mix(dark_nonpremult, dark_premult, spine_PremultipliedAlpha);
         vec3 light = texColor.rgb * lightColor.rgb;
         gl_FragColor.rgb = dark + light;
-        gl_FragColor.a = texColor.a * v_light.a;
+        gl_FragColor.a = texColor.a * lightColor.a;
       #else
         gl_FragColor = texColor * lightColor;
       #endif
