@@ -162,9 +162,9 @@ export class SpineGenerator {
           darkColor.set(0, 0, 0, 1);
         } else {
           if (premultipliedAlpha) {
-            darkColor.r = slotDarkColor.r * finalColor.a;
-            darkColor.g = slotDarkColor.g * finalColor.a;
-            darkColor.b = slotDarkColor.b * finalColor.a;
+            darkColor.r = slotDarkColor.r * finalAlpha;
+            darkColor.g = slotDarkColor.g * finalAlpha;
+            darkColor.b = slotDarkColor.b * finalAlpha;
           } else {
             darkColor.setFromColor(slotDarkColor);
           }

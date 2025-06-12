@@ -284,12 +284,13 @@ export class SpineAnimationRenderer extends Renderer {
     let cached = SpineAnimationRenderer._materialCache[key] as SpineMaterial;
     if (!cached) {
       cached = new SpineMaterial(engine);
+      cached.isGCIgnored = true;
       SpineAnimationRenderer._materialCache.set(key, cached);
     }
     cached._setBlendMode(blendMode, premultipliedAlpha);
-    cached.texture = texture;
-    cached.tintBlack = tintBlack;
-    cached.premultipliedAlpha = premultipliedAlpha;
+    cached._setTexture(texture);
+    cached._setTintBlack(tintBlack);
+    cached._setPremultipliedAlpha(premultipliedAlpha);
     return cached;
   }
 

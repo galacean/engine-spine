@@ -76,7 +76,7 @@ export class SpineMaterial extends Material {
   /**
    * @internal
    */
-  set tintBlack(enabled: boolean) {
+  _setTintBlack(enabled: boolean) {
     if (enabled) {
       this.shaderData.enableMacro("TWO_COLORED");
     } else {
@@ -87,7 +87,7 @@ export class SpineMaterial extends Material {
   /**
    * @internal
    */
-  set premultipliedAlpha(enabled: boolean) {
+  _setPremultipliedAlpha(enabled: boolean) {
     if (enabled) {
       this.shaderData.setFloat("spine_PremultipliedAlpha", 1);
     } else {
@@ -98,7 +98,7 @@ export class SpineMaterial extends Material {
   /**
    * @internal
    */
-  set texture(value: Texture2D) {
+  _setTexture(value: Texture2D) {
     this.shaderData.setTexture("material_SpineTexture", value);
   }
 
