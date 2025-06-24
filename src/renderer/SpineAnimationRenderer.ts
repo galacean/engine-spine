@@ -52,13 +52,24 @@ export class SpineAnimationRenderer extends Renderer {
   @assignmentClone
   premultipliedAlpha = false;
 
+  @assignmentClone
+  private _tintBlack = false;
+
   /**
    * Whether to enable dark color tint for your spine animation.
    * When your Spine animation uses "Tint Black" feature in the Spine editor, enable this to ensure
    * the rendered result matches the Spine editor preview.
    */
-  @assignmentClone
-  tintBlack = false;
+  get tintBlack(): boolean {
+    return this._tintBlack;
+  }
+
+  set tintBlack(value: boolean) {
+    if (this._tintBlack !== value) {
+      this._tintBlack = value;
+      this._needResizeBuffer = true;
+    }
+  }
 
   /**
    * Default state for spine animation.

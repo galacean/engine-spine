@@ -324,8 +324,9 @@ export class SpineGenerator {
       renderer.setMaterial(i, material);
     }
 
-    if (indicesLength > _vertexCount) {
+    if (indicesLength > _vertexCount || renderer._needResizeBuffer) {
       renderer._createAndBindBuffer(indicesLength);
+      renderer._needResizeBuffer = false;
       this.buildPrimitive(skeleton, renderer);
       return;
     }
