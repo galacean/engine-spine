@@ -20,14 +20,14 @@ export class SpineMaterial extends Material {
 
     attribute vec3 POSITION;
     attribute vec2 TEXCOORD_0;
-    attribute vec4 COLOR_0;
+    attribute vec4 LIGHT_COLOR;
     
     varying vec2 v_uv;
-    varying vec4 v_light;
+    varying vec4 v_lightColor;
 
-    #ifdef TWO_COLORED
-      attribute vec3 COLOR_1;
-      varying vec3 v_dark;
+    #ifdef TINT_BLACK
+      attribute vec3 DARK_COLOR;
+      varying vec3 v_darkColor;
     #endif
     
     void main()
@@ -35,10 +35,10 @@ export class SpineMaterial extends Material {
       gl_Position = renderer_MVPMat * vec4(POSITION, 1.0);
     
       v_uv = TEXCOORD_0;
-      v_light = COLOR_0;
+      v_lightColor = LIGHT_COLOR;
 
-      #ifdef TWO_COLORED
-        v_dark = COLOR_1;
+      #ifdef TINT_BLACK
+        v_darkColor = DARK_COLOR;
       #endif
     }
   `;
@@ -46,24 +46,24 @@ export class SpineMaterial extends Material {
   private static _spineFS = `
     #include <common>
     uniform sampler2D material_SpineTexture;
-    uniform float spine_PremultipliedAlpha;
+    uniform float renderer_PremultipliedAlpha;
 
     varying vec2 v_uv;
-    varying vec4 v_light;
+    varying vec4 v_lightColor;
 
-    #ifdef TWO_COLORED
-      varying vec3 v_dark;
+    #ifdef TINT_BLACK
+      varying vec3 v_darkColor;
     #endif
     
     void main()
     {
       vec4 texColor = texture2D(material_SpineTexture, v_uv);
-      vec4 lightColor = sRGBToLinear(v_light);
-      #ifdef TWO_COLORED
-        vec4 darkColor = sRGBToLinear(vec4(v_dark, 1.0));
+      vec4 lightColor = sRGBToLinear(v_lightColor);
+      #ifdef TINT_BLACK
+        vec4 darkColor = sRGBToLinear(vec4(v_darkColor, 1.0));
         vec3 dark_premult = (texColor.a - texColor.rgb) * darkColor.rgb;
         vec3 dark_nonpremult = (1.0 - texColor.rgb) * darkColor.rgb;
-        vec3 dark = mix(dark_nonpremult, dark_premult, spine_PremultipliedAlpha);
+        vec3 dark = mix(dark_nonpremult, dark_premult, renderer_PremultipliedAlpha);
         vec3 light = texColor.rgb * lightColor.rgb;
         gl_FragColor.rgb = dark + light;
         gl_FragColor.a = texColor.a * lightColor.a;
@@ -78,9 +78,9 @@ export class SpineMaterial extends Material {
    */
   _setTintBlack(enabled: boolean) {
     if (enabled) {
-      this.shaderData.enableMacro("TWO_COLORED");
+      this.shaderData.enableMacro("TINT_BLACK");
     } else {
-      this.shaderData.disableMacro("TWO_COLORED");
+      this.shaderData.disableMacro("TINT_BLACK");
     }
   }
 
@@ -89,9 +89,9 @@ export class SpineMaterial extends Material {
    */
   _setPremultipliedAlpha(enabled: boolean) {
     if (enabled) {
-      this.shaderData.setFloat("spine_PremultipliedAlpha", 1);
+      this.shaderData.setFloat("renderer_PremultipliedAlpha", 1);
     } else {
-      this.shaderData.setFloat("spine_PremultipliedAlpha", 0);
+      this.shaderData.setFloat("renderer_PremultipliedAlpha", 0);
     }
   }
 

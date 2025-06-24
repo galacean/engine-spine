@@ -30,12 +30,12 @@ import { SpineMaterial } from "./SpineMaterial";
 export class SpineAnimationRenderer extends Renderer {
   private static _spineGenerator = new SpineGenerator();
   private static _positionVertexElement = new VertexElement("POSITION", 0, VertexElementFormat.Vector3, 0);
-  private static _lightColorVertexElement = new VertexElement("COLOR_0", 12, VertexElementFormat.Vector4, 0);
+  private static _lightColorVertexElement = new VertexElement("LIGHT_COLOR", 12, VertexElementFormat.Vector4, 0);
   private static _uvVertexElement = new VertexElement("TEXCOORD_0", 28, VertexElementFormat.Vector2, 0);
-  private static _darkColorVertexElement = new VertexElement("COLOR_1", 36, VertexElementFormat.Vector3, 0);
+  private static _darkColorVertexElement = new VertexElement("DARK_COLOR", 36, VertexElementFormat.Vector3, 0);
 
   /** @internal */
-  static _materialCache = new Map<string, SpineMaterial>();
+  static _materialCacheMap = new Map<string, SpineMaterial>();
 
   /**
    * The spacing between z layers in world units.
@@ -53,8 +53,9 @@ export class SpineAnimationRenderer extends Renderer {
   premultipliedAlpha = false;
 
   /**
-   * Whether to support two color tint in shaders (tintBlack feature from Spine).
-   * When enabled, allows use of dark color for two-color tint.
+   * Whether to enable dark color tint for your spine animation.
+   * When your Spine animation uses "Tint Black" feature in the Spine editor, enable this to ensure
+   * the rendered result matches the Spine editor preview.
    */
   @assignmentClone
   tintBlack = false;
@@ -243,8 +244,7 @@ export class SpineAnimationRenderer extends Renderer {
   _createAndBindBuffer(vertexCount: number): void {
     const { _engine, _primitive } = this;
     this._vertexCount = vertexCount;
-    const { VertexStrideWithTint, VertexStrideWithoutTint } = SpineGenerator;
-    const stride = this.tintBlack ? VertexStrideWithTint : VertexStrideWithoutTint;
+    const stride = this.tintBlack ? SpineGenerator.vertexStrideWithTint : SpineGenerator.vertexStrideWithoutTint;
     this._vertices = new Float32Array(vertexCount * stride);
     this._indices = new Uint16Array(vertexCount);
     const vertexStride = stride << 2;
@@ -281,11 +281,11 @@ export class SpineAnimationRenderer extends Renderer {
     const tintBlack = this.tintBlack;
 
     const key = `${texture.instanceId}_${blendMode}_${premultipliedAlpha ? 1 : 0}`;
-    let cached = SpineAnimationRenderer._materialCache[key] as SpineMaterial;
+    let cached = SpineAnimationRenderer._materialCacheMap[key] as SpineMaterial;
     if (!cached) {
       cached = new SpineMaterial(engine);
       cached.isGCIgnored = true;
-      SpineAnimationRenderer._materialCache.set(key, cached);
+      SpineAnimationRenderer._materialCacheMap.set(key, cached);
     }
     cached._setBlendMode(blendMode, premultipliedAlpha);
     cached._setTexture(texture);
@@ -295,9 +295,9 @@ export class SpineAnimationRenderer extends Renderer {
   }
 
   private _clearMaterialCache(): void {
-    const materialCache = SpineAnimationRenderer._materialCache;
+    const materialCache = SpineAnimationRenderer._materialCacheMap;
     const premultipliedAlpha = this.premultipliedAlpha;
-    const { _materials: materials } = this;
+    const materials = this._materials;
     for (let i = 0, len = materials.length; i < len; i += 1) {
       const material = materials[i] as SpineMaterial;
       const texture = material.shaderData.getTexture("material_SpineTexture");

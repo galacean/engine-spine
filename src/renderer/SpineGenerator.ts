@@ -26,8 +26,8 @@ class SubRenderItem {
  * @internal
  */
 export class SpineGenerator {
-  static VertexStrideWithoutTint = 9;
-  static VertexStrideWithTint = 12;
+  static vertexStrideWithoutTint = 9;
+  static vertexStrideWithTint = 12;
   static tempDark = new Color();
   static tempColor = new Color();
   static tempVerts = new Array(8);
@@ -49,7 +49,7 @@ export class SpineGenerator {
 
     const { _clipper, _separateSlots, _subRenderItems, _separateSlotTextureMap } = this;
 
-    const { tempVerts, subRenderItemPool, subPrimitivePool, VertexStrideWithTint, VertexStrideWithoutTint } =
+    const { tempVerts, subRenderItemPool, subPrimitivePool, vertexStrideWithTint, vertexStrideWithoutTint } =
       SpineGenerator;
 
     _subRenderItems.length = 0;
@@ -89,10 +89,21 @@ export class SpineGenerator {
       let numFloats = 0;
       let attachmentColor: Color = null;
 
-      // vertexSize is our per-vertex float count.
-      // For non-tintBlack, we subtract 1 because we add z but don't have darkA.
-      // For tintBlack, adding z and omitting darkA cancel out, so we use the full stride.
-      let vertexSize = tintBlack ? VertexStrideWithTint : VertexStrideWithoutTint - 1;
+      // This vertexSize will be passed to spine-core's computeWorldVertices function.
+      //
+      // Expected format by computeWorldVertices:
+      // - Without tintBlack: [x, y, u, v, r, g, b, a] = 8 components
+      // - With tintBlack:    [x, y, u, v, r, g, b, a, dr, dg, db, da] = 12 components
+      //
+      // Our actual vertex buffer format:
+      // - vertexStrideWithoutTint: [x, y, z, u, v, r, g, b, a] = 9 components
+      // - vertexStrideWithTint:    [x, y, z, u, v, r, g, b, a, dr, dg, db] = 12 components
+      //   (Note: we optimized 'da' as uniform instead of buffer attribute)
+      //
+      // Calculation:
+      // - Without tintBlack: 9 - 1 (remove z) = 8 ✓
+      // - With tintBlack:    12 - 1 (remove z) + 1 (add back da) = 12 ✓
+      let vertexSize = tintBlack ? vertexStrideWithTint : vertexStrideWithoutTint - 1;
       let clippedVertexSize = isClipping ? 2 : vertexSize;
 
       switch (attachment.constructor) {
@@ -203,7 +214,7 @@ export class SpineGenerator {
           continue;
         }
 
-        const stride = tintBlack ? VertexStrideWithTint : VertexStrideWithoutTint;
+        const stride = tintBlack ? vertexStrideWithTint : vertexStrideWithoutTint;
         let indexStart = verticesLength / stride;
         let i = verticesLength;
         let j = 0;
