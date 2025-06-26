@@ -25,7 +25,7 @@ export class SpineMaterial extends Material {
     varying vec2 v_uv;
     varying vec4 v_lightColor;
 
-    #ifdef TINT_BLACK
+    #ifdef RENDERER_TINT_BLACK
       attribute vec3 DARK_COLOR;
       varying vec3 v_darkColor;
     #endif
@@ -37,7 +37,7 @@ export class SpineMaterial extends Material {
       v_uv = TEXCOORD_0;
       v_lightColor = LIGHT_COLOR;
 
-      #ifdef TINT_BLACK
+      #ifdef RENDERER_TINT_BLACK
         v_darkColor = DARK_COLOR;
       #endif
     }
@@ -51,7 +51,7 @@ export class SpineMaterial extends Material {
     varying vec2 v_uv;
     varying vec4 v_lightColor;
 
-    #ifdef TINT_BLACK
+    #ifdef RENDERER_TINT_BLACK
       varying vec3 v_darkColor;
     #endif
     
@@ -59,7 +59,7 @@ export class SpineMaterial extends Material {
     {
       vec4 texColor = texture2D(material_SpineTexture, v_uv);
       vec4 lightColor = sRGBToLinear(v_lightColor);
-      #ifdef TINT_BLACK
+      #ifdef RENDERER_TINT_BLACK
         vec4 darkColor = sRGBToLinear(vec4(v_darkColor, 1.0));
         vec3 dark_premult = (texColor.a - texColor.rgb) * darkColor.rgb;
         vec3 dark_nonpremult = (1.0 - texColor.rgb) * darkColor.rgb;
@@ -78,9 +78,9 @@ export class SpineMaterial extends Material {
    */
   _setTintBlack(enabled: boolean) {
     if (enabled) {
-      this.shaderData.enableMacro("TINT_BLACK");
+      this.shaderData.enableMacro("RENDERER_TINT_BLACK");
     } else {
-      this.shaderData.disableMacro("TINT_BLACK");
+      this.shaderData.disableMacro("RENDERER_TINT_BLACK");
     }
   }
 
