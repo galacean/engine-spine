@@ -56,9 +56,9 @@ export class SpineAnimationRenderer extends Renderer {
   private _tintBlack = false;
 
   /**
-   * Whether to enable dark color tint for your spine animation.
-   * When your Spine animation uses "Tint Black" feature in the Spine editor, enable this to ensure
-   * the rendered result matches the Spine editor preview.
+   * Whether to enable tint black feature for dark color tinting.
+   *
+   * @remarks Should be enabled when using "Tint Black" feature in Spine editor.
    */
   get tintBlack(): boolean {
     return this._tintBlack;
