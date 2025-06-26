@@ -1,40 +1,107 @@
-import { CullMode, Engine, Material, RenderQueueType, Shader } from "@galacean/engine";
-import { setBlendMode } from "../util/BlendMode";
+import {
+  CullMode,
+  Engine,
+  Material,
+  RenderQueueType,
+  Shader,
+  BlendFactor,
+  BlendOperation,
+  Texture2D
+} from "@galacean/engine";
 import { BlendMode } from "@esotericsoftware/spine-core";
 
+const { SourceAlpha, One, DestinationColor, OneMinusSourceColor, OneMinusSourceAlpha } = BlendFactor;
+const { Add } = BlendOperation;
+
 export class SpineMaterial extends Material {
+  private _blendMode: BlendMode = BlendMode.Normal;
   private static _spineVS = `
     uniform mat4 renderer_MVPMat;
 
     attribute vec3 POSITION;
     attribute vec2 TEXCOORD_0;
-    attribute vec4 COLOR_0;
+    attribute vec4 LIGHT_COLOR;
     
     varying vec2 v_uv;
-    varying vec4 v_color;
+    varying vec4 v_lightColor;
+
+    #ifdef RENDERER_TINT_BLACK
+      attribute vec3 DARK_COLOR;
+      varying vec3 v_darkColor;
+    #endif
     
     void main()
     {
       gl_Position = renderer_MVPMat * vec4(POSITION, 1.0);
     
       v_uv = TEXCOORD_0;
-      v_color = COLOR_0;
+      v_lightColor = LIGHT_COLOR;
+
+      #ifdef RENDERER_TINT_BLACK
+        v_darkColor = DARK_COLOR;
+      #endif
     }
   `;
 
   private static _spineFS = `
     #include <common>
     uniform sampler2D material_SpineTexture;
+    uniform float renderer_PremultipliedAlpha;
 
     varying vec2 v_uv;
-    varying vec4 v_color;
+    varying vec4 v_lightColor;
+
+    #ifdef RENDERER_TINT_BLACK
+      varying vec3 v_darkColor;
+    #endif
     
     void main()
     {
-      vec4 baseColor = texture2DSRGB(material_SpineTexture, v_uv);
-      gl_FragColor = baseColor * sRGBToLinear(v_color);
+      vec4 texColor = texture2D(material_SpineTexture, v_uv);
+      vec4 lightColor = sRGBToLinear(v_lightColor);
+      #ifdef RENDERER_TINT_BLACK
+        vec4 darkColor = sRGBToLinear(vec4(v_darkColor, 1.0));
+        vec3 dark_premult = (texColor.a - texColor.rgb) * darkColor.rgb;
+        vec3 dark_nonpremult = (1.0 - texColor.rgb) * darkColor.rgb;
+        vec3 dark = mix(dark_nonpremult, dark_premult, renderer_PremultipliedAlpha);
+        vec3 light = texColor.rgb * lightColor.rgb;
+        gl_FragColor.rgb = dark + light;
+        gl_FragColor.a = texColor.a * lightColor.a;
+      #else
+        gl_FragColor = texColor * lightColor;
+      #endif
     }
-   `;
+  `;
+
+  /**
+   * @internal
+   */
+  _setTintBlack(enabled: boolean) {
+    if (enabled) {
+      this.shaderData.enableMacro("RENDERER_TINT_BLACK");
+    } else {
+      this.shaderData.disableMacro("RENDERER_TINT_BLACK");
+    }
+  }
+
+  /**
+   * @internal
+   */
+  _setPremultipliedAlpha(enabled: boolean) {
+    if (enabled) {
+      this.shaderData.setFloat("renderer_PremultipliedAlpha", 1);
+    } else {
+      this.shaderData.setFloat("renderer_PremultipliedAlpha", 0);
+    }
+  }
+
+  /**
+   * @internal
+   */
+  _setTexture(value: Texture2D) {
+    this.shaderData.setTexture("material_SpineTexture", value);
+  }
+
   constructor(engine: Engine) {
     const shader =
       Shader.find("galacean-spine-shader") ||
@@ -43,9 +110,54 @@ export class SpineMaterial extends Material {
     const renderState = this.renderState;
     const target = renderState.blendState.targetBlendState;
     target.enabled = true;
-    setBlendMode(this, BlendMode.Normal, false);
+    this._setBlendMode(BlendMode.Normal, false);
     renderState.depthState.writeEnabled = false;
     renderState.rasterState.cullMode = CullMode.Off;
     renderState.renderQueueType = RenderQueueType.Transparent;
+  }
+
+  /**
+   * @internal
+   */
+  _setBlendMode(blendMode: BlendMode, premultipliedAlpha: boolean) {
+    const target = this.renderState.blendState.targetBlendState;
+    this._blendMode = blendMode;
+    switch (blendMode) {
+      case BlendMode.Additive:
+        target.sourceColorBlendFactor = premultipliedAlpha ? One : SourceAlpha;
+        target.destinationColorBlendFactor = One;
+        target.sourceAlphaBlendFactor = One;
+        target.destinationAlphaBlendFactor = One;
+        target.colorBlendOperation = target.alphaBlendOperation = Add;
+        break;
+      case BlendMode.Multiply:
+        target.sourceColorBlendFactor = DestinationColor;
+        target.destinationColorBlendFactor = OneMinusSourceAlpha;
+        target.sourceAlphaBlendFactor = One;
+        target.destinationAlphaBlendFactor = OneMinusSourceAlpha;
+        target.colorBlendOperation = target.alphaBlendOperation = Add;
+        break;
+      case BlendMode.Screen:
+        target.sourceColorBlendFactor = One;
+        target.destinationColorBlendFactor = OneMinusSourceColor;
+        target.sourceAlphaBlendFactor = One;
+        target.destinationAlphaBlendFactor = OneMinusSourceColor;
+        target.colorBlendOperation = target.alphaBlendOperation = Add;
+        break;
+      default:
+        target.sourceColorBlendFactor = premultipliedAlpha ? One : SourceAlpha;
+        target.destinationColorBlendFactor = OneMinusSourceAlpha;
+        target.sourceAlphaBlendFactor = One;
+        target.destinationAlphaBlendFactor = OneMinusSourceAlpha;
+        target.colorBlendOperation = target.alphaBlendOperation = Add;
+        break;
+    }
+  }
+
+  /**
+   * @internal
+   */
+  _getBlendMode(): BlendMode {
+    return this._blendMode;
   }
 }

@@ -34,7 +34,7 @@ const blobResource: any = {
   }
 };
 
-const baseDemo = "spineBoy-单json";
+const baseDemo = "tint-black"; // 默认演示
 const demos = {
   "spineBoy-单json": {
     url: "https://mdn.alipayobjects.com/huamei_kz4wfo/uri/file/as/2/kz4wfo/4/mp/yKbdfgijyLGzQDyQ/spineboy/spineboy.json"
@@ -52,6 +52,14 @@ const demos = {
       "https://mdn.alipayobjects.com/portal_h1wdez/afts/file/A*AjmGS7wM-2UAAAAAAAAAAAAAAQAAAQ?b=.atlas",
       "https://mdn.alipayobjects.com/portal_h1wdez/afts/img/A*BXnORpJ85ywAAAAAAAAAAAAAAQAAAQ/original?c=.png"
     ]
+  },
+  "tint-black": {
+    urls: [
+      "https://mdn.alipayobjects.com/portal_h1wdez/afts/file/A*s5GUT4yEPBYAAAAAAAAAAAAAAQAAAQ?a=.json",
+      "https://mdn.alipayobjects.com/portal_h1wdez/afts/file/A*WUkvTZ5APmEAAAAAAAAAAAAAAQAAAQ?b=.atlas",
+      "https://mdn.alipayobjects.com/portal_h1wdez/afts/img/A*HWO3QZVio6wAAAAAAAAAAAAAAQAAAQ/original?c=.png"
+    ],
+    scene: "tint"
   },
   ktx2: {
     urls: [
@@ -175,6 +183,11 @@ async function loadSpine(root: Entity, engine: Engine, resource) {
   if (scene === "physic") {
     spineAnimation.premultipliedAlpha = true;
     spineEntity.transform.setScale(0.5, 0.5, 0.5);
+  }
+  if (scene === "tint") {
+    spineEntity.transform.scale.set(0.3, 0.3, 0.2);
+    spineEntity.transform.position.set(10, 0, 0);
+    spineAnimation.tintBlack = true;
   }
   spineAnimation.resource = spineResource;
   root.addChild(spineEntity);

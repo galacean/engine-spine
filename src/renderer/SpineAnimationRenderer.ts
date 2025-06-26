@@ -1,4 +1,4 @@
-import { AnimationState, AnimationStateData, Physics, Skeleton } from "@esotericsoftware/spine-core";
+import { AnimationState, AnimationStateData, Physics, Skeleton, BlendMode } from "@esotericsoftware/spine-core";
 import {
   assignmentClone,
   BoundingBox,
@@ -6,7 +6,6 @@ import {
   BufferBindFlag,
   BufferUsage,
   deepClone,
-  Engine,
   Entity,
   ignoreClone,
   IndexBufferBinding,
@@ -15,46 +14,28 @@ import {
   Primitive,
   Renderer,
   SubPrimitive,
+  Texture2D,
   Vector3,
   VertexBufferBinding,
   VertexElement,
   VertexElementFormat
 } from "@galacean/engine";
 import { SpineGenerator } from "./SpineGenerator";
-import { SpineMaterial } from "./SpineMaterial";
 import { SpineResource } from "../loader/SpineResource";
-import { getBlendMode } from "../util/BlendMode";
+import { SpineMaterial } from "./SpineMaterial";
 
 /**
  * Spine animation renderer, capable of rendering spine animations and providing functions for animation and skeleton manipulation.
  */
 export class SpineAnimationRenderer extends Renderer {
-  private static _defaultMaterial: Material;
   private static _spineGenerator = new SpineGenerator();
-
   private static _positionVertexElement = new VertexElement("POSITION", 0, VertexElementFormat.Vector3, 0);
-  private static _colorVertexElement = new VertexElement("COLOR_0", 12, VertexElementFormat.Vector4, 0);
+  private static _lightColorVertexElement = new VertexElement("LIGHT_COLOR", 12, VertexElementFormat.Vector4, 0);
   private static _uvVertexElement = new VertexElement("TEXCOORD_0", 28, VertexElementFormat.Vector2, 0);
+  private static _darkColorVertexElement = new VertexElement("DARK_COLOR", 36, VertexElementFormat.Vector3, 0);
 
   /** @internal */
-  static _materialCache = new Map<string, Material>();
-
-  /** @internal */
-  static _getDefaultMaterial(engine: Engine): Material {
-    let defaultMaterial = this._defaultMaterial;
-    if (defaultMaterial) {
-      if (defaultMaterial.engine === engine) {
-        return defaultMaterial.clone();
-      } else {
-        defaultMaterial.destroy(true);
-        defaultMaterial = null;
-      }
-    }
-    defaultMaterial = new SpineMaterial(engine);
-    defaultMaterial.isGCIgnored = true;
-    this._defaultMaterial = defaultMaterial;
-    return defaultMaterial.clone();
-  }
+  static _materialCacheMap = new Map<string, SpineMaterial>();
 
   /**
    * The spacing between z layers in world units.
@@ -70,6 +51,25 @@ export class SpineAnimationRenderer extends Renderer {
    */
   @assignmentClone
   premultipliedAlpha = false;
+
+  @assignmentClone
+  private _tintBlack = false;
+
+  /**
+   * Whether to enable tint black feature for dark color tinting.
+   *
+   * @remarks Should be enabled when using "Tint Black" feature in Spine editor.
+   */
+  get tintBlack(): boolean {
+    return this._tintBlack;
+  }
+
+  set tintBlack(value: boolean) {
+    if (this._tintBlack !== value) {
+      this._tintBlack = value;
+      this._needResizeBuffer = true;
+    }
+  }
 
   /**
    * Default state for spine animation.
@@ -142,8 +142,9 @@ export class SpineAnimationRenderer extends Renderer {
     const primitive = new Primitive(this._engine);
     this._primitive = primitive;
     primitive.addVertexElement(SpineAnimationRenderer._positionVertexElement);
-    primitive.addVertexElement(SpineAnimationRenderer._colorVertexElement);
+    primitive.addVertexElement(SpineAnimationRenderer._lightColorVertexElement);
     primitive.addVertexElement(SpineAnimationRenderer._uvVertexElement);
+    primitive.addVertexElement(SpineAnimationRenderer._darkColorVertexElement);
   }
 
   /**
@@ -254,9 +255,10 @@ export class SpineAnimationRenderer extends Renderer {
   _createAndBindBuffer(vertexCount: number): void {
     const { _engine, _primitive } = this;
     this._vertexCount = vertexCount;
-    this._vertices = new Float32Array(vertexCount * SpineGenerator.VERTEX_STRIDE);
+    const stride = this.tintBlack ? SpineGenerator.vertexStrideWithTint : SpineGenerator.vertexStrideWithoutTint;
+    this._vertices = new Float32Array(vertexCount * stride);
     this._indices = new Uint16Array(vertexCount);
-    const vertexStride = SpineGenerator.VERTEX_STRIDE * 4;
+    const vertexStride = stride << 2;
     const vertexBuffer = new Buffer(_engine, BufferBindFlag.VertexBuffer, this._vertices, BufferUsage.Dynamic);
     const indexBuffer = new Buffer(_engine, BufferBindFlag.IndexBuffer, this._indices, BufferUsage.Dynamic);
     this._indexBuffer = indexBuffer;
@@ -281,14 +283,37 @@ export class SpineAnimationRenderer extends Renderer {
     this._subPrimitives.length = 0;
   }
 
+  /**
+   * @internal
+   */
+  _getMaterial(texture: Texture2D, blendMode: BlendMode): Material {
+    const engine = this._engine;
+    const premultipliedAlpha = this.premultipliedAlpha;
+    const tintBlack = this.tintBlack;
+
+    const key = `${texture.instanceId}_${blendMode}_${premultipliedAlpha ? 1 : 0}`;
+    let cached = SpineAnimationRenderer._materialCacheMap[key] as SpineMaterial;
+    if (!cached) {
+      cached = new SpineMaterial(engine);
+      cached.isGCIgnored = true;
+      SpineAnimationRenderer._materialCacheMap.set(key, cached);
+    }
+    cached._setBlendMode(blendMode, premultipliedAlpha);
+    cached._setTexture(texture);
+    cached._setTintBlack(tintBlack);
+    cached._setPremultipliedAlpha(premultipliedAlpha);
+    return cached;
+  }
+
   private _clearMaterialCache(): void {
-    const materialCache = SpineAnimationRenderer._materialCache;
-    const { _materials: materials } = this;
+    const materialCache = SpineAnimationRenderer._materialCacheMap;
+    const premultipliedAlpha = this.premultipliedAlpha;
+    const materials = this._materials;
     for (let i = 0, len = materials.length; i < len; i += 1) {
-      const material = materials[i];
+      const material = materials[i] as SpineMaterial;
       const texture = material.shaderData.getTexture("material_SpineTexture");
-      const blendMode = getBlendMode(material);
-      const key = `${texture.instanceId}_${blendMode}`;
+      const blendMode = material._getBlendMode();
+      const key = `${texture.instanceId}_${blendMode}_${premultipliedAlpha ? 1 : 0}`;
       materialCache.delete(key);
     }
   }

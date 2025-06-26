@@ -9,12 +9,11 @@ import {
   Skeleton,
   SkeletonClipping
 } from "@esotericsoftware/spine-core";
-import { BoundingBox, Engine, Material, SubPrimitive, Texture2D } from "@galacean/engine";
-import { SpineAnimationRenderer } from "./SpineAnimationRenderer";
+import { BoundingBox, SubPrimitive, Texture2D } from "@galacean/engine";
 import { SpineTexture } from "../loader/SpineTexture";
-import { setBlendMode } from "../util/BlendMode";
 import { ClearablePool } from "../util/ClearablePool";
 import { ReturnablePool } from "../util/ReturnablePool";
+import { SpineAnimationRenderer } from "./SpineAnimationRenderer";
 
 class SubRenderItem {
   subPrimitive: SubPrimitive;
@@ -27,8 +26,8 @@ class SubRenderItem {
  * @internal
  */
 export class SpineGenerator {
-  static VERTEX_SIZE = 8;
-  static VERTEX_STRIDE = 9;
+  static vertexStrideWithoutTint = 9;
+  static vertexStrideWithTint = 12;
   static tempDark = new Color();
   static tempColor = new Color();
   static tempVerts = new Array(8);
@@ -42,7 +41,7 @@ export class SpineGenerator {
   private _separateSlotTextureMap: Map<string, Texture2D> = new Map();
 
   buildPrimitive(skeleton: Skeleton, renderer: SpineAnimationRenderer) {
-    const { _indices, _vertices, _localBounds, _vertexCount, _subPrimitives, engine, zSpacing, premultipliedAlpha } =
+    const { _indices, _vertices, _localBounds, _vertexCount, _subPrimitives, zSpacing, premultipliedAlpha, tintBlack } =
       renderer;
 
     _localBounds.min.set(Infinity, Infinity, Infinity);
@@ -50,7 +49,8 @@ export class SpineGenerator {
 
     const { _clipper, _separateSlots, _subRenderItems, _separateSlotTextureMap } = this;
 
-    const { tempVerts, subRenderItemPool, subPrimitivePool, VERTEX_SIZE } = SpineGenerator;
+    const { tempVerts, subRenderItemPool, subPrimitivePool, vertexStrideWithTint, vertexStrideWithoutTint } =
+      SpineGenerator;
 
     _subRenderItems.length = 0;
     subRenderItemPool.clear();
@@ -88,14 +88,30 @@ export class SpineGenerator {
       const isClipping = _clipper.isClipping();
       let numFloats = 0;
       let attachmentColor: Color = null;
-      let vertexSize = isClipping ? 2 : VERTEX_SIZE;
+
+      // This vertexSize will be passed to spine-core's computeWorldVertices function.
+      //
+      // Expected format by computeWorldVertices:
+      // - Without tintBlack: [x, y, u, v, r, g, b, a] = 8 components
+      // - With tintBlack:    [x, y, u, v, r, g, b, a, dr, dg, db, da] = 12 components
+      //
+      // Our actual vertex buffer format:
+      // - vertexStrideWithoutTint: [x, y, z, u, v, r, g, b, a] = 9 components
+      // - vertexStrideWithTint:    [x, y, z, u, v, r, g, b, a, dr, dg, db] = 12 components
+      //   (Note: we optimized 'da' as uniform instead of buffer attribute)
+      //
+      // Calculation:
+      // - Without tintBlack: 9 - 1 (remove z) = 8 ✓
+      // - With tintBlack:    12 - 1 (remove z) + 1 (add back da) = 12 ✓
+      let vertexSize = tintBlack ? vertexStrideWithTint : vertexStrideWithoutTint - 1;
+      let clippedVertexSize = isClipping ? 2 : vertexSize;
 
       switch (attachment.constructor) {
         case RegionAttachment:
           const regionAttachment = <RegionAttachment>attachment;
           attachmentColor = regionAttachment.color;
-          numFloats = vertexSize * 4;
-          regionAttachment.computeWorldVertices(slot, tempVerts, 0, vertexSize);
+          numFloats = clippedVertexSize << 2;
+          regionAttachment.computeWorldVertices(slot, tempVerts, 0, clippedVertexSize);
           triangles = SpineGenerator.QUAD_TRIANGLES;
           uvs = regionAttachment.uvs;
           texture = regionAttachment.region.texture;
@@ -103,11 +119,18 @@ export class SpineGenerator {
         case MeshAttachment:
           const meshAttachment = <MeshAttachment>attachment;
           attachmentColor = meshAttachment.color;
-          numFloats = (meshAttachment.worldVerticesLength >> 1) * vertexSize;
+          numFloats = (meshAttachment.worldVerticesLength >> 1) * clippedVertexSize;
           if (numFloats > _vertices.length) {
             SpineGenerator.tempVerts = new Array(numFloats);
           }
-          meshAttachment.computeWorldVertices(slot, 0, meshAttachment.worldVerticesLength, tempVerts, 0, vertexSize);
+          meshAttachment.computeWorldVertices(
+            slot,
+            0,
+            meshAttachment.worldVerticesLength,
+            tempVerts,
+            0,
+            clippedVertexSize
+          );
           triangles = meshAttachment.triangles;
           uvs = meshAttachment.uvs;
           texture = meshAttachment.region.texture;
@@ -144,16 +167,22 @@ export class SpineGenerator {
           finalColor.b *= finalAlpha;
         }
 
+        let darkColor = SpineGenerator.tempDark;
+        const slotDarkColor = slot.darkColor;
+        if (!slotDarkColor) {
+          darkColor.set(0, 0, 0, 1);
+        } else {
+          if (premultipliedAlpha) {
+            darkColor.r = slotDarkColor.r * finalAlpha;
+            darkColor.g = slotDarkColor.g * finalAlpha;
+            darkColor.b = slotDarkColor.b * finalAlpha;
+          } else {
+            darkColor.setFromColor(slotDarkColor);
+          }
+        }
+
         if (isClipping) {
-          _clipper.clipTriangles(
-            tempVerts,
-            triangles,
-            triangles.length,
-            uvs,
-            finalColor,
-            SpineGenerator.tempDark,
-            false
-          );
+          _clipper.clipTriangles(tempVerts, triangles, triangles.length, uvs, finalColor, darkColor, tintBlack);
           finalVertices = _clipper.clippedVertices;
           finalVerticesLength = finalVertices.length;
           finalIndices = _clipper.clippedTriangles;
@@ -167,6 +196,12 @@ export class SpineGenerator {
             tempVerts[v + 3] = a;
             tempVerts[v + 4] = uvs[u];
             tempVerts[v + 5] = uvs[u + 1];
+            if (tintBlack) {
+              tempVerts[v + 6] = darkColor.r;
+              tempVerts[v + 7] = darkColor.g;
+              tempVerts[v + 8] = darkColor.b;
+              tempVerts[v + 9] = darkColor.a;
+            }
           }
           finalVertices = tempVerts;
           finalVerticesLength = numFloats;
@@ -179,7 +214,8 @@ export class SpineGenerator {
           continue;
         }
 
-        let indexStart = verticesLength / SpineGenerator.VERTEX_STRIDE;
+        const stride = tintBlack ? vertexStrideWithTint : vertexStrideWithoutTint;
+        let indexStart = verticesLength / stride;
         let i = verticesLength;
         let j = 0;
         for (; j < finalVerticesLength; ) {
@@ -188,12 +224,18 @@ export class SpineGenerator {
           _vertices[i++] = x;
           _vertices[i++] = y;
           _vertices[i++] = z;
-          _vertices[i++] = finalVertices[j++];
-          _vertices[i++] = finalVertices[j++];
-          _vertices[i++] = finalVertices[j++];
-          _vertices[i++] = finalVertices[j++];
-          _vertices[i++] = finalVertices[j++];
-          _vertices[i++] = finalVertices[j++];
+          _vertices[i++] = finalVertices[j++]; // u
+          _vertices[i++] = finalVertices[j++]; // v
+          _vertices[i++] = finalVertices[j++]; // r
+          _vertices[i++] = finalVertices[j++]; // g
+          _vertices[i++] = finalVertices[j++]; // b
+          _vertices[i++] = finalVertices[j++]; // a
+          if (tintBlack) {
+            _vertices[i++] = finalVertices[j++]; // darkR
+            _vertices[i++] = finalVertices[j++]; // darkG
+            _vertices[i++] = finalVertices[j++]; // darkB
+            j++; // darkA
+          }
           this._expandBounds(x, y, z, _localBounds);
         }
         verticesLength = i;
@@ -273,23 +315,18 @@ export class SpineGenerator {
     }
 
     renderer._clearSubPrimitives();
-    const materialCache = SpineAnimationRenderer._materialCache;
     for (let i = 0, l = curLen; i < l; ++i) {
       const item = _subRenderItems[i];
       const { slotName, blendMode, texture } = item;
       renderer._addSubPrimitive(item.subPrimitive);
       const subTexture = _separateSlotTextureMap.get(slotName) || texture.getImage();
-      const key = `${subTexture.instanceId}_${blendMode}_${premultipliedAlpha}`;
-      let material = materialCache.get(key);
-      if (!material) {
-        material = this._createMaterialForTexture(subTexture, engine, blendMode, premultipliedAlpha);
-        materialCache.set(key, material);
-      }
+      const material = renderer._getMaterial(subTexture, blendMode);
       renderer.setMaterial(i, material);
     }
 
-    if (indicesLength > _vertexCount) {
+    if (indicesLength > _vertexCount || renderer._needResizeBuffer) {
       renderer._createAndBindBuffer(indicesLength);
+      renderer._needResizeBuffer = false;
       this.buildPrimitive(skeleton, renderer);
       return;
     }
@@ -306,18 +343,6 @@ export class SpineGenerator {
 
   addSeparateSlotTexture(slotName: string, texture: Texture2D) {
     this._separateSlotTextureMap.set(slotName, texture);
-  }
-
-  private _createMaterialForTexture(
-    texture: Texture2D,
-    engine: Engine,
-    blendMode: BlendMode,
-    premultipliedAlpha: boolean
-  ): Material {
-    const material = SpineAnimationRenderer._getDefaultMaterial(engine);
-    material.shaderData.setTexture("material_SpineTexture", texture);
-    setBlendMode(material, blendMode, premultipliedAlpha);
-    return material;
   }
 
   private _createRenderItem(
