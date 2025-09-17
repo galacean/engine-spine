@@ -141,6 +141,7 @@ export class SpineAnimationRenderer extends Renderer {
     super(entity);
     const primitive = new Primitive(this._engine);
     this._primitive = primitive;
+    this._primitive._addReferCount(1);
     primitive.addVertexElement(SpineAnimationRenderer._positionVertexElement);
     primitive.addVertexElement(SpineAnimationRenderer._lightColorVertexElement);
     primitive.addVertexElement(SpineAnimationRenderer._uvVertexElement);
@@ -241,8 +242,12 @@ export class SpineAnimationRenderer extends Renderer {
   override _onDestroy(): void {
     this._clearMaterialCache();
     this._subPrimitives.length = 0;
-    this._primitive && this._primitive.destroy();
-    this._primitive = null;
+    const primitive = this._primitive;
+    if (primitive) {
+      primitive._addReferCount(-1);
+      primitive._destroy();
+      this._primitive = null;
+    }
     this._resource = null;
     this._skeleton = null;
     this._state = null;
