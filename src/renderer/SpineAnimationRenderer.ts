@@ -245,7 +245,7 @@ export class SpineAnimationRenderer extends Renderer {
     const primitive = this._primitive;
     if (primitive) {
       primitive._addReferCount(-1);
-      primitive._destroy();
+      primitive.destroy();
       this._primitive = null;
     }
     this._resource = null;
