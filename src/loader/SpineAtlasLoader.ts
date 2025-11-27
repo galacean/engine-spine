@@ -9,7 +9,7 @@ interface SpineAtlasAsset {
   imageExtensions?: string[];
 }
 
-@resourceLoader("SpineAtlas", ["atlas"])
+@resourceLoader("SpineAtlas", ["atlas"], false)
 export class SpineAtlasLoader extends Loader<TextureAtlas> {
   private static _groupAssetsByExtension(url: string, assetPath: SpineAtlasAsset, resourceManager: ResourceManager) {
     let ext = SpineLoader._getUrlExtension(url);
