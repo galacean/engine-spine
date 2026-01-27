@@ -1,5 +1,5 @@
 {
-  "version": "4.2.5",
+  "version": "4.2.8",
   "description": "galacean spine runtime",
   "name": "@galacean/engine-spine",
   "main": "dist/main.js",
@@ -10,7 +10,7 @@
     "@esotericsoftware/spine-core": "~4.2.66"
   },
   "peerDependencies": {
-    "@galacean/engine": ">=1.5.0-0"
+    "@galacean/engine": ">=1.5.0-0 || >=2.0.0-0"
   },
   "devDependencies": {
     "@babel/core": "^7.26.0",
